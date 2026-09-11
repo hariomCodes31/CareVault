@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import './PatientDashboard.css';
 import { getPatientProfile, getPatientVisits } from './services/visitService';
+import { getPatientById } from './services/patientService';
 
 // ── SVG Icons ───────────────────────────────────────────────────────────────
 const IconActivity = () => (
@@ -40,6 +41,33 @@ const IconFileText = () => (
     <line x1="16" y1="13" x2="8" y2="13" />
     <line x1="16" y1="17" x2="8" y2="17" />
     <polyline points="10 9 9 9 8 9" />
+  </svg>
+);
+
+const IconFolder = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+  </svg>
+);
+
+const IconUser = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+    <circle cx="12" cy="7" r="4" />
+  </svg>
+);
+
+const IconBriefcase = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+  </svg>
+);
+
+const IconClock = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10" />
+    <polyline points="12 6 12 12 16 14" />
   </svg>
 );
 
@@ -93,35 +121,38 @@ const IconLogOut = () => (
   </svg>
 );
 
-// ── Default Mock Patient Structure ──────────────────────────────────────────
+// Default patient fallback
 const DEFAULT_PATIENT = {
-  name: 'Rahul Kumar',
-  patientId: 'CV2026-000102',
-  age: 28,
+  name: 'Vikram Malhotra',
+  patientId: 'CV2026-000110',
+  age: 32,
+  dob: '1994-07-12',
   gender: 'Male',
-  phone: '+91 98765 43210',
-  address: 'Patna, Bihar',
-  aadhaar: '7845 9612 9012',
-  bloodGroup: 'O+',
-  knownConditions: 'None',
+  phone: '9876512340',
+  email: 'vikram.malhotra@example.com',
+  address: 'Boring Road, Patna, Bihar - 800001',
+  aadhaar: '7812 3456 9012',
+  bloodGroup: 'B+',
+  knownConditions: 'None Reported',
   allergies: 'Not Reported',
-  emergencyContact: '+91 98765 43211',
+  emergencyContact: '9876512341',
+  emergencyContactRelationship: 'Spouse',
   vitals: {
     bp: '120/80 mmHg',
-    hr: '98 bpm',
-    temp: '101°F',
-    spo2: '98%',
+    hr: '76 bpm',
+    temp: '98.6°F',
+    spo2: '99%',
   },
   stats: {
-    totalVisits: 5,
-    reportsCount: 3,
+    totalVisits: 3,
+    reportsCount: 2,
     activeFollowUps: 1,
   },
   reports: [
     {
       id: 'r1',
       title: 'Complete Blood Count (CBC)',
-      date: '08 Sep 2026',
+      date: '10 Sep 2026',
       category: 'Laboratory',
       status: 'Completed',
       issuedBy: 'CareVault Central Diagnostics',
@@ -130,34 +161,25 @@ const DEFAULT_PATIENT = {
     {
       id: 'r2',
       title: 'Chest X-Ray PA View',
-      date: '12 Apr 2026',
+      date: '15 May 2026',
       category: 'Radiology',
       status: 'Completed',
-      issuedBy: 'Radiology Dept - City Hospital',
+      issuedBy: 'Radiology Dept - CareVault Hospital',
       fileSize: '4.8 MB',
-    },
-    {
-      id: 'r3',
-      title: 'Lipid Profile Panel',
-      date: '10 Jul 2026',
-      category: 'Laboratory',
-      status: 'Completed',
-      issuedBy: 'CareVault Labs',
-      fileSize: '2.1 MB',
     },
   ],
   prescriptions: [
     {
       id: 'p1',
-      date: '08 Sep 2026',
+      date: '10 Sep 2026',
       doctor: 'Dr. Ananya Sharma',
       medicines: [
-        { name: 'Paracetamol 500 mg', dosage: '1-0-1', duration: '3 days', instruction: 'After meals' },
-        { name: 'ORS Powder', dosage: '1 sachet/day', duration: '5 days', instruction: 'Dissolve in 1L water' },
+        { name: 'Paracetamol 650 mg', dosage: '1-0-1', duration: '5 days', instruction: 'After meals' },
         { name: 'Tab Cetirizine 10 mg', dosage: '0-0-1', duration: '3 days', instruction: 'At bedtime' },
+        { name: 'Cough Syrup (100ml)', dosage: '2 tsp', frequency: 'TID', duration: '5 days', instruction: 'After meals' },
       ],
-      advice: 'Rest and adequate hydration. Avoid cold items.',
-      followUp: '7 days',
+      advice: 'Rest, warm fluids, and adequate hydration.',
+      followUp: '15 Sep 2026',
     },
   ],
 };
@@ -169,15 +191,16 @@ export default function PatientDashboard({
   onSignOut,
   selectedVisitIdToOpen,
 }) {
-  const targetId = customPatientData?.patientId || customPatientData?.id || 'CV2026-000102';
+  const targetId = customPatientData?.patientId || customPatientData?.id || 'CV2026-000110';
 
   const [activeTab, setActiveTab] = useState('overview');
   const [patient, setPatient] = useState(DEFAULT_PATIENT);
   const [serviceVisits, setServiceVisits] = useState([]);
   const [selectedVisitModal, setSelectedVisitModal] = useState(null);
 
-  // Load and sync data from visitService & props & localStorage
+  // Load and sync patient details from services
   useEffect(() => {
+    const regPatient = getPatientById(targetId);
     const profile = getPatientProfile(targetId);
     const vList = getPatientVisits(targetId);
     setServiceVisits(vList || []);
@@ -187,31 +210,26 @@ export default function PatientDashboard({
       if (found) setSelectedVisitModal(found);
     }
 
-    // Try reading registration data saved in localStorage
-    let storedReg = null;
-    try {
-      const savedReg = localStorage.getItem('carevault_registered_patient') || localStorage.getItem('registeredPatient');
-      if (savedReg) storedReg = JSON.parse(savedReg);
-    } catch (e) {
-      console.warn('Could not load stored patient registration', e);
-    }
-
     setPatient((prev) => ({
       ...prev,
       ...profile,
-      name: customPatientData?.name || storedReg?.name || storedReg?.fullName || profile.name || prev.name,
-      patientId: customPatientData?.patientId || customPatientData?.id || profile.id || prev.patientId,
-      age: customPatientData?.age || storedReg?.age || profile.age || prev.age,
-      gender: customPatientData?.gender || storedReg?.gender || profile.gender || prev.gender,
-      phone: customPatientData?.phone || storedReg?.phone || profile.contact || prev.phone,
-      address: customPatientData?.address || storedReg?.address || profile.address || prev.address,
-      aadhaar: customPatientData?.aadhaar || storedReg?.aadhaar || profile.aadhaar || prev.aadhaar,
-      bloodGroup: customPatientData?.bloodGroup || storedReg?.bloodGroup || profile.bloodGroup || prev.bloodGroup,
-      knownConditions: customPatientData?.knownConditions || storedReg?.knownConditions || profile.knownConditions || prev.knownConditions,
-      allergies: customPatientData?.allergies || storedReg?.allergies || profile.allergies || prev.allergies,
+      ...regPatient,
+      name: customPatientData?.name || regPatient?.name || profile.name || prev.name,
+      patientId: targetId,
+      age: customPatientData?.age || regPatient?.age || profile.age || prev.age,
+      gender: customPatientData?.gender || regPatient?.gender || profile.gender || prev.gender,
+      phone: customPatientData?.phone || regPatient?.phone || profile.contact || prev.phone,
+      email: regPatient?.email || profile.email || prev.email,
+      address: customPatientData?.address || regPatient?.address || profile.address || prev.address,
+      aadhaar: customPatientData?.aadhaar || regPatient?.aadhaar || profile.aadhaar || prev.aadhaar,
+      bloodGroup: customPatientData?.bloodGroup || regPatient?.bloodGroup || profile.bloodGroup || prev.bloodGroup,
+      emergencyContact: regPatient?.emergencyContact || prev.emergencyContact,
+      emergencyContactRelationship: regPatient?.emergencyContactRelationship || prev.emergencyContactRelationship,
+      knownConditions: regPatient?.knownConditions || profile.knownConditions || prev.knownConditions,
+      allergies: regPatient?.allergies || profile.allergies || prev.allergies,
       vitals: { ...prev.vitals, ...(customPatientData?.vitals || {}) },
       stats: {
-        totalVisits: vList.length > 0 ? vList.length : prev.stats.totalVisits,
+        totalVisits: (vList && vList.length > 0) ? vList.length : prev.stats.totalVisits,
         reportsCount: profile.reportCount || prev.stats.reportsCount,
         activeFollowUps: profile.activeFollowUpCount || prev.stats.activeFollowUps,
       },
@@ -226,19 +244,14 @@ export default function PatientDashboard({
     }
   };
 
-  // Compute Initials for Avatar
-  const initials = (patient.name || 'Rahul Kumar')
+  // Initials for avatar
+  const initials = (patient.name || 'Vikram Malhotra')
     .split(' ')
     .map((n) => n[0])
     .join('')
     .substring(0, 2)
     .toUpperCase();
 
-  const handlePrintPrescription = () => {
-    window.print();
-  };
-
-  // Combine visit records from visitService with fallback default visits
   const displayVisits = serviceVisits.length > 0
     ? serviceVisits.map((v) => ({
         id: v.id,
@@ -257,26 +270,93 @@ export default function PatientDashboard({
       }))
     : [
         {
-          id: 'VIS-2026-002',
-          date: '08 Sep 2026',
+          id: 'VIS-2026-003',
+          date: '10 Sep 2026',
           type: 'OPD Visit',
-          chiefComplaint: 'Fever, headache & body ache',
+          chiefComplaint: 'Chest congestion & fever since 3 days',
           doctor: 'Dr. Ananya Sharma',
           department: 'General Medicine',
-          diagnosis: 'Acute Viral Pyrexia',
+          diagnosis: 'Acute Viral Pyrexia & Bronchitis',
           status: 'Completed',
         },
         {
-          id: 'VIS-2026-001',
-          date: '12 Apr 2026',
-          type: 'OPD Visit',
-          chiefComplaint: 'Viral infection & cough',
+          id: 'VIS-2026-002',
+          date: '15 May 2026',
+          type: 'Lab Test',
+          chiefComplaint: 'Routine Lab Screening',
           doctor: 'Dr. Rajesh Verma',
           department: 'Internal Medicine',
-          diagnosis: 'Upper Respiratory Tract Infection',
+          diagnosis: 'Chest X-Ray & CBC Screening',
           status: 'Completed',
         },
       ];
+
+  const patientCases = [
+    {
+      id: 'CASE-2026-081',
+      title: 'Acute Viral Pyrexia & Respiratory Infection',
+      startDate: '10 Sep 2026',
+      status: 'Active',
+      primaryDiagnosis: 'Acute Viral Pyrexia',
+      secondaryDiagnosis: 'Upper Respiratory Tract Congestion',
+      doctor: 'Dr. Ananya Sharma',
+      department: 'General Medicine',
+      lastUpdated: '10 Sep 2026',
+    },
+    {
+      id: 'CASE-2026-042',
+      title: 'Hypertension Monitoring & Blood Pressure Control',
+      startDate: '15 May 2026',
+      status: 'Closed',
+      primaryDiagnosis: 'Essential Hypertension (Controlled)',
+      secondaryDiagnosis: 'Mild Hyperlipidemia',
+      doctor: 'Dr. Rajesh Verma',
+      department: 'Internal Medicine',
+      lastUpdated: '28 Aug 2026',
+    },
+  ];
+
+  const patientAppointments = [
+    {
+      id: 'APT-2026-104',
+      date: '15 Sep 2026',
+      time: '10:00 AM',
+      type: 'Follow-up Consultation',
+      tokenNumber: 'TK-104',
+      department: 'General Medicine',
+      doctor: 'Dr. Ananya Sharma',
+      status: 'Confirmed',
+    },
+    {
+      id: 'APT-2026-088',
+      date: '10 Sep 2026',
+      time: '10:30 AM',
+      type: 'OPD Consultation',
+      tokenNumber: 'TK-102',
+      department: 'General Medicine',
+      doctor: 'Dr. Ananya Sharma',
+      status: 'Completed',
+    },
+  ];
+
+  const patientDocuments = [
+    {
+      id: 'doc-1',
+      title: 'UIDAI Aadhaar KYC Identity Document',
+      category: 'Identity Record',
+      uploadDate: '10 Jan 2026',
+      fileSize: '1.4 MB',
+      fileType: 'PDF Document',
+    },
+    {
+      id: 'doc-2',
+      title: 'Hospital Clinical Summary & Vitals Card',
+      category: 'Clinical Record',
+      uploadDate: '15 May 2026',
+      fileSize: '2.8 MB',
+      fileType: 'PDF Document',
+    },
+  ];
 
   return (
     <div className="patient-dashboard-container">
@@ -312,6 +392,10 @@ export default function PatientDashboard({
                 <strong>Gender:</strong> {patient.gender}
               </span>
               <span className="pd-meta-divider">•</span>
+              <span className="pd-meta-item">
+                <strong>Blood Group:</strong> {patient.bloodGroup}
+              </span>
+              <span className="pd-meta-divider">•</span>
               <span className="pd-meta-item icon-item">
                 <IconPhone /> {patient.phone}
               </span>
@@ -335,12 +419,12 @@ export default function PatientDashboard({
             onClick={handleNewVisitAction}
             id="btn-new-visit-case-taking"
           >
-            <IconPlusCircle /> + New Visit Case-Taking
+            <IconPlusCircle /> + Start Consultation / New Case
           </button>
         </div>
       </header>
 
-      {/* ── Navigation Tabs ── */}
+      {/* ── Navigation Tabs (8 Dedicated Tabs) ── */}
       <nav className="pd-tabs-nav">
         <button
           type="button"
@@ -351,24 +435,52 @@ export default function PatientDashboard({
         </button>
         <button
           type="button"
-          className={`pd-tab-btn ${activeTab === 'visits' ? 'active' : ''}`}
-          onClick={() => setActiveTab('visits')}
+          className={`pd-tab-btn ${activeTab === 'history' ? 'active' : ''}`}
+          onClick={() => setActiveTab('history')}
         >
-          <IconCalendar /> Visits ({displayVisits.length})
+          <IconCalendar /> Medical History ({displayVisits.length})
         </button>
         <button
           type="button"
-          className={`pd-tab-btn ${activeTab === 'reports' ? 'active' : ''}`}
-          onClick={() => setActiveTab('reports')}
+          className={`pd-tab-btn ${activeTab === 'cases' ? 'active' : ''}`}
+          onClick={() => setActiveTab('cases')}
         >
-          <IconFileText /> Reports ({patient.reports?.length || 3})
+          <IconBriefcase /> Cases ({patientCases.length})
+        </button>
+        <button
+          type="button"
+          className={`pd-tab-btn ${activeTab === 'appointments' ? 'active' : ''}`}
+          onClick={() => setActiveTab('appointments')}
+        >
+          <IconClock /> Appointments ({patientAppointments.length})
         </button>
         <button
           type="button"
           className={`pd-tab-btn ${activeTab === 'prescriptions' ? 'active' : ''}`}
           onClick={() => setActiveTab('prescriptions')}
         >
-          <IconPill /> Prescriptions ({patient.prescriptions?.length || 2})
+          <IconPill /> Prescriptions ({patient.prescriptions?.length || 1})
+        </button>
+        <button
+          type="button"
+          className={`pd-tab-btn ${activeTab === 'reports' ? 'active' : ''}`}
+          onClick={() => setActiveTab('reports')}
+        >
+          <IconFileText /> Lab Reports ({patient.reports?.length || 2})
+        </button>
+        <button
+          type="button"
+          className={`pd-tab-btn ${activeTab === 'documents' ? 'active' : ''}`}
+          onClick={() => setActiveTab('documents')}
+        >
+          <IconFolder /> Documents ({patientDocuments.length})
+        </button>
+        <button
+          type="button"
+          className={`pd-tab-btn ${activeTab === 'profile' ? 'active' : ''}`}
+          onClick={() => setActiveTab('profile')}
+        >
+          <IconUser /> Profile
         </button>
       </nav>
 
@@ -377,6 +489,57 @@ export default function PatientDashboard({
         {/* ==================== 1. OVERVIEW TAB ==================== */}
         {activeTab === 'overview' && (
           <div className="pd-overview-grid">
+            {/* RECENT ACTIVITY FEED */}
+            <div className="pd-card pd-key-info-card" style={{ gridColumn: '1 / -1' }}>
+              <div className="pd-card-header-flex">
+                <h2 className="pd-card-title">Recent Activity</h2>
+                <span className="pd-vitals-date">Timeline of recent patient updates</span>
+              </div>
+              <div className="pd-timeline" style={{ marginTop: '0.75rem' }}>
+                <div className="pd-timeline-item">
+                  <div className="pd-timeline-dot" />
+                  <div className="pd-timeline-content">
+                    <div className="pd-timeline-header">
+                      <span className="pd-timeline-date">10 Sep 2026</span>
+                      <span className="pd-visit-type-badge">New Consultation / Case</span>
+                    </div>
+                    <h4 className="pd-visit-complaint">Chest congestion & fever evaluation</h4>
+                    <p style={{ fontSize: '0.85rem', color: '#475569', marginTop: '4px' }}>
+                      Primary Diagnosis: <strong>Acute Viral Pyrexia & Bronchitis</strong>. Prescribed Paracetamol 650mg & Cetirizine.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="pd-timeline-item">
+                  <div className="pd-timeline-dot" />
+                  <div className="pd-timeline-content">
+                    <div className="pd-timeline-header">
+                      <span className="pd-timeline-date">10 Sep 2026</span>
+                      <span className="pd-visit-type-badge" style={{ background: '#e0f2fe', color: '#0369a1' }}>Lab Report Ready</span>
+                    </div>
+                    <h4 className="pd-visit-complaint">Complete Blood Count (CBC) Diagnostic Result</h4>
+                    <p style={{ fontSize: '0.85rem', color: '#475569', marginTop: '4px' }}>
+                      Issued by CareVault Central Diagnostics. Status: Completed.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="pd-timeline-item">
+                  <div className="pd-timeline-dot" />
+                  <div className="pd-timeline-content">
+                    <div className="pd-timeline-header">
+                      <span className="pd-timeline-date">15 Sep 2026</span>
+                      <span className="pd-visit-type-badge" style={{ background: '#fef3c7', color: '#b45309' }}>Follow-up Scheduled</span>
+                    </div>
+                    <h4 className="pd-visit-complaint">Clinical Review & Vitals Check</h4>
+                    <p style={{ fontSize: '0.85rem', color: '#475569', marginTop: '4px' }}>
+                      Scheduled OPD Token: <strong>TK-104</strong> with Dr. Ananya Sharma.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Key Information Box */}
             <div className="pd-card pd-key-info-card">
               <h2 className="pd-card-title">Key Medical Information</h2>
@@ -407,7 +570,7 @@ export default function PatientDashboard({
                 <span className="pd-stat-label">Total Visits</span>
               </div>
               <div className="pd-stat-card">
-                <span className="pd-stat-number">{patient.stats?.reportsCount || 3}</span>
+                <span className="pd-stat-number">{patient.reports?.length || 2}</span>
                 <span className="pd-stat-label">Lab Reports</span>
               </div>
               <div className="pd-stat-card highlight">
@@ -420,7 +583,7 @@ export default function PatientDashboard({
             <div className="pd-card pd-vitals-card">
               <div className="pd-card-header-flex">
                 <h2 className="pd-card-title">Latest Recorded Vitals</h2>
-                <span className="pd-vitals-date">{displayVisits[0]?.date || '08 Sep 2026'}</span>
+                <span className="pd-vitals-date">{displayVisits[0]?.date || '10 Sep 2026'}</span>
               </div>
               <div className="pd-vitals-grid">
                 <div className="pd-vital-tile">
@@ -429,15 +592,15 @@ export default function PatientDashboard({
                 </div>
                 <div className="pd-vital-tile">
                   <span className="pd-vital-name">Heart Rate</span>
-                  <span className="pd-vital-val">{displayVisits[0]?.vitals?.heartRate ? `${displayVisits[0].vitals.heartRate} bpm` : (patient.vitals?.hr || '98 bpm')}</span>
+                  <span className="pd-vital-val">{displayVisits[0]?.vitals?.heartRate ? `${displayVisits[0].vitals.heartRate} bpm` : (patient.vitals?.hr || '76 bpm')}</span>
                 </div>
                 <div className="pd-vital-tile">
                   <span className="pd-vital-name">Temperature</span>
-                  <span className="pd-vital-val warning">{displayVisits[0]?.vitals?.temperature ? `${displayVisits[0].vitals.temperature}°F` : (patient.vitals?.temp || '101°F')}</span>
+                  <span className="pd-vital-val warning">{displayVisits[0]?.vitals?.temperature ? `${displayVisits[0].vitals.temperature}°F` : (patient.vitals?.temp || '98.6°F')}</span>
                 </div>
                 <div className="pd-vital-tile">
                   <span className="pd-vital-name">SpO2</span>
-                  <span className="pd-vital-val">{displayVisits[0]?.vitals?.spO2 ? `${displayVisits[0].vitals.spO2}%` : (patient.vitals?.spo2 || '98%')}</span>
+                  <span className="pd-vital-val">{displayVisits[0]?.vitals?.spO2 ? `${displayVisits[0].vitals.spO2}%` : (patient.vitals?.spo2 || '99%')}</span>
                 </div>
               </div>
             </div>
@@ -445,27 +608,27 @@ export default function PatientDashboard({
             {/* Quick Action Case-Taking Card */}
             <div className="pd-card pd-action-banner">
               <div className="pd-banner-content">
-                <span className="pd-banner-badge">Smart Case-Taking</span>
-                <h3>Need a new consultation?</h3>
-                <p>Start a structured case-taking dynamic form with clinical record tracking.</p>
+                <span className="pd-banner-badge">Smart Consultation</span>
+                <h3>Start New Clinical Case</h3>
+                <p>Begin dynamic case-taking, vitals intake, diagnosis, and prescription recording.</p>
               </div>
               <button
                 type="button"
                 className="pd-btn pd-btn-secondary"
                 onClick={handleNewVisitAction}
               >
-                + New Visit Case-Taking <IconArrowRight />
+                + Start Consultation <IconArrowRight />
               </button>
             </div>
           </div>
         )}
 
-        {/* ==================== 2. VISITS TIMELINE TAB ==================== */}
-        {activeTab === 'visits' && (
+        {/* ==================== 2. MEDICAL HISTORY TAB ==================== */}
+        {activeTab === 'history' && (
           <div className="pd-card pd-visits-section">
             <div className="pd-card-header-flex">
               <div>
-                <h2 className="pd-card-title">Patient Timeline & Visit History</h2>
+                <h2 className="pd-card-title">Patient Timeline & Medical History</h2>
                 <p className="pd-card-subtitle">Chronological record of consultations, complaints & diagnoses</p>
               </div>
               <button
@@ -473,7 +636,7 @@ export default function PatientDashboard({
                 className="pd-btn pd-btn-primary"
                 onClick={handleNewVisitAction}
               >
-                <IconPlusCircle /> + New Visit Case-Taking
+                <IconPlusCircle /> + Start Consultation
               </button>
             </div>
 
@@ -523,37 +686,48 @@ export default function PatientDashboard({
           </div>
         )}
 
-        {/* ==================== 3. REPORTS TAB ==================== */}
-        {activeTab === 'reports' && (
-          <div className="pd-card pd-reports-section">
+        {/* ==================== 3. CASES TAB ==================== */}
+        {activeTab === 'cases' && (
+          <div className="pd-card pd-visits-section">
             <div className="pd-card-header-flex">
               <div>
-                <h2 className="pd-card-title">Diagnostic Reports & Lab Results</h2>
-                <p className="pd-card-subtitle">Access lab tests, imaging, and pathology documents</p>
+                <h2 className="pd-card-title">Clinical Cases</h2>
+                <p className="pd-card-subtitle">Active and past medical cases recorded for this patient</p>
               </div>
+              <button type="button" className="pd-btn pd-btn-primary" onClick={handleNewVisitAction}>
+                <IconPlusCircle /> + Create New Case
+              </button>
             </div>
 
             <div className="pd-reports-list">
-              {patient.reports.map((report) => (
-                <div key={report.id} className="pd-report-card">
-                  <div className="pd-report-icon">
-                    <IconFileText />
-                  </div>
-                  <div className="pd-report-info">
-                    <h4 className="pd-report-title">{report.title}</h4>
-                    <div className="pd-report-meta">
-                      <span>{report.category}</span> • <span>{report.date}</span> • <span>{report.issuedBy}</span>
+              {patientCases.map((c) => (
+                <div key={c.id} className="pd-report-card" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '0.6rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <IconBriefcase />
+                      <h4 className="pd-report-title">{c.title}</h4>
+                      <span className="mono" style={{ fontSize: '0.8rem', color: '#64748b' }}>({c.id})</span>
                     </div>
-                  </div>
-                  <div className="pd-report-right">
-                    <span className="pd-status-tag completed" style={{ background: '#dcfce7', color: '#15803d', padding: '0.2rem 0.6rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600 }}>{report.status}</span>
-                    <button
-                      type="button"
-                      className="pd-btn pd-btn-outline"
-                      onClick={() => alert(`Downloading report: ${report.title}`)}
+                    <span
+                      style={{
+                        padding: '0.2rem 0.6rem',
+                        borderRadius: '20px',
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        background: c.status === 'Active' ? '#dcfce7' : '#f1f5f9',
+                        color: c.status === 'Active' ? '#15803d' : '#475569',
+                      }}
                     >
-                      <IconDownload /> Download ({report.fileSize})
-                    </button>
+                      {c.status}
+                    </span>
+                  </div>
+
+                  <div style={{ fontSize: '0.875rem', color: '#334155' }}>
+                    <strong>Primary Diagnosis:</strong> {c.primaryDiagnosis} {c.secondaryDiagnosis ? `| Secondary: ${c.secondaryDiagnosis}` : ''}
+                  </div>
+
+                  <div className="pd-report-meta">
+                    <span>Started: {c.startDate}</span> • <span>Doctor: {c.doctor}</span> • <span>Dept: {c.department}</span>
                   </div>
                 </div>
               ))}
@@ -561,15 +735,57 @@ export default function PatientDashboard({
           </div>
         )}
 
-        {/* ==================== 4. PRESCRIPTIONS TAB ==================== */}
+        {/* ==================== 4. APPOINTMENTS TAB ==================== */}
+        {activeTab === 'appointments' && (
+          <div className="pd-card pd-visits-section">
+            <div className="pd-card-header-flex">
+              <div>
+                <h2 className="pd-card-title">Appointments & OPD Tokens</h2>
+                <p className="pd-card-subtitle">Scheduled and completed consultations</p>
+              </div>
+            </div>
+
+            <div className="pd-reports-list">
+              {patientAppointments.map((apt) => (
+                <div key={apt.id} className="pd-report-card">
+                  <div className="pd-report-icon">
+                    <IconClock />
+                  </div>
+                  <div className="pd-report-info">
+                    <h4 className="pd-report-title">{apt.type} — {apt.tokenNumber}</h4>
+                    <div className="pd-report-meta">
+                      <span>Date: {apt.date} at {apt.time}</span> • <span>Doctor: {apt.doctor}</span> • <span>Dept: {apt.department}</span>
+                    </div>
+                  </div>
+                  <div className="pd-report-right">
+                    <span
+                      style={{
+                        padding: '0.2rem 0.6rem',
+                        borderRadius: '20px',
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        background: apt.status === 'Confirmed' ? '#e0f2fe' : '#dcfce7',
+                        color: apt.status === 'Confirmed' ? '#0369a1' : '#15803d',
+                      }}
+                    >
+                      {apt.status}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ==================== 5. PRESCRIPTIONS TAB ==================== */}
         {activeTab === 'prescriptions' && (
           <div className="pd-card pd-rx-section">
             <div className="pd-card-header-flex">
               <div>
-                <h2 className="pd-card-title">Active & Recent Prescriptions</h2>
+                <h2 className="pd-card-title">Active & Past Prescriptions</h2>
                 <p className="pd-card-subtitle">Medications prescribed by attending doctors</p>
               </div>
-              <button type="button" className="pd-btn pd-btn-outline" onClick={handlePrintPrescription}>
+              <button type="button" className="pd-btn pd-btn-outline" onClick={() => window.print()}>
                 <IconPrinter /> Print Prescription
               </button>
             </div>
@@ -616,11 +832,143 @@ export default function PatientDashboard({
                     <strong>Doctor's Advice:</strong> {rx.advice}
                   </div>
                   <div className="pd-rx-followup">
-                    <strong>Next Follow-up:</strong> In {rx.followUp}
+                    <strong>Next Follow-up:</strong> {rx.followUp}
                   </div>
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* ==================== 6. LAB REPORTS TAB ==================== */}
+        {activeTab === 'reports' && (
+          <div className="pd-card pd-reports-section">
+            <div className="pd-card-header-flex">
+              <div>
+                <h2 className="pd-card-title">Diagnostic Reports & Lab Results</h2>
+                <p className="pd-card-subtitle">Access lab tests, imaging, and pathology documents</p>
+              </div>
+            </div>
+
+            <div className="pd-reports-list">
+              {patient.reports.map((report) => (
+                <div key={report.id} className="pd-report-card">
+                  <div className="pd-report-icon">
+                    <IconFileText />
+                  </div>
+                  <div className="pd-report-info">
+                    <h4 className="pd-report-title">{report.title}</h4>
+                    <div className="pd-report-meta">
+                      <span>{report.category}</span> • <span>{report.date}</span> • <span>{report.issuedBy}</span>
+                    </div>
+                  </div>
+                  <div className="pd-report-right">
+                    <span className="pd-status-tag completed" style={{ background: '#dcfce7', color: '#15803d', padding: '0.2rem 0.6rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600 }}>{report.status}</span>
+                    <button
+                      type="button"
+                      className="pd-btn pd-btn-outline"
+                      onClick={() => alert(`Downloading report: ${report.title}`)}
+                    >
+                      <IconDownload /> Download ({report.fileSize})
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ==================== 7. DOCUMENTS TAB ==================== */}
+        {activeTab === 'documents' && (
+          <div className="pd-card pd-reports-section">
+            <div className="pd-card-header-flex">
+              <div>
+                <h2 className="pd-card-title">Uploaded Medical Documents</h2>
+                <p className="pd-card-subtitle">KYC records, discharge summaries, and external documents</p>
+              </div>
+            </div>
+
+            <div className="pd-reports-list">
+              {patientDocuments.map((doc) => (
+                <div key={doc.id} className="pd-report-card">
+                  <div className="pd-report-icon">
+                    <IconFolder />
+                  </div>
+                  <div className="pd-report-info">
+                    <h4 className="pd-report-title">{doc.title}</h4>
+                    <div className="pd-report-meta">
+                      <span>Category: {doc.category}</span> • <span>Uploaded: {doc.uploadDate}</span> • <span>Type: {doc.fileType}</span>
+                    </div>
+                  </div>
+                  <div className="pd-report-right">
+                    <button
+                      type="button"
+                      className="pd-btn pd-btn-outline"
+                      onClick={() => alert(`Downloading document: ${doc.title}`)}
+                    >
+                      <IconDownload /> Download ({doc.fileSize})
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ==================== 8. PROFILE TAB ==================== */}
+        {activeTab === 'profile' && (
+          <div className="pd-card pd-key-info-card">
+            <div className="pd-card-header-flex">
+              <h2 className="pd-card-title">Patient Demographic Profile</h2>
+              <span className="pd-vitals-date">Registered Identity Information</span>
+            </div>
+
+            <div className="pd-info-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', marginTop: '1rem' }}>
+              <div className="pd-info-box">
+                <span className="pd-info-label">Full Name</span>
+                <span className="pd-info-value">{patient.name}</span>
+              </div>
+              <div className="pd-info-box">
+                <span className="pd-info-label">CareVault Patient ID</span>
+                <span className="pd-info-value highlight-blue">{patient.patientId}</span>
+              </div>
+              <div className="pd-info-box">
+                <span className="pd-info-label">Age / Gender</span>
+                <span className="pd-info-value">{patient.age} Yrs / {patient.gender}</span>
+              </div>
+              <div className="pd-info-box">
+                <span className="pd-info-label">Date of Birth</span>
+                <span className="pd-info-value">{patient.dob || '12 Jul 1994'}</span>
+              </div>
+              <div className="pd-info-box">
+                <span className="pd-info-label">Mobile Phone</span>
+                <span className="pd-info-value">{patient.phone}</span>
+              </div>
+              <div className="pd-info-box">
+                <span className="pd-info-label">Email Address</span>
+                <span className="pd-info-value">{patient.email || 'Not Provided'}</span>
+              </div>
+              <div className="pd-info-box">
+                <span className="pd-info-label">Blood Group</span>
+                <span className="pd-info-value highlight-red">{patient.bloodGroup}</span>
+              </div>
+              <div className="pd-info-box">
+                <span className="pd-info-label">Aadhaar (KYC Status)</span>
+                <span className="pd-info-value">{patient.aadhaar ? `${patient.aadhaar} (Verified)` : 'Not Provided'}</span>
+              </div>
+              <div className="pd-info-box">
+                <span className="pd-info-label">Emergency Contact</span>
+                <span className="pd-info-value">{patient.emergencyContact || 'Not Provided'}</span>
+              </div>
+              <div className="pd-info-box">
+                <span className="pd-info-label">Relationship</span>
+                <span className="pd-info-value">{patient.emergencyContactRelationship || 'Spouse / Relative'}</span>
+              </div>
+              <div className="pd-info-box" style={{ gridColumn: '1 / -1' }}>
+                <span className="pd-info-label">Residential Address</span>
+                <span className="pd-info-value">{patient.address}</span>
+              </div>
+            </div>
           </div>
         )}
       </main>

@@ -18,15 +18,6 @@ const IconSearch = () => (
   </svg>
 );
 
-const IconUserPlus = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-    <circle cx="8.5" cy="7" r="4" />
-    <line x1="20" y1="8" x2="20" y2="14" />
-    <line x1="23" y1="11" x2="17" y2="11" />
-  </svg>
-);
-
 const IconScan = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M3 7V5a2 2 0 0 1 2-2h2" />
@@ -72,6 +63,13 @@ const IconArrowRight = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <line x1="5" y1="12" x2="19" y2="12" />
     <polyline points="12 5 19 12 12 19" />
+  </svg>
+);
+
+const IconArrowLeft = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ width: 14, height: 14 }}>
+    <line x1="19" y1="12" x2="5" y2="12" />
+    <polyline points="12 19 5 12 12 5" />
   </svg>
 );
 
@@ -194,10 +192,21 @@ export default function PatientRegistrationDashboard({
   userRole = 'doctor',
   currentId = 'DR2026-000100',
   onRegistrationComplete,
+  onBack,
+  onDoctorSelectPatient,
+  onDoctorStartVisit,
 }) {
   const isPatient = userRole === 'patient';
   // If patient, directly start on 'register' tab; if doctor, start on 'search'
   const [activeTab, setActiveTab] = useState(isPatient ? 'register' : 'search');
+
+  const handleBackClick = () => {
+    if (onBack) {
+      onBack();
+    } else if (typeof window !== 'undefined' && window.history.length > 1) {
+      window.history.back();
+    }
+  };
 
   // Check if this patient already has a record in storage
   const existingPatient = isPatient && currentId ? getPatientById(currentId) : null;
@@ -477,6 +486,18 @@ export default function PatientRegistrationDashboard({
 
   return (
     <div className="patient-reg-dashboard">
+      {/* ── Top Navigation Bar with Back Button ───────────────────────── */}
+      <div className="prd-top-nav-bar">
+        <button
+          type="button"
+          className="prd-back-btn"
+          onClick={handleBackClick}
+          aria-label="Go back"
+        >
+          <IconArrowLeft /> Back
+        </button>
+      </div>
+
       {/* ── Subheader / Control Banner ─────────────────────────────────── */}
       <div className="prd-banner">
         {isPatient ? (
@@ -503,10 +524,10 @@ export default function PatientRegistrationDashboard({
         ) : (
           <>
             <div className="prd-banner-left">
-              <div className="prd-badge-step">Workflow Step 2</div>
-              <h2 className="prd-title">Patient Registration & Record Search</h2>
+              <div className="prd-badge-step">Doctor Clinical Workspace</div>
+              <h2 className="prd-title">Search & Retrieve Patient Record</h2>
               <p className="prd-subtitle">
-                Create new patient identity or retrieve existing medical history securely.
+                Enter a Patient ID to access complete medical history, recent activity, cases, and prescriptions.
               </p>
             </div>
 
@@ -520,43 +541,16 @@ export default function PatientRegistrationDashboard({
                 <span className="chip-val">{allPatientsCount}</span>
               </div>
               <div className="prd-stat-chip highlight">
-                <span className="chip-label">Smart India Hackathon</span>
-                <span className="chip-val">SIH 2026</span>
+                <span className="chip-label">CareVault Clinical</span>
+                <span className="chip-val">EHR Network</span>
               </div>
             </div>
           </>
         )}
       </div>
 
-      {/* ── Main Tab Switcher (Visible to Doctor; Hidden for Patient) ────── */}
-      {!isPatient && (
-        <div className="prd-tab-bar">
-          <button
-            type="button"
-            className={`prd-tab-btn ${activeTab === 'search' ? 'active' : ''}`}
-            onClick={() => setActiveTab('search')}
-          >
-            <IconSearch />
-            <span>Search Existing</span>
-            {hasSearched && searchResults.length > 0 && (
-              <span className="prd-tab-count">{searchResults.length}</span>
-            )}
-          </button>
-
-          <button
-            type="button"
-            className={`prd-tab-btn ${activeTab === 'register' ? 'active' : ''}`}
-            onClick={() => setActiveTab('register')}
-          >
-            <IconUserPlus />
-            <span>New Patient Registration</span>
-            <span className="prd-tab-badge">AI Scan Ready</span>
-          </button>
-        </div>
-      )}
-
       {/* ───────────────────────────────────────────────────────────────── */}
-      {/* TAB 1: SEARCH EXISTING PATIENT (DOCTOR SEARCH WORKSPACE)         */}
+      {/* SEARCH EXISTING PATIENT (DOCTOR SEARCH WORKSPACE)                */}
       {/* ───────────────────────────────────────────────────────────────── */}
       {activeTab === 'search' && (
         <div className="prd-content-section">
@@ -568,7 +562,7 @@ export default function PatientRegistrationDashboard({
                 <input
                   type="text"
                   className="prd-search-input"
-                  placeholder="Search by Patient ID (CV2026-000452), Name, Phone, or Aadhaar..."
+                  placeholder="Enter Patient ID (e.g. CV2026-000110), Name, or Phone..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   autoFocus
@@ -590,30 +584,30 @@ export default function PatientRegistrationDashboard({
               <button
                 type="button"
                 className="preset-chip"
-                onClick={() => handlePresetSearch('Rahul Kumar')}
+                onClick={() => handlePresetSearch('CV2026-000110')}
               >
-                Rahul Kumar (Patna)
+                CV2026-000110 (Vikram Malhotra)
               </button>
               <button
                 type="button"
                 className="preset-chip"
                 onClick={() => handlePresetSearch('CV2026-000452')}
               >
-                CV2026-000452
+                CV2026-000452 (Rahul Kumar)
               </button>
               <button
                 type="button"
                 className="preset-chip"
-                onClick={() => handlePresetSearch('Ananya Verma')}
+                onClick={() => handlePresetSearch('CV2026-000101')}
               >
-                Ananya Verma (Ranchi)
+                CV2026-000101 (Ananya Verma)
               </button>
               <button
                 type="button"
                 className="preset-chip"
-                onClick={() => handlePresetSearch('Rajesh Sharma')}
+                onClick={() => handlePresetSearch('CV2026-000214')}
               >
-                Rajesh Sharma (Varanasi)
+                CV2026-000214 (Rajesh Sharma)
               </button>
             </div>
           </div>
@@ -627,22 +621,15 @@ export default function PatientRegistrationDashboard({
               <h3 className="privacy-heading">Patient Data Privacy Protection Active</h3>
               <p className="privacy-desc">
                 In accordance with CareVault clinical protocols, patient records are <strong>hidden by default</strong> upon login.
-                Please type a Patient ID, Mobile Number, Name, or Aadhaar in the search bar above to look up records.
+                Please enter a Patient ID (CV2026-000110), Name, or Phone in the search bar above to look up records.
               </p>
               <div className="privacy-actions">
                 <button
                   type="button"
-                  className="prd-btn-secondary"
-                  onClick={() => handlePresetSearch('Rahul Kumar')}
+                  className="prd-btn-primary"
+                  onClick={() => handlePresetSearch('CV2026-000110')}
                 >
-                  <IconSearch /> Search Demo Patient (Rahul Kumar)
-                </button>
-                <button
-                  type="button"
-                  className="prd-btn-secondary"
-                  onClick={() => setActiveTab('register')}
-                >
-                  <IconUserPlus /> Register New Patient
+                  <IconSearch /> Search Demo Patient (CV2026-000110)
                 </button>
               </div>
             </div>
@@ -652,23 +639,8 @@ export default function PatientRegistrationDashboard({
           {hasSearched && searchResults.length === 0 && (
             <div className="prd-no-results">
               <div className="no-results-icon"><IconAlertCircle /></div>
-              <h3>No Patient Found Matching "{searchQuery}"</h3>
-              <p>No existing record matched this query in the CareVault registry.</p>
-              <button
-                type="button"
-                className="prd-btn-primary"
-                onClick={() => {
-                  setActiveTab('register');
-                  // Pre-fill phone or name if applicable
-                  if (/^\d{10}$/.test(searchQuery)) {
-                    setFormData((p) => ({ ...p, phone: searchQuery }));
-                  } else {
-                    setFormData((p) => ({ ...p, name: searchQuery }));
-                  }
-                }}
-              >
-                <IconUserPlus /> Register as New Patient Now
-              </button>
+              <h3>Patient Not Found</h3>
+              <p>No CareVault patient was found with this Patient ID. Please verify the ID and try again.</p>
             </div>
           )}
 
@@ -725,20 +697,27 @@ export default function PatientRegistrationDashboard({
                     type="button"
                     className="prd-btn-outline"
                     onClick={() => {
-                      setNewlyRegisteredRecord({ patient: selectedPatient, tokenNumber: 'TK-102' });
-                      setShowSlipModal(true);
+                      if (onDoctorStartVisit) {
+                        onDoctorStartVisit(selectedPatient);
+                      } else if (onDoctorSelectPatient) {
+                        onDoctorSelectPatient(selectedPatient);
+                      }
                     }}
                   >
-                    <IconPrinter /> Print Registration Slip
+                    + New Case / Visit
                   </button>
                   <button
                     type="button"
                     className="prd-btn-primary"
                     onClick={() => {
-                      alert(`Patient record selected (${selectedPatient.patientId})! Proceeding to Step 3 (Patient Dashboard).`);
+                      if (onDoctorSelectPatient) {
+                        onDoctorSelectPatient(selectedPatient);
+                      } else {
+                        alert(`Patient Record Opened: ${selectedPatient.name} (${selectedPatient.patientId})`);
+                      }
                     }}
                   >
-                    Proceed to Patient Dashboard (Step 3) <IconArrowRight />
+                    Open Patient Overview & Records <IconArrowRight />
                   </button>
                 </div>
               </div>

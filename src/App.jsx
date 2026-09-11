@@ -103,6 +103,7 @@ function App() {
           <AuthenticatedHome
             session={sessionData}
             onSignOut={handleSignOut}
+            onReturnToCreateAccount={() => setCurrentScreen('create-account')}
           />
         )}
 

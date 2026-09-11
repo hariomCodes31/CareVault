@@ -12,6 +12,12 @@ const INITIAL_SEED_ACCOUNTS = [
   },
   {
     role: 'patient',
+    patientId: 'CV2026-000110',
+    password: 'password123',
+    createdAt: '2026-01-01T00:00:00.000Z',
+  },
+  {
+    role: 'patient',
     patientId: 'CV2026-000101',
     password: 'password123',
     createdAt: '2026-01-01T00:00:00.000Z',
@@ -244,6 +250,7 @@ export function createAccount({ role, id, password, profileData }) {
       patientId: cleanId,
       role: 'patient',
       authenticatedAt: new Date().toISOString(),
+      isNewAccount: true,
     };
     setSession(session);
 
@@ -302,6 +309,7 @@ export function authenticate({ role, id, password }) {
     patientId: userIdentifier, // For backwards compatibility
     role: foundAccount.role,
     authenticatedAt: new Date().toISOString(),
+    isNewAccount: false,
   };
 
   setSession(session);

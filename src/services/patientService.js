@@ -6,6 +6,30 @@ const TOKENS_STORAGE_KEY = 'carevault_tokens_counter';
 // Initial Seed Patients based on the SIH 2026 Workflow Poster
 const INITIAL_PATIENTS = [
   {
+    patientId: 'CV2026-000110',
+    name: 'Vikram Malhotra',
+    age: 32,
+    dob: '1994-07-12',
+    gender: 'Male',
+    phone: '9876512340',
+    address: 'Boring Road, Patna, Bihar',
+    aadhaar: '7812 3456 9012',
+    bloodGroup: 'B+',
+    knownConditions: 'None',
+    allergies: 'Not Reported',
+    totalVisits: 3,
+    reportsCount: 2,
+    activeFollowUp: 1,
+    registrationComplete: true,
+    createdAt: '2026-01-10T10:00:00.000Z',
+    recentComplaint: 'Chest congestion & fever',
+    timeline: [
+      { date: '10 Sep 2026', type: 'OPD Visit', details: 'Fever & cough evaluation', status: 'Completed' },
+      { date: '15 May 2026', type: 'Lab Test', details: 'Chest X-Ray & CBC', status: 'Completed' },
+      { date: '12 Jan 2026', type: 'OPD Visit', details: 'Routine checkup', status: 'Completed' },
+    ],
+  },
+  {
     patientId: 'CV2026-000452',
     name: 'Rahul Kumar',
     age: 28,

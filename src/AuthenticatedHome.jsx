@@ -36,7 +36,7 @@ const IconStethoscope = () => (
   </svg>
 );
 
-export default function AuthenticatedHome({ session, onSignOut }) {
+export default function AuthenticatedHome({ session, onSignOut, onReturnToCreateAccount }) {
   const isDoctor = session?.role === 'doctor';
   const roleName = isDoctor ? 'Doctor' : 'Patient';
   const idLabel = isDoctor ? 'Doctor ID:' : 'Patient ID:';
@@ -79,6 +79,33 @@ export default function AuthenticatedHome({ session, onSignOut }) {
   const handleRegistrationComplete = () => {
     setProfileComplete(true);
     setActiveView('dashboard');
+  };
+
+  const handleBackFromRegistration = () => {
+    if (session?.isNewAccount && onReturnToCreateAccount) {
+      onReturnToCreateAccount();
+    } else {
+      setActiveView('dashboard');
+    }
+  };
+
+  // Selected Patient ID for Doctor lookup view
+  const [selectedDoctorPatientId, setSelectedDoctorPatientId] = useState(null);
+
+  const handleDoctorSelectPatient = (patient) => {
+    const pId = patient?.patientId || patient?.id;
+    if (pId) {
+      setSelectedDoctorPatientId(pId);
+      setActiveView('doctor-patient-view');
+    }
+  };
+
+  const handleDoctorStartVisit = (patient) => {
+    const pId = patient?.patientId || patient?.id;
+    if (pId) {
+      setSelectedDoctorPatientId(pId);
+      setActiveView('case-taking');
+    }
   };
 
   return (
@@ -130,8 +157,18 @@ export default function AuthenticatedHome({ session, onSignOut }) {
                 className={`auth-signout-btn ${activeView === 'registration' ? 'active' : ''}`}
                 onClick={() => setActiveView('registration')}
               >
-                Doctor Workspace
+                Doctor Search & Registration
               </button>
+
+              {selectedDoctorPatientId && (
+                <button
+                  type="button"
+                  className={`auth-signout-btn ${activeView === 'doctor-patient-view' ? 'active' : ''}`}
+                  onClick={() => setActiveView('doctor-patient-view')}
+                >
+                  Patient ({selectedDoctorPatientId})
+                </button>
+              )}
 
               <button
                 type="button"
@@ -160,11 +197,35 @@ export default function AuthenticatedHome({ session, onSignOut }) {
           />
         )}
 
+        {isDoctor && activeView === 'doctor-patient-view' && selectedDoctorPatientId && (
+          <div>
+            <div style={{ padding: '0.5rem 1rem 0 1rem', maxWidth: '1180px', margin: '0 auto' }}>
+              <button
+                type="button"
+                className="auth-signout-btn"
+                onClick={() => setActiveView('registration')}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600 }}
+              >
+                ← Back to Doctor Search Workspace
+              </button>
+            </div>
+            <PatientDashboard
+              patientData={{ patientId: selectedDoctorPatientId }}
+              onNavigateToCaseTaking={() => setActiveView('case-taking')}
+              onNavigateToNewVisit={() => setActiveView('case-taking')}
+            />
+          </div>
+        )}
+
         {activeView === 'case-taking' && (
           <NewVisitCaseTaking
-            session={session}
+            session={
+              selectedDoctorPatientId
+                ? { ...session, patientId: selectedDoctorPatientId, id: selectedDoctorPatientId }
+                : session
+            }
             onSignOut={onSignOut}
-            onReturnToDashboard={() => setActiveView('dashboard')}
+            onReturnToDashboard={() => setActiveView(isDoctor ? 'doctor-patient-view' : 'dashboard')}
           />
         )}
 
@@ -173,6 +234,9 @@ export default function AuthenticatedHome({ session, onSignOut }) {
             userRole={isDoctor ? 'doctor' : 'patient'}
             currentId={accountId}
             onRegistrationComplete={handleRegistrationComplete}
+            onBack={handleBackFromRegistration}
+            onDoctorSelectPatient={handleDoctorSelectPatient}
+            onDoctorStartVisit={handleDoctorStartVisit}
           />
         )}
 
