@@ -6,7 +6,6 @@ import {
   registerPatient,
   parseAadhaarCard,
   generateNextPatientId,
-  SAMPLE_AADHAAR_PRESETS,
 } from '../services/patientService';
 import './PatientRegistrationDashboard.css';
 
@@ -15,16 +14,6 @@ const IconSearch = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="11" cy="11" r="8" />
     <line x1="21" y1="21" x2="16.65" y2="16.65" />
-  </svg>
-);
-
-const IconScan = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M3 7V5a2 2 0 0 1 2-2h2" />
-    <path d="M17 3h2a2 2 0 0 1 2 2v2" />
-    <path d="M21 17v2a2 2 0 0 1-2 2h-2" />
-    <path d="M7 21H5a2 2 0 0 1-2-2v-2" />
-    <line x1="7" y1="12" x2="17" y2="12" />
   </svg>
 );
 
@@ -70,12 +59,6 @@ const IconArrowLeft = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ width: 14, height: 14 }}>
     <line x1="19" y1="12" x2="5" y2="12" />
     <polyline points="12 19 5 12 12 5" />
-  </svg>
-);
-
-const IconSparkles = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z" />
   </svg>
 );
 
@@ -768,29 +751,10 @@ export default function PatientRegistrationDashboard({
           <div className="aadhaar-scanner-card">
             <div className="aadhaar-header">
               <div className="aadhaar-title-group">
-                <span className="aadhaar-badge-smart"><IconSparkles /> AI-Powered Auto-Fill</span>
                 <h3 className="aadhaar-heading">Smart Aadhaar Card OCR Scanner</h3>
                 <p className="aadhaar-desc">
-                  Upload patient's Aadhaar card image or PDF. Our Neural OCR will automatically extract Name, DOB, Age, Gender, Aadhaar Number, and Address to populate the registration form instantly!
+                  Upload your Aadhaar card to automatically extract information into the registration form.
                 </p>
-              </div>
-
-              {/* Sample Preset Buttons for Hackathon Live Demo */}
-              <div className="aadhaar-demo-presets">
-                <span className="demo-hint">Quick Demo Cards (1-Click Fill):</span>
-                <div className="demo-preset-btns">
-                  {SAMPLE_AADHAAR_PRESETS.map((preset) => (
-                    <button
-                      key={preset.id}
-                      type="button"
-                      className="btn-sample-aadhaar"
-                      disabled={isScanningAadhaar}
-                      onClick={() => triggerAadhaarScan(preset.id)}
-                    >
-                      <IconScan /> {preset.name}
-                    </button>
-                  ))}
-                </div>
               </div>
             </div>
 
