@@ -73,10 +73,12 @@
 
 .auth-home-main {
   flex: 1;
+  width: 100%;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: 2rem 1rem;
+  padding: 1.5rem 1rem;
+  overflow-y: auto;
 }
 
 .auth-home-card {

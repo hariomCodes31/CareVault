@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import PatientDashboard from './PatientDashboard';
 import './AuthenticatedHome.css';
 
 // ── SVG Icons ───────────────────────────────────────────────────────────────
@@ -22,6 +24,9 @@ export default function AuthenticatedHome({ session, onSignOut }) {
   const idLabel = isDoctor ? 'Doctor ID:' : 'Patient ID:';
   const accountId = session?.id || session?.doctorId || session?.patientId;
 
+  // View state for patient (Dashboard vs Session info)
+  const [activeView, setActiveView] = useState('dashboard');
+
   return (
     <div className="auth-home-container">
       {/* Top Navbar */}
@@ -32,49 +37,79 @@ export default function AuthenticatedHome({ session, onSignOut }) {
           <span className="auth-nav-role-badge">{roleName} Portal</span>
         </div>
 
-        <button type="button" className="auth-signout-btn" onClick={onSignOut}>
-          <IconLogOut /> Sign Out
-        </button>
-      </nav>
-
-      {/* Main Content */}
-      <main className="auth-home-main">
-        <div className="auth-home-card">
-          <div className="auth-status-badge">
-            <IconCheckCircle /> Authenticated Session
-          </div>
-
-          <h1 className="auth-welcome-title">Welcome to CareVault</h1>
-          <p className="auth-welcome-desc">
-            You are signed in as a registered <strong>{roleName}</strong>.
-          </p>
-
-          <div className="auth-user-info-box">
-            <div className="info-row">
-              <span className="info-label">{idLabel}</span>
-              <span className="info-val"><strong>{accountId}</strong></span>
-            </div>
-            <div className="info-row">
-              <span className="info-label">Selected Role:</span>
-              <span className="info-val">{roleName}</span>
-            </div>
-            <div className="info-row">
-              <span className="info-label">Session Status:</span>
-              <span className="info-val status-active">Active</span>
-            </div>
-          </div>
-
-          <div className="auth-actions-group">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          {!isDoctor && (
             <button
               type="button"
               className="auth-action-btn secondary"
-              onClick={onSignOut}
+              style={{ padding: '0.4rem 0.85rem', fontSize: '0.825rem' }}
+              onClick={() => setActiveView(activeView === 'dashboard' ? 'session' : 'dashboard')}
             >
-              <IconLogOut /> Sign Out
+              {activeView === 'dashboard' ? 'View Session Info' : 'Back to Dashboard'}
             </button>
-          </div>
+          )}
+
+          <button type="button" className="auth-signout-btn" onClick={onSignOut}>
+            <IconLogOut /> Sign Out
+          </button>
         </div>
+      </nav>
+
+      {/* Main Content */}
+      <main className="auth-home-main" style={{ padding: isDoctor || activeView === 'session' ? '2rem 1rem' : '0.5rem 0' }}>
+        {!isDoctor && activeView === 'dashboard' ? (
+          <PatientDashboard
+            patientData={{ patientId: accountId }}
+            onNavigateToCaseTaking={() => alert('Redirecting to Case-Taking Module (Module 4)...')}
+          />
+        ) : (
+          <div className="auth-home-card">
+            <div className="auth-status-badge">
+              <IconCheckCircle /> Authenticated Session
+            </div>
+
+            <h1 className="auth-welcome-title">Welcome to CareVault</h1>
+            <p className="auth-welcome-desc">
+              You are signed in as a registered <strong>{roleName}</strong>.
+            </p>
+
+            <div className="auth-user-info-box">
+              <div className="info-row">
+                <span className="info-label">{idLabel}</span>
+                <span className="info-val"><strong>{accountId}</strong></span>
+              </div>
+              <div className="info-row">
+                <span className="info-label">Selected Role:</span>
+                <span className="info-val">{roleName}</span>
+              </div>
+              <div className="info-row">
+                <span className="info-label">Session Status:</span>
+                <span className="info-val status-active">Active</span>
+              </div>
+            </div>
+
+            <div className="auth-actions-group">
+              {!isDoctor && (
+                <button
+                  type="button"
+                  className="auth-action-btn primary"
+                  onClick={() => setActiveView('dashboard')}
+                >
+                  Open Patient Dashboard
+                </button>
+              )}
+              <button
+                type="button"
+                className="auth-action-btn secondary"
+                onClick={onSignOut}
+              >
+                <IconLogOut /> Sign Out
+              </button>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
 }
+
