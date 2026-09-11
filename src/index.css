@@ -1,4 +1,6 @@
-/* CareVault — Global Design System */
+/* CareVault — Unified Healthcare Design System
+   Inspired by the CareVault Brandmark: Soft Ivory, Forest Green, Soft Sage, and Brushed Gold.
+*/
 
 *, *::before, *::after {
   box-sizing: border-box;
@@ -7,89 +9,100 @@
 }
 
 :root {
-  /* Brand Colors */
-  --cv-blue-950: #0a1628;
-  --cv-blue-900: #0f2040;
-  --cv-blue-800: #163060;
-  --cv-blue-700: #1a4080;
-  --cv-blue-600: #1d56aa;
-  --cv-blue-500: #2563eb;
-  --cv-blue-400: #3b82f6;
-  --cv-blue-300: #60a5fa;
-  --cv-blue-200: #93c5fd;
-  --cv-blue-100: #dbeafe;
-  --cv-blue-50:  #eff6ff;
+  /* ── Background & Neutral Foundations ── */
+  --cv-ivory: #FAF8F5;
+  --cv-ivory-light: #FDFBF7;
+  --cv-ivory-soft: #F4EFE6;
+  --cv-white: #FFFFFF;
 
-  --cv-teal-500: #0ea5e9;
-  --cv-teal-400: #38bdf8;
+  --cv-grey-50: #F9FAFB;
+  --cv-grey-100: #F3F4F6;
+  --cv-grey-200: #E5E7EB;
+  --cv-grey-300: #D1D5DB;
+  --cv-grey-400: #9CA3AF;
 
-  --cv-slate-950: #020617;
-  --cv-slate-900: #0f172a;
-  --cv-slate-800: #1e293b;
-  --cv-slate-700: #334155;
-  --cv-slate-600: #475569;
-  --cv-slate-500: #64748b;
-  --cv-slate-400: #94a3b8;
-  --cv-slate-300: #cbd5e1;
-  --cv-slate-200: #e2e8f0;
-  --cv-slate-100: #f1f5f9;
-  --cv-slate-50:  #f8fafc;
+  /* ── Brand Dark Forest Green (from CareVault "Care") ── */
+  --cv-green-primary: #1C3B2B;
+  --cv-green-dark: #12281D;
+  --cv-green-hover: #163224;
+  --cv-green-light: #2A543E;
 
-  --cv-white: #ffffff;
-  --cv-error: #ef4444;
-  --cv-error-light: #fef2f2;
-  --cv-success: #10b981;
+  /* ── Brand Soft Sage Green (from the Leaf element) ── */
+  --cv-sage: #588065;
+  --cv-sage-light: #EBF2EE;
+  --cv-sage-subtle: #F3F7F5;
+  --cv-sage-border: #CBDED2;
+  --cv-sage-muted: #82A38F;
 
-  /* Typography */
-  --font-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  /* ── Brand Brushed Gold (from "Vault" and medical plus) ── */
+  --cv-gold: #C0A15C;
+  --cv-gold-dark: #9F8240;
+  --cv-gold-light: #F8F4EA;
+  --cv-gold-border: rgba(192, 161, 92, 0.35);
+  --cv-gold-glow: rgba(192, 161, 92, 0.18);
 
-  /* Spacing */
-  --sp-1: 0.25rem;
-  --sp-2: 0.5rem;
-  --sp-3: 0.75rem;
-  --sp-4: 1rem;
-  --sp-5: 1.25rem;
-  --sp-6: 1.5rem;
-  --sp-8: 2rem;
-  --sp-10: 2.5rem;
-  --sp-12: 3rem;
-  --sp-16: 4rem;
+  /* ── Professional Medical Blue (Preserved for critical actions/links) ── */
+  --cv-blue-accent: #2563EB;
+  --cv-blue-50: #EFF6FF;
+  --cv-blue-100: #DBEAFE;
+  --cv-blue-600: #1D4ED8;
 
-  /* Radius */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
+  /* ── Typography & Content ── */
+  --cv-text-primary: #18231C;
+  --cv-text-secondary: #47544C;
+  --cv-text-muted: #6B7A71;
+  --cv-text-light: #94A399;
+
+  --font-display: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* ── Status & Feedback ── */
+  --cv-status-success: #15803D;
+  --cv-status-success-bg: #E8F7EE;
+  --cv-status-warning: #B45309;
+  --cv-status-warning-bg: #FEF3C7;
+  --cv-status-danger: #BE123C;
+  --cv-status-danger-bg: #FEE2E2;
+
+  /* ── Elevation & Shadows (Soft, Multi-layered, Natural) ── */
+  --shadow-xs: 0 1px 2px rgba(28, 59, 43, 0.04);
+  --shadow-sm: 0 2px 6px -1px rgba(28, 59, 43, 0.05), 0 1px 3px rgba(0, 0, 0, 0.03);
+  --shadow-card: 0 4px 16px -3px rgba(28, 59, 43, 0.06), 0 1px 3px rgba(0, 0, 0, 0.03);
+  --shadow-hover: 0 12px 28px -6px rgba(28, 59, 43, 0.09), 0 4px 10px rgba(0, 0, 0, 0.03);
+  --shadow-modal: 0 24px 50px -12px rgba(18, 40, 29, 0.14), 0 4px 14px rgba(0, 0, 0, 0.04);
+
+  /* ── Corner Radii ── */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
   --radius-xl: 24px;
   --radius-full: 9999px;
 
-  /* Shadows */
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
-  --shadow-md: 0 4px 16px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
-  --shadow-lg: 0 10px 40px rgba(0,0,0,0.10), 0 4px 12px rgba(0,0,0,0.05);
-  --shadow-xl: 0 20px 60px rgba(0,0,0,0.12), 0 8px 20px rgba(0,0,0,0.06);
-  --shadow-blue: 0 8px 32px rgba(37, 99, 235, 0.25);
-  --shadow-blue-sm: 0 2px 12px rgba(37, 99, 235, 0.20);
-
-  /* Transitions */
-  --transition-fast: 150ms ease;
-  --transition-base: 200ms ease;
-  --transition-slow: 300ms ease;
+  /* ── Transition Curves ── */
+  --transition-fast: 160ms cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-base: 260ms cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-slow: 450ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* ── Base Reset & Smoothness ── */
 html {
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   scroll-behavior: smooth;
+  background-color: var(--cv-ivory);
+  color: var(--cv-text-primary);
 }
 
 body {
-  font-family: var(--font-base);
-  background-color: var(--cv-slate-50);
-  color: var(--cv-slate-900);
+  font-family: var(--font-body);
+  background-color: var(--cv-ivory);
+  color: var(--cv-text-primary);
   line-height: 1.6;
   min-height: 100vh;
   overflow-x: hidden;
+  position: relative;
 }
 
 #root {
@@ -98,27 +111,142 @@ body {
   flex-direction: column;
 }
 
-/* Utility: Visually hidden (for accessibility) */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0,0,0,0);
-  white-space: nowrap;
-  border-width: 0;
+/* ── Heading Hierarchy ── */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  color: var(--cv-text-primary);
+  letter-spacing: -0.025em;
+  font-weight: 700;
+  line-height: 1.25;
 }
 
-/* Scrollbar */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--cv-slate-300); border-radius: var(--radius-full); }
-::-webkit-scrollbar-thumb:hover { background: var(--cv-slate-400); }
+p {
+  color: var(--cv-text-secondary);
+}
 
-/* Focus ring */
+/* ── Subtle Focus Ring ── */
 :focus-visible {
-  outline: 2px solid var(--cv-blue-500);
+  outline: 2px solid var(--cv-sage);
   outline-offset: 2px;
+}
+
+/* ── Elegant Custom Scrollbar ── */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--cv-ivory);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #D8E0DA;
+  border-radius: var(--radius-full);
+  border: 2px solid var(--cv-ivory);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--cv-sage-muted);
+}
+
+/* ── Utility Classes ── */
+.cv-container {
+  width: 100%;
+  max-width: 1240px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: clamp(1.25rem, 4vw, 2.5rem);
+  padding-right: clamp(1.25rem, 4vw, 2.5rem);
+}
+
+.cv-badge-gold {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.85rem;
+  background: var(--cv-gold-light);
+  color: var(--cv-gold-dark);
+  border: 1px solid var(--cv-gold-border);
+  border-radius: var(--radius-full);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.cv-badge-sage {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.85rem;
+  background: var(--cv-sage-subtle);
+  color: var(--cv-green-primary);
+  border: 1px solid var(--cv-sage-border);
+  border-radius: var(--radius-full);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* ── Keyframe Animations ── */
+@keyframes cvFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes cvFadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cvScaleUp {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes cvBlurClear {
+  0% {
+    opacity: 0;
+    filter: blur(10px);
+    transform: scale(0.92);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0px);
+    transform: scale(1);
+  }
+}
+
+@keyframes cvFloatSubtle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes cvPulseSoft {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }

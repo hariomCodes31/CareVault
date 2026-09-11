@@ -1,0 +1,828 @@
+/* ==========================================================================
+   CareVault — Patient Dashboard Styling (Premium Healthcare Aesthetic)
+   ========================================================================== */
+
+:root {
+  --pd-primary: #1C3B2B;
+  --pd-primary-hover: #142B1F;
+  --pd-sage: #588065;
+  --pd-sage-light: #EBF2EE;
+  --pd-gold: #C0A15C;
+  --pd-gold-light: #F8F4EA;
+  --pd-bg: #FAF8F5;
+  --pd-card-bg: #FFFFFF;
+  --pd-border: #E2E8E4;
+  --pd-text-main: #18231C;
+  --pd-text-muted: #6B7A71;
+  --pd-accent-red: #BE123C;
+  --pd-accent-green: #15803D;
+  --pd-radius: 14px;
+  --pd-shadow: 0 4px 16px -2px rgba(28, 59, 43, 0.06);
+  --pd-shadow-hover: 0 12px 28px -4px rgba(28, 59, 43, 0.1);
+}
+
+.patient-dashboard-container {
+  max-width: 1220px;
+  margin: 0 auto;
+  padding: 1.5rem clamp(1rem, 2.5vw, 2rem);
+  font-family: var(--font-body);
+  color: var(--pd-text-main);
+  background-color: var(--cv-ivory);
+}
+
+/* ── Top Header Profile Card ── */
+.pd-header-card {
+  background: linear-gradient(135deg, #1C3B2B 0%, #162E21 60%, #102319 100%);
+  color: #FFFFFF;
+  padding: 1.75rem 2.25rem;
+  border-radius: var(--pd-radius);
+  box-shadow: 0 12px 30px -5px rgba(20, 44, 32, 0.28);
+  border: 1px solid rgba(192, 161, 92, 0.25);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.pd-header-card::before {
+  content: '';
+  position: absolute;
+  top: -40%;
+  right: -15%;
+  width: 380px;
+  height: 380px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(192, 161, 92, 0.14) 0%, rgba(88, 128, 101, 0.08) 50%, transparent 70%);
+  pointer-events: none;
+}
+
+.pd-profile-left {
+  display: flex;
+  align-items: center;
+  gap: 1.35rem;
+  position: relative;
+  z-index: 1;
+}
+
+.pd-avatar {
+  width: 66px;
+  height: 66px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #588065 0%, #2A543E 100%);
+  color: #FFFFFF;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid rgba(192, 161, 92, 0.5);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+}
+
+.pd-profile-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.pd-name-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.pd-patient-name {
+  font-family: var(--font-display);
+  font-size: 1.65rem;
+  font-weight: 800;
+  color: #FFFFFF;
+  margin: 0;
+  letter-spacing: -0.025em;
+}
+
+.pd-id-badge {
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 0.25rem 0.85rem;
+  border-radius: var(--radius-full);
+  font-size: 0.825rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--pd-gold);
+  border: 1px solid rgba(192, 161, 92, 0.35);
+}
+
+.pd-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.88rem;
+  color: rgba(255, 255, 255, 0.82);
+  flex-wrap: wrap;
+}
+
+.pd-meta-divider {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.pd-meta-item.icon-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.pd-meta-item.icon-item svg {
+  width: 14px;
+  height: 14px;
+  color: var(--pd-gold);
+}
+
+.pd-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 1;
+}
+
+.pd-aadhaar-chip {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.9);
+  padding: 0.45rem 0.95rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.pd-aadhaar-chip svg {
+  width: 15px;
+  height: 15px;
+  color: var(--pd-gold);
+}
+
+/* ── Buttons ── */
+.pd-btn {
+  padding: 0.65rem 1.25rem;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all var(--transition-fast);
+}
+
+.pd-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.pd-btn-primary {
+  background: var(--pd-gold);
+  color: var(--pd-primary);
+  font-weight: 700;
+  box-shadow: 0 4px 14px rgba(192, 161, 92, 0.35);
+}
+
+.pd-btn-primary:hover {
+  background: #B0924E;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(192, 161, 92, 0.45);
+}
+
+.pd-btn-secondary {
+  background: var(--pd-primary);
+  color: #FFFFFF;
+}
+
+.pd-btn-secondary:hover {
+  background: var(--pd-primary-hover);
+  transform: translateY(-1px);
+}
+
+.pd-btn-outline {
+  background: #FFFFFF;
+  border: 1.5px solid var(--pd-border);
+  color: var(--pd-text-main);
+}
+
+.pd-btn-outline:hover {
+  background: var(--pd-sage-light);
+  border-color: var(--pd-sage);
+  color: var(--pd-primary);
+}
+
+.pd-btn-text {
+  background: none;
+  border: none;
+  color: var(--pd-primary);
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 0;
+  margin-top: 0.5rem;
+  transition: color var(--transition-fast);
+}
+
+.pd-btn-text:hover {
+  color: var(--pd-sage);
+  text-decoration: underline;
+}
+
+/* ── Navigation Tabs ── */
+.pd-tabs-nav {
+  display: flex;
+  gap: 0.65rem;
+  margin: 1.75rem 0 1.5rem 0;
+  border-bottom: 2px solid var(--pd-border);
+  padding-bottom: 0.25rem;
+  overflow-x: auto;
+}
+
+.pd-tab-btn {
+  background: transparent;
+  border: none;
+  padding: 0.75rem 1.35rem;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--pd-text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  position: relative;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.pd-tab-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.pd-tab-btn:hover {
+  color: var(--pd-primary);
+  background: var(--pd-sage-light);
+}
+
+.pd-tab-btn.active {
+  color: var(--pd-primary);
+  font-weight: 700;
+}
+
+.pd-tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -0.3rem;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--pd-primary);
+  border-radius: 3px;
+}
+
+/* ── Card Containers ── */
+.pd-card {
+  background: var(--pd-card-bg);
+  border: 1px solid var(--pd-border);
+  border-radius: var(--pd-radius);
+  padding: 1.75rem;
+  box-shadow: var(--pd-shadow);
+  transition: box-shadow var(--transition-base), transform var(--transition-base);
+}
+
+.pd-card:hover {
+  box-shadow: var(--pd-shadow-hover);
+}
+
+.pd-card-title {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0 0 1rem 0;
+  color: var(--pd-primary);
+}
+
+.pd-card-subtitle {
+  font-size: 0.88rem;
+  color: var(--pd-text-muted);
+  margin: 0.25rem 0 0 0;
+}
+
+.pd-card-header-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+/* ── 1. Overview Tab ── */
+.pd-overview-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 900px) {
+  .pd-overview-grid {
+    grid-template-columns: 1.4fr 1fr;
+  }
+  .pd-key-info-card {
+    grid-column: 1 / -1;
+  }
+  .pd-stats-row {
+    grid-column: 1 / -1;
+  }
+}
+
+.pd-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.25rem;
+}
+
+.pd-info-box {
+  background: var(--cv-ivory-light);
+  border: 1px solid var(--pd-border);
+  padding: 1rem 1.15rem;
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.pd-info-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--pd-text-muted);
+}
+
+.pd-info-value {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--pd-text-main);
+}
+
+.pd-info-value.highlight-red {
+  color: var(--pd-accent-red);
+}
+
+/* Stats Row */
+.pd-stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.25rem;
+}
+
+.pd-stat-card {
+  background: var(--pd-card-bg);
+  border: 1px solid var(--pd-border);
+  border-radius: var(--pd-radius);
+  padding: 1.5rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  box-shadow: var(--pd-shadow);
+  transition: all var(--transition-base);
+}
+
+.pd-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--pd-shadow-hover);
+}
+
+.pd-stat-card.highlight {
+  border-left: 4px solid var(--pd-gold);
+}
+
+.pd-stat-number {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--pd-primary);
+  line-height: 1;
+}
+
+.pd-stat-label {
+  font-size: 0.85rem;
+  color: var(--pd-text-muted);
+  font-weight: 500;
+}
+
+/* Vitals Card */
+.pd-vitals-date {
+  font-size: 0.8rem;
+  color: var(--pd-text-muted);
+  font-weight: 500;
+}
+
+.pd-vitals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+}
+
+.pd-vital-tile {
+  background: var(--cv-ivory-light);
+  border: 1px solid var(--pd-border);
+  border-radius: var(--radius-md);
+  padding: 1.15rem 1rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.pd-vital-name {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--pd-text-muted);
+  text-transform: uppercase;
+}
+
+.pd-vital-val {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--pd-primary);
+}
+
+.pd-vital-val.warning {
+  color: var(--cv-status-warning);
+}
+
+/* Action Banner */
+.pd-action-banner {
+  background: linear-gradient(135deg, #FAF8F5 0%, #EBF2EE 100%);
+  border: 1px solid var(--cv-sage-border);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.pd-banner-badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--pd-primary);
+  margin-bottom: 0.5rem;
+}
+
+.pd-banner-content h3 {
+  font-size: 1.3rem;
+  margin-bottom: 0.35rem;
+  color: var(--pd-primary);
+}
+
+.pd-banner-content p {
+  font-size: 0.88rem;
+  color: var(--pd-text-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ── 2. Visits Timeline Tab ── */
+.pd-timeline {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  margin-top: 1.5rem;
+  padding-left: 1.75rem;
+}
+
+.pd-timeline::before {
+  content: '';
+  position: absolute;
+  left: 7px;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  background: var(--cv-sage-border);
+}
+
+.pd-timeline-item {
+  position: relative;
+  margin-bottom: 2rem;
+}
+
+.pd-timeline-item:last-child {
+  margin-bottom: 0;
+}
+
+.pd-timeline-dot {
+  position: absolute;
+  left: -1.75rem;
+  top: 5px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--pd-card-bg);
+  border: 3.5px solid var(--pd-primary);
+  box-shadow: 0 0 0 3px var(--cv-ivory);
+}
+
+.pd-timeline-content {
+  background: var(--cv-ivory-light);
+  border: 1px solid var(--pd-border);
+  border-radius: var(--radius-md);
+  padding: 1.25rem 1.5rem;
+}
+
+.pd-timeline-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.pd-timeline-date {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--pd-primary);
+}
+
+.pd-visit-type-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.2rem 0.65rem;
+  background: var(--pd-sage-light);
+  color: var(--pd-primary);
+  border-radius: var(--radius-full);
+}
+
+.pd-visit-complaint {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--pd-text-main);
+  margin-bottom: 0.35rem;
+}
+
+.pd-visit-meta {
+  display: flex;
+  gap: 0.5rem;
+  font-size: 0.825rem;
+  color: var(--pd-text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.pd-visit-diagnosis {
+  font-size: 0.875rem;
+  color: var(--pd-text-main);
+}
+
+.pd-visit-expanded {
+  margin-top: 0.85rem;
+  padding-top: 0.85rem;
+  border-top: 1px dashed var(--pd-border);
+}
+
+.pd-visit-expanded h5 {
+  font-size: 0.85rem;
+  margin-bottom: 0.25rem;
+  color: var(--pd-primary);
+}
+
+.pd-visit-expanded p {
+  font-size: 0.825rem;
+  color: var(--pd-text-muted);
+  margin: 0;
+}
+
+/* ── 3. Reports Tab ── */
+.pd-reports-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+
+.pd-report-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  padding: 1.15rem 1.35rem;
+  background: var(--cv-ivory-light);
+  border: 1px solid var(--pd-border);
+  border-radius: var(--radius-md);
+  flex-wrap: wrap;
+  transition: all var(--transition-fast);
+}
+
+.pd-report-card:hover {
+  background: #FFFFFF;
+  border-color: var(--pd-sage);
+  box-shadow: var(--pd-shadow);
+}
+
+.pd-report-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  background: var(--pd-sage-light);
+  color: var(--pd-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.pd-report-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.pd-report-info {
+  flex: 1;
+  min-width: 200px;
+}
+
+.pd-report-title {
+  margin: 0 0 0.25rem 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--pd-primary);
+}
+
+.pd-report-meta {
+  font-size: 0.8rem;
+  color: var(--pd-text-muted);
+}
+
+.pd-report-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.pd-status-tag {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-full);
+}
+
+.pd-status-tag.completed {
+  background: var(--cv-status-success-bg);
+  color: var(--cv-status-success);
+}
+
+/* ── 4. Prescriptions Tab ── */
+.pd-rx-card {
+  border: 1px solid var(--pd-border);
+  border-radius: var(--radius-lg);
+  background: #FFFFFF;
+  overflow: hidden;
+  box-shadow: var(--pd-shadow);
+  margin-top: 1.25rem;
+}
+
+.pd-rx-header {
+  background: var(--cv-ivory-light);
+  padding: 1.15rem 1.5rem;
+  border-bottom: 1px solid var(--pd-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.pd-rx-badge {
+  background: var(--pd-primary);
+  color: #FFFFFF;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-xs);
+  margin-right: 0.75rem;
+}
+
+.pd-rx-doctor {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--pd-primary);
+}
+
+.pd-rx-date {
+  font-size: 0.85rem;
+  color: var(--pd-text-muted);
+}
+
+.pd-rx-table-wrapper {
+  overflow-x: auto;
+}
+
+.pd-rx-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+.pd-rx-table th {
+  background: var(--cv-ivory);
+  color: var(--pd-text-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.85rem 1.35rem;
+  border-bottom: 1px solid var(--pd-border);
+}
+
+.pd-rx-table td {
+  padding: 0.95rem 1.35rem;
+  border-bottom: 1px solid var(--cv-grey-100);
+}
+
+.pd-med-name {
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--pd-primary);
+}
+
+.pd-med-name svg {
+  width: 16px;
+  height: 16px;
+  color: var(--pd-sage);
+}
+
+.pd-dosage-chip {
+  background: var(--pd-sage-light);
+  color: var(--pd-primary);
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-xs);
+  font-size: 0.8rem;
+}
+
+.pd-med-instruction {
+  color: var(--pd-text-muted);
+  font-size: 0.85rem;
+}
+
+.pd-rx-footer {
+  padding: 1.15rem 1.5rem;
+  background: var(--cv-ivory-light);
+  border-top: 1px solid var(--pd-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  font-size: 0.875rem;
+}
+
+.pd-rx-note {
+  color: var(--pd-text-main);
+}
+
+.pd-rx-followup {
+  color: var(--pd-primary);
+  font-weight: 700;
+}
+
+/* ── Print Media Query ── */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .pd-rx-card,
+  .pd-rx-card * {
+    visibility: visible;
+  }
+  .pd-rx-card {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+}
