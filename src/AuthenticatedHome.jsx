@@ -17,7 +17,10 @@ const IconLogOut = () => (
 );
 
 export default function AuthenticatedHome({ session, onSignOut }) {
-  const roleName = session?.role === 'doctor' ? 'Doctor' : 'Patient';
+  const isDoctor = session?.role === 'doctor';
+  const roleName = isDoctor ? 'Doctor' : 'Patient';
+  const idLabel = isDoctor ? 'Doctor ID:' : 'Patient ID:';
+  const accountId = session?.id || session?.doctorId || session?.patientId;
 
   return (
     <div className="auth-home-container">
@@ -48,8 +51,8 @@ export default function AuthenticatedHome({ session, onSignOut }) {
 
           <div className="auth-user-info-box">
             <div className="info-row">
-              <span className="info-label">Account ID:</span>
-              <span className="info-val"><strong>{session?.patientId}</strong></span>
+              <span className="info-label">{idLabel}</span>
+              <span className="info-val"><strong>{accountId}</strong></span>
             </div>
             <div className="info-row">
               <span className="info-label">Selected Role:</span>

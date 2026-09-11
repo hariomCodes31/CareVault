@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { generatePatientId, createAccount } from './services/authService';
+import { generateDoctorId, generatePatientId, createAccount } from './services/authService';
 import './CreateAccount.css';
 
 // ── SVG Icons ───────────────────────────────────────────────────────────────
@@ -92,9 +92,9 @@ const ROLES = [
 ];
 
 export default function CreateAccount({ onReturnToLogin }) {
-  const [selectedRole, setSelectedRole] = useState(null);
-  // Auto-generate guaranteed unique Patient ID lazily from storage
-  const [patientId] = useState(() => generatePatientId());
+  const [selectedRole, setSelectedRole] = useState('doctor');
+  // Auto-generate role-specific unique ID (Doctor ID vs Patient ID)
+  const [generatedId, setGeneratedId] = useState(() => generateDoctorId());
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -103,8 +103,14 @@ export default function CreateAccount({ onReturnToLogin }) {
   const [loading, setLoading] = useState(false);
   const [createdSuccess, setCreatedSuccess] = useState(null);
 
+  // When role selection changes, update the generated ID to match the selected role
   const handleRoleSelect = (roleId) => {
     setSelectedRole(roleId);
+    if (roleId === 'doctor') {
+      setGeneratedId(generateDoctorId());
+    } else {
+      setGeneratedId(generatePatientId());
+    }
     if (errors.role) setErrors((prev) => ({ ...prev, role: undefined }));
   };
 
@@ -146,7 +152,7 @@ export default function CreateAccount({ onReturnToLogin }) {
 
     const result = createAccount({
       role: selectedRole,
-      patientId,
+      id: generatedId,
       password,
     });
 
@@ -158,10 +164,14 @@ export default function CreateAccount({ onReturnToLogin }) {
     }
 
     setCreatedSuccess({
-      patientId: result.user.patientId,
+      id: result.id,
       role: result.user.role,
     });
   };
+
+  const isDoctor = selectedRole === 'doctor';
+  const idLabelText = isDoctor ? 'Doctor ID' : 'Patient ID';
+  const idHintText = isDoctor ? 'Doctor ID generated automatically' : 'Patient ID generated automatically';
 
   return (
     <div className="create-account-page">
@@ -199,13 +209,18 @@ export default function CreateAccount({ onReturnToLogin }) {
               <div className="create-success-icon-wrap">
                 <IconCheckCircle />
               </div>
-              <h2 className="create-success-title">Account created successfully.</h2>
+              <h2 className="create-success-title">
+                {createdSuccess.role === 'doctor'
+                  ? 'Doctor account created successfully.'
+                  : 'Patient account created successfully.'}
+              </h2>
               <p className="create-success-subtext">
-                Your account is ready. Use the Patient ID below to sign in.
+                Your account is ready. Use the ID below to sign in.
               </p>
 
               <div className="create-success-id-badge">
-                Patient ID: <strong>{createdSuccess.patientId}</strong>
+                {createdSuccess.role === 'doctor' ? 'Doctor ID:' : 'Patient ID:'}{' '}
+                <strong>{createdSuccess.id}</strong>
               </div>
 
               <button
@@ -267,27 +282,27 @@ export default function CreateAccount({ onReturnToLogin }) {
                 )}
               </div>
 
-              {/* Patient ID (Read-only / Immutable) */}
+              {/* Role-Specific ID Field (Read-only / Immutable) */}
               <div className="field-group">
-                <label className="field-label" htmlFor="create-patientId">
-                  Patient ID
+                <label className="field-label" htmlFor="create-accountId">
+                  {idLabelText}
                 </label>
                 <div className="field-input-wrap">
                   <input
-                    id="create-patientId"
+                    id="create-accountId"
                     type="text"
                     className="field-input readonly-input"
-                    value={patientId}
+                    value={generatedId}
                     readOnly
                     disabled
-                    aria-describedby="create-patientId-hint"
+                    aria-describedby="create-accountId-hint"
                   />
                   <span className="field-icon" aria-hidden="true">
-                    <IconUser />
+                    {isDoctor ? <IconDoctor /> : <IconUser />}
                   </span>
                 </div>
-                <span id="create-patientId-hint" className="field-hint">
-                  Patient ID generated automatically
+                <span id="create-accountId-hint" className="field-hint">
+                  {idHintText}
                 </span>
               </div>
 

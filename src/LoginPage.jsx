@@ -84,22 +84,28 @@ const ROLES = [
   },
 ];
 
-// Patient ID Format Regex: CVYYYY-XXXXXX (e.g. CV2026-000452)
+// Regex Format Rules
+const DOCTOR_ID_REGEX = /^DR\d{4}-\d{6}$/i;
 const PATIENT_ID_REGEX = /^CV\d{4}-\d{6}$/i;
 
 // ── Client Format Validation ──────────────────────────────────────────────────
-function validate({ patientId, password, role }) {
+function validate({ accountId, password, role }) {
   const errors = {};
 
   if (!role) {
     errors.role = 'Please select your role to continue.';
+    return errors;
   }
 
-  const cleanId = patientId.trim();
+  const idLabel = role === 'doctor' ? 'Doctor ID' : 'Patient ID';
+  const cleanId = (accountId || '').trim();
+
   if (!cleanId) {
-    errors.patientId = 'Patient ID is required.';
-  } else if (!PATIENT_ID_REGEX.test(cleanId)) {
-    errors.patientId = 'Please enter a valid Patient ID.';
+    errors.accountId = `${idLabel} is required.`;
+  } else if (role === 'doctor' && !DOCTOR_ID_REGEX.test(cleanId)) {
+    errors.accountId = 'Please enter a valid Doctor ID (DRYYYY-XXXXXX).';
+  } else if (role === 'patient' && !PATIENT_ID_REGEX.test(cleanId)) {
+    errors.accountId = 'Please enter a valid Patient ID (CVYYYY-XXXXXX).';
   }
 
   if (!password) {
@@ -111,8 +117,9 @@ function validate({ patientId, password, role }) {
 
 // ── Main Component ───────────────────────────────────────────────────────────
 export default function LoginPage({ onLoginSuccess, onNavigateToCreateAccount }) {
-  const [selectedRole, setSelectedRole] = useState(null);
-  const [patientId, setPatientId] = useState('');
+  // Default selected role is Doctor
+  const [selectedRole, setSelectedRole] = useState('doctor');
+  const [accountId, setAccountId] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
@@ -120,17 +127,17 @@ export default function LoginPage({ onLoginSuccess, onNavigateToCreateAccount })
   const [toastVisible, setToastVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
 
+  // When switching roles, clear the identifier input to prevent accidental leakage
   const handleRoleSelect = (roleId) => {
     setSelectedRole(roleId);
-    if (errors.role) {
-      setErrors((prev) => ({ ...prev, role: undefined }));
-    }
+    setAccountId('');
+    setErrors({});
   };
 
-  const handlePatientId = (e) => {
-    setPatientId(e.target.value);
-    if (errors.patientId || errors.form) {
-      setErrors((prev) => ({ ...prev, patientId: undefined, form: undefined }));
+  const handleAccountId = (e) => {
+    setAccountId(e.target.value);
+    if (errors.accountId || errors.form) {
+      setErrors((prev) => ({ ...prev, accountId: undefined, form: undefined }));
     }
   };
 
@@ -150,7 +157,7 @@ export default function LoginPage({ onLoginSuccess, onNavigateToCreateAccount })
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const validationErrors = validate({ patientId, password, role: selectedRole });
+    const validationErrors = validate({ accountId, password, role: selectedRole });
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
@@ -161,10 +168,10 @@ export default function LoginPage({ onLoginSuccess, onNavigateToCreateAccount })
 
     await new Promise((res) => setTimeout(res, 600));
 
-    // Call authentication service
+    // Call authentication service with role, id, and password
     const authResult = authenticate({
       role: selectedRole,
-      patientId,
+      id: accountId,
       password,
     });
 
@@ -184,6 +191,9 @@ export default function LoginPage({ onLoginSuccess, onNavigateToCreateAccount })
       }
     }, 400);
   };
+
+  const idLabelText = selectedRole === 'doctor' ? 'Doctor ID' : 'Patient ID';
+  const idPlaceholderText = selectedRole === 'doctor' ? 'Enter your Doctor ID' : 'Enter your Patient ID';
 
   return (
     <div className="login-page">
@@ -255,37 +265,37 @@ export default function LoginPage({ onLoginSuccess, onNavigateToCreateAccount })
               )}
             </div>
 
-            {/* Patient ID */}
+            {/* Role-Specific ID Field (Doctor ID vs Patient ID) */}
             <div className="field-group">
-              <label className="field-label" htmlFor="patientId">
-                Patient ID
+              <label className="field-label" htmlFor="accountId">
+                {idLabelText}
               </label>
               <div className="field-input-wrap">
                 <input
-                  id="patientId"
+                  id="accountId"
                   type="text"
-                  className={`field-input${errors.patientId ? ' error' : ''}`}
-                  placeholder="Enter your Patient ID"
-                  value={patientId}
-                  onChange={handlePatientId}
+                  className={`field-input${errors.accountId ? ' error' : ''}`}
+                  placeholder={idPlaceholderText}
+                  value={accountId}
+                  onChange={handleAccountId}
                   autoComplete="username"
-                  aria-describedby={errors.patientId ? 'patientId-error' : undefined}
-                  aria-invalid={!!errors.patientId}
+                  aria-describedby={errors.accountId ? 'accountId-error' : undefined}
+                  aria-invalid={!!errors.accountId}
                   disabled={loading}
                 />
                 <span className="field-icon" aria-hidden="true">
-                  <IconUser />
+                  {selectedRole === 'doctor' ? <IconDoctor /> : <IconUser />}
                 </span>
               </div>
-              {errors.patientId && (
+              {errors.accountId && (
                 <span
-                  id="patientId-error"
+                  id="accountId-error"
                   className="field-error"
                   role="alert"
                   aria-live="assertive"
                 >
                   <IconAlert />
-                  {errors.patientId}
+                  {errors.accountId}
                 </span>
               )}
             </div>
