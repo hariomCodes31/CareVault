@@ -268,3 +268,33 @@
   font-size: 0.7rem;
   color: var(--cv-slate-400);
 }
+
+/* Patient Form Expansion */
+.create-account-center-wrapper.patient-wide {
+  max-width: 760px;
+}
+
+.create-account-section-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--cv-blue-800, #1e40af);
+  margin-top: 0.6rem;
+  margin-bottom: 0.35rem;
+  border-bottom: 1px solid var(--cv-slate-200, #e2e8f0);
+  padding-bottom: 0.25rem;
+}
+
+.create-account-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem 0.8rem;
+}
+
+@media (max-width: 640px) {
+  .create-account-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+

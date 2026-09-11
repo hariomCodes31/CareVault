@@ -1,12 +1,5 @@
 /* LoginPage.css — CareVault Login & Role Selection Styles */
 
-@media (min-width: 901px) {
-  html, body, #root {
-    height: 100%;
-    overflow: hidden;
-  }
-}
-
 .login-page {
   width: 100%;
   min-height: 100vh;

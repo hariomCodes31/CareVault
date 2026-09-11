@@ -16,6 +16,18 @@ const INITIAL_SEED_ACCOUNTS = [
     password: 'password123',
     createdAt: '2026-01-01T00:00:00.000Z',
   },
+  {
+    role: 'patient',
+    patientId: 'CV2026-000452',
+    password: 'password123',
+    createdAt: '2026-01-01T00:00:00.000Z',
+  },
+  {
+    role: 'patient',
+    patientId: 'CV2026-000214',
+    password: 'password123',
+    createdAt: '2026-01-01T00:00:00.000Z',
+  },
 ];
 
 /**
@@ -86,17 +98,52 @@ export function generateDoctorId() {
 
 /**
  * Automatically generate a guaranteed UNIQUE Patient ID: CVYYYY-XXXXXX
+ * Checks both accounts and stored patient records to prevent collisions
  */
 export function generatePatientId() {
   const year = new Date().getFullYear();
   const accounts = getAccounts();
-  const patients = accounts.filter((acc) => acc.role === 'patient');
-  let counter = patients.length + 101;
-  let candidate = `CV${year}-${String(counter).padStart(6, '0')}`;
+  
+  // Read stored patients directly from localStorage to prevent circular imports
+  let storedPatients = [];
+  try {
+    const raw = localStorage.getItem('carevault_patients');
+    if (raw) storedPatients = JSON.parse(raw);
+  } catch {
+    // Fallback
+  }
 
-  while (accounts.some((acc) => (acc.patientId || '').toUpperCase() === candidate.toUpperCase())) {
-    counter++;
-    candidate = `CV${year}-${String(counter).padStart(6, '0')}`;
+  let maxNum = 452;
+
+  accounts.forEach((acc) => {
+    if (acc.role === 'patient' && acc.patientId) {
+      const match = acc.patientId.match(/CV\d{4}-(\d+)/i);
+      if (match) {
+        const num = parseInt(match[1], 10);
+        if (num > maxNum) maxNum = num;
+      }
+    }
+  });
+
+  storedPatients.forEach((p) => {
+    if (p.patientId) {
+      const match = p.patientId.match(/CV\d{4}-(\d+)/i);
+      if (match) {
+        const num = parseInt(match[1], 10);
+        if (num > maxNum) maxNum = num;
+      }
+    }
+  });
+
+  let nextNum = maxNum + 1;
+  let candidate = `CV${year}-${String(nextNum).padStart(6, '0')}`;
+
+  while (
+    accounts.some((acc) => (acc.patientId || '').toUpperCase() === candidate.toUpperCase()) ||
+    storedPatients.some((p) => (p.patientId || '').toUpperCase() === candidate.toUpperCase())
+  ) {
+    nextNum++;
+    candidate = `CV${year}-${String(nextNum).padStart(6, '0')}`;
   }
 
   return candidate;
@@ -111,8 +158,9 @@ export function generateIdForRole(role) {
 
 /**
  * Register a new account with role-specific ID (Doctor ID vs Patient ID)
+ * Now supports passing optional patient profile data during registration.
  */
-export function createAccount({ role, id, password }) {
+export function createAccount({ role, id, password, profileData }) {
   if (!role) {
     return { success: false, error: 'Role is required.' };
   }
@@ -137,7 +185,14 @@ export function createAccount({ role, id, password }) {
     };
 
     saveAccounts([...accounts, newAccount]);
-    return { success: true, user: newAccount, id: cleanId };
+    const session = {
+      id: cleanId,
+      doctorId: cleanId,
+      role: 'doctor',
+      authenticatedAt: new Date().toISOString(),
+    };
+    setSession(session);
+    return { success: true, user: newAccount, id: cleanId, session };
   } else {
     if (!cleanId || accounts.some((acc) => (acc.patientId || '').toUpperCase() === cleanId)) {
       cleanId = generatePatientId();
@@ -151,7 +206,48 @@ export function createAccount({ role, id, password }) {
     };
 
     saveAccounts([...accounts, newAccount]);
-    return { success: true, user: newAccount, id: cleanId };
+
+    if (profileData) {
+      try {
+        const raw = localStorage.getItem('carevault_patients');
+        const patients = raw ? JSON.parse(raw) : [];
+        const newPatient = {
+          patientId: cleanId,
+          name: (profileData.name || '').trim(),
+          age: parseInt(profileData.age, 10) || 0,
+          dob: profileData.dob || '',
+          gender: profileData.gender || 'Male',
+          phone: (profileData.phone || '').trim(),
+          email: (profileData.email || '').trim(),
+          address: (profileData.address || '').trim(),
+          aadhaar: (profileData.aadhaar || '').trim(),
+          bloodGroup: profileData.bloodGroup || 'Not Specified',
+          emergencyContact: (profileData.emergencyContact || '').trim(),
+          emergencyContactRelationship: (profileData.emergencyContactRelationship || '').trim(),
+          registrationComplete: true,
+          createdAt: new Date().toISOString(),
+        };
+        const idx = patients.findIndex((p) => p.patientId === cleanId);
+        if (idx >= 0) {
+          patients[idx] = { ...patients[idx], ...newPatient };
+        } else {
+          patients.unshift(newPatient);
+        }
+        localStorage.setItem('carevault_patients', JSON.stringify(patients));
+      } catch (e) {
+        console.warn('Could not save patient profile in createAccount', e);
+      }
+    }
+
+    const session = {
+      id: cleanId,
+      patientId: cleanId,
+      role: 'patient',
+      authenticatedAt: new Date().toISOString(),
+    };
+    setSession(session);
+
+    return { success: true, user: newAccount, id: cleanId, session };
   }
 }
 
