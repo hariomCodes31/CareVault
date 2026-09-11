@@ -1,6 +1,7 @@
 import { useState, Component } from 'react';
 import LoginPage from './LoginPage';
 import CreateAccount from './CreateAccount';
+import NewVisitCaseTaking from './NewVisitCaseTaking';
 import AuthenticatedHome from './AuthenticatedHome';
 import { getSession, clearSession } from './services/authService';
 
@@ -66,7 +67,8 @@ class ErrorBoundary extends Component {
 function App() {
   const [sessionData, setSessionData] = useState(() => getSession());
   const [currentScreen, setCurrentScreen] = useState(() => {
-    return sessionData ? 'authenticated' : 'login';
+    if (!sessionData) return 'login';
+    return 'authenticated';
   });
 
   const handleLoginSuccess = (session) => {
@@ -96,10 +98,18 @@ function App() {
           />
         )}
 
-        {currentScreen === 'authenticated' && (
+        {sessionData && (currentScreen === 'authenticated' || currentScreen === 'doctor-portal' || currentScreen === 'patient-dashboard') && (
           <AuthenticatedHome
             session={sessionData}
             onSignOut={handleSignOut}
+          />
+        )}
+
+        {sessionData && currentScreen === 'case-taking' && (
+          <NewVisitCaseTaking
+            session={sessionData}
+            onSignOut={handleSignOut}
+            onReturnToDashboard={() => setCurrentScreen('authenticated')}
           />
         )}
       </div>

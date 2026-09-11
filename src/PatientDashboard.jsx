@@ -1,34 +1,19 @@
 import { useState, useEffect } from 'react';
 import './PatientDashboard.css';
+import { getPatientProfile, getPatientVisits } from './services/visitService';
 
 // ── SVG Icons ───────────────────────────────────────────────────────────────
-const IconUser = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-    <circle cx="12" cy="7" r="4" />
-  </svg>
-);
-
 const IconActivity = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
   </svg>
 );
 
-const IconFileText = () => (
+const IconPlusCircle = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-    <polyline points="14 2 14 8 20 8" />
-    <line x1="16" y1="13" x2="8" y2="13" />
-    <line x1="16" y1="17" x2="8" y2="17" />
-    <polyline points="10 9 9 9 8 9" />
-  </svg>
-);
-
-const IconPill = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M10.5 20.5l10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7z" />
-    <line x1="8.5" y1="8.5" x2="15.5" y2="15.5" />
+    <circle cx="12" cy="12" r="10" />
+    <line x1="12" y1="8" x2="12" y2="16" />
+    <line x1="8" y1="12" x2="16" y2="12" />
   </svg>
 );
 
@@ -41,11 +26,20 @@ const IconCalendar = () => (
   </svg>
 );
 
-const IconPlusCircle = () => (
+const IconPill = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="10" />
-    <line x1="12" y1="8" x2="12" y2="16" />
-    <line x1="8" y1="12" x2="16" y2="12" />
+    <path d="M10.5 20.5l10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7z" />
+    <line x1="8.5" y1="8.5" x2="15.5" y2="15.5" />
+  </svg>
+);
+
+const IconFileText = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+    <polyline points="14 2 14 8 20 8" />
+    <line x1="16" y1="13" x2="8" y2="13" />
+    <line x1="16" y1="17" x2="8" y2="17" />
+    <polyline points="10 9 9 9 8 9" />
   </svg>
 );
 
@@ -91,19 +85,27 @@ const IconShield = () => (
   </svg>
 );
 
-// ── Default Mock Patient (SIH Flowchart Demo Alignment) ────────────────────
+const IconLogOut = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+    <polyline points="16 17 21 12 16 7" />
+    <line x1="21" y1="12" x2="9" y2="12" />
+  </svg>
+);
+
+// ── Default Mock Patient Structure ──────────────────────────────────────────
 const DEFAULT_PATIENT = {
   name: 'Rahul Kumar',
-  patientId: 'CV2026-000452',
+  patientId: 'CV2026-000102',
   age: 28,
   gender: 'Male',
-  phone: '9876543210',
+  phone: '+91 98765 43210',
   address: 'Patna, Bihar',
-  aadhaar: '1234 5678 9012',
+  aadhaar: '7845 9612 9012',
   bloodGroup: 'O+',
   knownConditions: 'None',
   allergies: 'Not Reported',
-  emergencyContact: '+91 9876543211',
+  emergencyContact: '+91 98765 43211',
   vitals: {
     bp: '120/80 mmHg',
     hr: '98 bpm',
@@ -112,51 +114,9 @@ const DEFAULT_PATIENT = {
   },
   stats: {
     totalVisits: 5,
-    reportsCount: 2,
+    reportsCount: 3,
     activeFollowUps: 1,
   },
-  visits: [
-    {
-      id: 'v1',
-      date: '08 Sep 2026',
-      type: 'OPD Visit',
-      chiefComplaint: 'Fever, headache & body ache',
-      doctor: 'Dr. Ananya Sharma',
-      department: 'General Medicine',
-      diagnosis: 'Acute Viral Pyrexia',
-      status: 'Completed',
-    },
-    {
-      id: 'v2',
-      date: '12 Apr 2026',
-      type: 'OPD Visit',
-      chiefComplaint: 'Viral infection & cough',
-      doctor: 'Dr. Rajesh Verma',
-      department: 'Internal Medicine',
-      diagnosis: 'Upper Respiratory Tract Infection',
-      status: 'Completed',
-    },
-    {
-      id: 'v3',
-      date: '03 Jan 2026',
-      type: 'OPD Visit',
-      chiefComplaint: 'Lower back pain',
-      doctor: 'Dr. Vikram Seth',
-      department: 'Orthopedics',
-      diagnosis: 'Lumbar Muscle Strain',
-      status: 'Completed',
-    },
-    {
-      id: 'v4',
-      date: '21 Aug 2025',
-      type: 'OPD Visit',
-      chiefComplaint: 'General routine checkup',
-      doctor: 'Dr. Ananya Sharma',
-      department: 'General Medicine',
-      diagnosis: 'Healthy / Routine Clearance',
-      status: 'Completed',
-    },
-  ],
   reports: [
     {
       id: 'r1',
@@ -176,6 +136,15 @@ const DEFAULT_PATIENT = {
       issuedBy: 'Radiology Dept - City Hospital',
       fileSize: '4.8 MB',
     },
+    {
+      id: 'r3',
+      title: 'Lipid Profile Panel',
+      date: '10 Jul 2026',
+      category: 'Laboratory',
+      status: 'Completed',
+      issuedBy: 'CareVault Labs',
+      fileSize: '2.1 MB',
+    },
   ],
   prescriptions: [
     {
@@ -193,46 +162,69 @@ const DEFAULT_PATIENT = {
   ],
 };
 
-export default function PatientDashboard({ patientData: customPatientData, onNavigateToCaseTaking }) {
+export default function PatientDashboard({
+  patientData: customPatientData,
+  onNavigateToCaseTaking,
+  onNavigateToNewVisit,
+  onSignOut,
+  selectedVisitIdToOpen,
+}) {
+  const targetId = customPatientData?.patientId || customPatientData?.id || 'CV2026-000102';
+
   const [activeTab, setActiveTab] = useState('overview');
   const [patient, setPatient] = useState(DEFAULT_PATIENT);
-  const [selectedVisit, setSelectedVisit] = useState(null);
+  const [serviceVisits, setServiceVisits] = useState([]);
+  const [selectedVisitModal, setSelectedVisitModal] = useState(null);
 
-  // Sync data from props or localStorage (Registration integration fallback)
+  // Load and sync data from visitService & props & localStorage
   useEffect(() => {
-    if (customPatientData && Object.keys(customPatientData).length > 0) {
-      setPatient((prev) => ({
-        ...prev,
-        ...customPatientData,
-        vitals: { ...prev.vitals, ...(customPatientData.vitals || {}) },
-        stats: { ...prev.stats, ...(customPatientData.stats || {}) },
-      }));
-      return;
+    const profile = getPatientProfile(targetId);
+    const vList = getPatientVisits(targetId);
+    setServiceVisits(vList || []);
+
+    if (selectedVisitIdToOpen) {
+      const found = (vList || []).find((v) => v.id === selectedVisitIdToOpen);
+      if (found) setSelectedVisitModal(found);
     }
 
-    // Try reading registration data saved in localStorage by Registration teammate module
+    // Try reading registration data saved in localStorage
+    let storedReg = null;
     try {
       const savedReg = localStorage.getItem('carevault_registered_patient') || localStorage.getItem('registeredPatient');
-      if (savedReg) {
-        const parsed = JSON.parse(savedReg);
-        setPatient((prev) => ({
-          ...prev,
-          name: parsed.name || parsed.fullName || prev.name,
-          patientId: parsed.patientId || parsed.id || prev.patientId,
-          age: parsed.age || prev.age,
-          gender: parsed.gender || prev.gender,
-          phone: parsed.phone || prev.phone,
-          address: parsed.address || prev.address,
-          aadhaar: parsed.aadhaar || prev.aadhaar,
-          bloodGroup: parsed.bloodGroup || prev.bloodGroup,
-          knownConditions: parsed.knownConditions || prev.knownConditions,
-          allergies: parsed.allergies || prev.allergies,
-        }));
-      }
+      if (savedReg) storedReg = JSON.parse(savedReg);
     } catch (e) {
       console.warn('Could not load stored patient registration', e);
     }
-  }, [customPatientData]);
+
+    setPatient((prev) => ({
+      ...prev,
+      ...profile,
+      name: customPatientData?.name || storedReg?.name || storedReg?.fullName || profile.name || prev.name,
+      patientId: customPatientData?.patientId || customPatientData?.id || profile.id || prev.patientId,
+      age: customPatientData?.age || storedReg?.age || profile.age || prev.age,
+      gender: customPatientData?.gender || storedReg?.gender || profile.gender || prev.gender,
+      phone: customPatientData?.phone || storedReg?.phone || profile.contact || prev.phone,
+      address: customPatientData?.address || storedReg?.address || profile.address || prev.address,
+      aadhaar: customPatientData?.aadhaar || storedReg?.aadhaar || profile.aadhaar || prev.aadhaar,
+      bloodGroup: customPatientData?.bloodGroup || storedReg?.bloodGroup || profile.bloodGroup || prev.bloodGroup,
+      knownConditions: customPatientData?.knownConditions || storedReg?.knownConditions || profile.knownConditions || prev.knownConditions,
+      allergies: customPatientData?.allergies || storedReg?.allergies || profile.allergies || prev.allergies,
+      vitals: { ...prev.vitals, ...(customPatientData?.vitals || {}) },
+      stats: {
+        totalVisits: vList.length > 0 ? vList.length : prev.stats.totalVisits,
+        reportsCount: profile.reportCount || prev.stats.reportsCount,
+        activeFollowUps: profile.activeFollowUpCount || prev.stats.activeFollowUps,
+      },
+    }));
+  }, [customPatientData, targetId, selectedVisitIdToOpen]);
+
+  const handleNewVisitAction = () => {
+    if (onNavigateToCaseTaking) {
+      onNavigateToCaseTaking();
+    } else if (onNavigateToNewVisit) {
+      onNavigateToNewVisit();
+    }
+  };
 
   // Compute Initials for Avatar
   const initials = (patient.name || 'Rahul Kumar')
@@ -246,8 +238,62 @@ export default function PatientDashboard({ patientData: customPatientData, onNav
     window.print();
   };
 
+  // Combine visit records from visitService with fallback default visits
+  const displayVisits = serviceVisits.length > 0
+    ? serviceVisits.map((v) => ({
+        id: v.id,
+        date: v.date,
+        time: v.time,
+        type: 'OPD Visit',
+        chiefComplaint: `${v.chiefComplaint}${v.complaintDuration ? ` (${v.complaintDuration} ${v.complaintDurationUnit || 'Days'})` : ''}`,
+        doctor: v.doctorName || 'Dr. Ananya Sharma',
+        department: 'General Medicine',
+        diagnosis: v.primaryDiagnosis || 'Clinical Assessment',
+        vitals: v.vitals,
+        prescription: v.prescription,
+        historyOfPresentIllness: v.historyOfPresentIllness,
+        followUp: v.followUp,
+        rawVisitObj: v,
+      }))
+    : [
+        {
+          id: 'VIS-2026-002',
+          date: '08 Sep 2026',
+          type: 'OPD Visit',
+          chiefComplaint: 'Fever, headache & body ache',
+          doctor: 'Dr. Ananya Sharma',
+          department: 'General Medicine',
+          diagnosis: 'Acute Viral Pyrexia',
+          status: 'Completed',
+        },
+        {
+          id: 'VIS-2026-001',
+          date: '12 Apr 2026',
+          type: 'OPD Visit',
+          chiefComplaint: 'Viral infection & cough',
+          doctor: 'Dr. Rajesh Verma',
+          department: 'Internal Medicine',
+          diagnosis: 'Upper Respiratory Tract Infection',
+          status: 'Completed',
+        },
+      ];
+
   return (
     <div className="patient-dashboard-container">
+      {/* ── Top Header Navbar (if Sign Out is available) ── */}
+      {onSignOut && (
+        <nav className="pd-navbar" style={{ marginBottom: '1.25rem', borderRadius: '12px' }}>
+          <div className="pd-nav-brand">
+            <img src="/logo.jpeg" alt="CareVault" className="pd-nav-logo" />
+            <span className="pd-nav-title">CareVault</span>
+            <span className="pd-nav-role-badge">Doctor & Patient Portal</span>
+          </div>
+          <button type="button" className="pd-signout-btn" onClick={onSignOut}>
+            <IconLogOut /> Sign Out
+          </button>
+        </nav>
+      )}
+
       {/* ── Top Header Profile Card ── */}
       <header className="pd-header-card">
         <div className="pd-profile-left">
@@ -259,7 +305,7 @@ export default function PatientDashboard({ patientData: customPatientData, onNav
             </div>
             <div className="pd-meta-row">
               <span className="pd-meta-item">
-                <strong>Age:</strong> {patient.age}
+                <strong>Age:</strong> {patient.age} Yrs
               </span>
               <span className="pd-meta-divider">•</span>
               <span className="pd-meta-item">
@@ -283,15 +329,14 @@ export default function PatientDashboard({ patientData: customPatientData, onNav
               <IconShield /> Aadhaar: •••• •••• {String(patient.aadhaar).slice(-4)}
             </div>
           )}
-          {onNavigateToCaseTaking && (
-            <button
-              type="button"
-              className="pd-btn pd-btn-primary"
-              onClick={onNavigateToCaseTaking}
-            >
-              <IconPlusCircle /> New Visit Case-Taking
-            </button>
-          )}
+          <button
+            type="button"
+            className="pd-btn pd-btn-primary"
+            onClick={handleNewVisitAction}
+            id="btn-new-visit-case-taking"
+          >
+            <IconPlusCircle /> + New Visit Case-Taking
+          </button>
         </div>
       </header>
 
@@ -309,21 +354,21 @@ export default function PatientDashboard({ patientData: customPatientData, onNav
           className={`pd-tab-btn ${activeTab === 'visits' ? 'active' : ''}`}
           onClick={() => setActiveTab('visits')}
         >
-          <IconCalendar /> Visits ({patient.visits.length})
+          <IconCalendar /> Visits ({displayVisits.length})
         </button>
         <button
           type="button"
           className={`pd-tab-btn ${activeTab === 'reports' ? 'active' : ''}`}
           onClick={() => setActiveTab('reports')}
         >
-          <IconFileText /> Reports ({patient.reports.length})
+          <IconFileText /> Reports ({patient.reports?.length || 3})
         </button>
         <button
           type="button"
           className={`pd-tab-btn ${activeTab === 'prescriptions' ? 'active' : ''}`}
           onClick={() => setActiveTab('prescriptions')}
         >
-          <IconPill /> Prescriptions ({patient.prescriptions.length})
+          <IconPill /> Prescriptions ({patient.prescriptions?.length || 2})
         </button>
       </nav>
 
@@ -350,7 +395,7 @@ export default function PatientDashboard({ patientData: customPatientData, onNav
                 </div>
                 <div className="pd-info-box">
                   <span className="pd-info-label">Emergency Contact</span>
-                  <span className="pd-info-value">{patient.emergencyContact}</span>
+                  <span className="pd-info-value">{patient.emergencyContact || patient.phone}</span>
                 </div>
               </div>
             </div>
@@ -358,15 +403,15 @@ export default function PatientDashboard({ patientData: customPatientData, onNav
             {/* Stats Summary Cards */}
             <div className="pd-stats-row">
               <div className="pd-stat-card">
-                <span className="pd-stat-number">{patient.stats.totalVisits}</span>
+                <span className="pd-stat-number">{displayVisits.length}</span>
                 <span className="pd-stat-label">Total Visits</span>
               </div>
               <div className="pd-stat-card">
-                <span className="pd-stat-number">{patient.stats.reportsCount}</span>
+                <span className="pd-stat-number">{patient.stats?.reportsCount || 3}</span>
                 <span className="pd-stat-label">Lab Reports</span>
               </div>
               <div className="pd-stat-card highlight">
-                <span className="pd-stat-number">{patient.stats.activeFollowUps}</span>
+                <span className="pd-stat-number">{patient.stats?.activeFollowUps || 1}</span>
                 <span className="pd-stat-label">Active Follow-up</span>
               </div>
             </div>
@@ -375,24 +420,24 @@ export default function PatientDashboard({ patientData: customPatientData, onNav
             <div className="pd-card pd-vitals-card">
               <div className="pd-card-header-flex">
                 <h2 className="pd-card-title">Latest Recorded Vitals</h2>
-                <span className="pd-vitals-date">08 Sep 2026</span>
+                <span className="pd-vitals-date">{displayVisits[0]?.date || '08 Sep 2026'}</span>
               </div>
               <div className="pd-vitals-grid">
                 <div className="pd-vital-tile">
                   <span className="pd-vital-name">BP</span>
-                  <span className="pd-vital-val">{patient.vitals.bp}</span>
+                  <span className="pd-vital-val">{displayVisits[0]?.vitals?.bloodPressure || patient.vitals?.bp || '120/80 mmHg'}</span>
                 </div>
                 <div className="pd-vital-tile">
                   <span className="pd-vital-name">Heart Rate</span>
-                  <span className="pd-vital-val">{patient.vitals.hr}</span>
+                  <span className="pd-vital-val">{displayVisits[0]?.vitals?.heartRate ? `${displayVisits[0].vitals.heartRate} bpm` : (patient.vitals?.hr || '98 bpm')}</span>
                 </div>
                 <div className="pd-vital-tile">
                   <span className="pd-vital-name">Temperature</span>
-                  <span className="pd-vital-val warning">{patient.vitals.temp}</span>
+                  <span className="pd-vital-val warning">{displayVisits[0]?.vitals?.temperature ? `${displayVisits[0].vitals.temperature}°F` : (patient.vitals?.temp || '101°F')}</span>
                 </div>
                 <div className="pd-vital-tile">
                   <span className="pd-vital-name">SpO2</span>
-                  <span className="pd-vital-val">{patient.vitals.spo2}</span>
+                  <span className="pd-vital-val">{displayVisits[0]?.vitals?.spO2 ? `${displayVisits[0].vitals.spO2}%` : (patient.vitals?.spo2 || '98%')}</span>
                 </div>
               </div>
             </div>
@@ -402,20 +447,14 @@ export default function PatientDashboard({ patientData: customPatientData, onNav
               <div className="pd-banner-content">
                 <span className="pd-banner-badge">Smart Case-Taking</span>
                 <h3>Need a new consultation?</h3>
-                <p>Start a structured case-taking dynamic form with AI complaint assistance.</p>
+                <p>Start a structured case-taking dynamic form with clinical record tracking.</p>
               </div>
               <button
                 type="button"
                 className="pd-btn pd-btn-secondary"
-                onClick={() => {
-                  if (onNavigateToCaseTaking) {
-                    onNavigateToCaseTaking();
-                  } else {
-                    setActiveTab('visits');
-                  }
-                }}
+                onClick={handleNewVisitAction}
               >
-                View Timeline <IconArrowRight />
+                + New Visit Case-Taking <IconArrowRight />
               </button>
             </div>
           </div>
@@ -429,16 +468,24 @@ export default function PatientDashboard({ patientData: customPatientData, onNav
                 <h2 className="pd-card-title">Patient Timeline & Visit History</h2>
                 <p className="pd-card-subtitle">Chronological record of consultations, complaints & diagnoses</p>
               </div>
+              <button
+                type="button"
+                className="pd-btn pd-btn-primary"
+                onClick={handleNewVisitAction}
+              >
+                <IconPlusCircle /> + New Visit Case-Taking
+              </button>
             </div>
 
             <div className="pd-timeline">
-              {patient.visits.map((visit, index) => (
+              {displayVisits.map((visit) => (
                 <div key={visit.id} className="pd-timeline-item">
                   <div className="pd-timeline-dot" />
                   <div className="pd-timeline-content">
                     <div className="pd-timeline-header">
-                      <span className="pd-timeline-date">{visit.date}</span>
-                      <span className="pd-visit-type-badge">{visit.type}</span>
+                      <span className="pd-timeline-date">{visit.date} {visit.time ? `• ${visit.time}` : ''}</span>
+                      <span className="pd-visit-type-badge">{visit.type || 'OPD Visit'}</span>
+                      <span className="visit-id" style={{ marginLeft: 'auto', fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>{visit.id}</span>
                     </div>
 
                     <h4 className="pd-visit-complaint">{visit.chiefComplaint}</h4>
@@ -446,27 +493,29 @@ export default function PatientDashboard({ patientData: customPatientData, onNav
                     <div className="pd-visit-meta">
                       <span><strong>Doctor:</strong> {visit.doctor}</span>
                       <span>•</span>
-                      <span><strong>Dept:</strong> {visit.department}</span>
+                      <span><strong>Dept:</strong> {visit.department || 'General Medicine'}</span>
                     </div>
 
                     <div className="pd-visit-diagnosis">
                       <strong>Diagnosis:</strong> {visit.diagnosis}
                     </div>
 
+                    {visit.vitals && (
+                      <div className="vitals-pill-group" style={{ marginTop: '0.5rem', display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                        {visit.vitals.bloodPressure && <span className="v-pill">BP: {visit.vitals.bloodPressure}</span>}
+                        {visit.vitals.heartRate && <span className="v-pill">HR: {visit.vitals.heartRate} bpm</span>}
+                        {visit.vitals.temperature && <span className="v-pill">Temp: {visit.vitals.temperature}°F</span>}
+                        {visit.vitals.spO2 && <span className="v-pill">SpO2: {visit.vitals.spO2}%</span>}
+                      </div>
+                    )}
+
                     <button
                       type="button"
                       className="pd-btn-text"
-                      onClick={() => setSelectedVisit(selectedVisit === visit.id ? null : visit.id)}
+                      onClick={() => setSelectedVisitModal(visit.rawVisitObj || visit)}
                     >
-                      {selectedVisit === visit.id ? 'Hide Details' : 'View Full Details →'}
+                      View Case Record Details →
                     </button>
-
-                    {selectedVisit === visit.id && (
-                      <div className="pd-visit-expanded">
-                        <h5>Visit Notes</h5>
-                        <p>Patient presented with moderate symptoms. Structured case-taking completed. Vitals stable. Follow-up advised within 7 days.</p>
-                      </div>
-                    )}
                   </div>
                 </div>
               ))}
@@ -497,7 +546,7 @@ export default function PatientDashboard({ patientData: customPatientData, onNav
                     </div>
                   </div>
                   <div className="pd-report-right">
-                    <span className="pd-status-tag completed">{report.status}</span>
+                    <span className="pd-status-tag completed" style={{ background: '#dcfce7', color: '#15803d', padding: '0.2rem 0.6rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600 }}>{report.status}</span>
                     <button
                       type="button"
                       className="pd-btn pd-btn-outline"
@@ -575,6 +624,101 @@ export default function PatientDashboard({ patientData: customPatientData, onNav
           </div>
         )}
       </main>
+
+      {/* ── Clinical Case Details Modal ── */}
+      {selectedVisitModal && (
+        <div className="modal-backdrop" onClick={() => setSelectedVisitModal(null)}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <div>
+                <h2 className="modal-title">Clinical Case Record: {selectedVisitModal.id}</h2>
+                <div style={{ fontSize: '0.825rem', color: '#64748b' }}>
+                  Visit Date: {selectedVisitModal.date} • Attending: {selectedVisitModal.doctorName || selectedVisitModal.doctor || 'Dr. Ananya Sharma'}
+                </div>
+              </div>
+              <button type="button" className="modal-close-btn" onClick={() => setSelectedVisitModal(null)}>
+                ×
+              </button>
+            </div>
+
+            <div className="modal-body">
+              <div>
+                <h4 style={{ color: '#1e3a8a', fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Chief Complaint</h4>
+                <p style={{ fontSize: '0.95rem', color: '#0f172a', fontWeight: '500', marginTop: '4px' }}>
+                  {selectedVisitModal.chiefComplaint}
+                </p>
+              </div>
+
+              {selectedVisitModal.historyOfPresentIllness && (
+                <div>
+                  <h4 style={{ color: '#1e3a8a', fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>History of Present Illness</h4>
+                  <p style={{ fontSize: '0.9rem', color: '#334155', marginTop: '4px' }}>{selectedVisitModal.historyOfPresentIllness}</p>
+                </div>
+              )}
+
+              {selectedVisitModal.vitals && (
+                <div>
+                  <h4 style={{ color: '#1e3a8a', fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Vitals</h4>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '6px' }}>
+                    {selectedVisitModal.vitals.bloodPressure && <span className="v-pill">BP: {selectedVisitModal.vitals.bloodPressure} mmHg</span>}
+                    {selectedVisitModal.vitals.heartRate && <span className="v-pill">Heart Rate: {selectedVisitModal.vitals.heartRate} bpm</span>}
+                    {selectedVisitModal.vitals.temperature && <span className="v-pill">Temp: {selectedVisitModal.vitals.temperature} °F</span>}
+                    {selectedVisitModal.vitals.spO2 && <span className="v-pill">SpO2: {selectedVisitModal.vitals.spO2}%</span>}
+                    {selectedVisitModal.vitals.weight && <span className="v-pill">Weight: {selectedVisitModal.vitals.weight} kg</span>}
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <h4 style={{ color: '#1e3a8a', fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Diagnosis & Assessment</h4>
+                <div style={{ fontSize: '0.95rem', color: '#2563eb', fontWeight: '700', marginTop: '4px' }}>
+                  Primary: {selectedVisitModal.primaryDiagnosis || selectedVisitModal.diagnosis || 'Clinical Assessment'}
+                </div>
+                {selectedVisitModal.additionalDiagnosis && (
+                  <div style={{ fontSize: '0.875rem', color: '#475569', marginTop: '2px' }}>
+                    Secondary: {selectedVisitModal.additionalDiagnosis}
+                  </div>
+                )}
+                {selectedVisitModal.clinicalNotes && (
+                  <div style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '4px', fontStyle: 'italic' }}>
+                    Notes: "{selectedVisitModal.clinicalNotes}"
+                  </div>
+                )}
+              </div>
+
+              {selectedVisitModal.prescription && selectedVisitModal.prescription.length > 0 && (
+                <div>
+                  <h4 style={{ color: '#1e3a8a', fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Rx Prescriptions</h4>
+                  <ul style={{ paddingLeft: '1.2rem', marginTop: '4px', fontSize: '0.9rem', color: '#334155' }}>
+                    {selectedVisitModal.prescription.map((p, idx) => (
+                      <li key={idx} style={{ marginBottom: '4px' }}>
+                        <strong>{p.medicine}</strong> — {p.dosage || p.dose} ({p.frequency}) for {p.duration}. <span style={{ color: '#64748b' }}>{p.instructions}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {selectedVisitModal.followUp && selectedVisitModal.followUp.required === 'Yes' && (
+                <div style={{ background: '#fef3c7', padding: '0.75rem', borderRadius: '6px', border: '1px solid #fde68a' }}>
+                  <strong style={{ color: '#b45309', fontSize: '0.875rem' }}>Follow-up Scheduled:</strong> {selectedVisitModal.followUp.date}
+                  <div style={{ fontSize: '0.825rem', color: '#92400e', marginTop: '2px' }}>{selectedVisitModal.followUp.instructions}</div>
+                </div>
+              )}
+            </div>
+
+            <div className="modal-footer">
+              <button
+                type="button"
+                className="pd-btn pd-btn-secondary"
+                onClick={() => setSelectedVisitModal(null)}
+              >
+                Close Record
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

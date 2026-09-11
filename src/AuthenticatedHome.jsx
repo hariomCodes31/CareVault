@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import PatientRegistrationDashboard from './components/PatientRegistrationDashboard';
 import PatientDashboard from './PatientDashboard';
+import NewVisitCaseTaking from './NewVisitCaseTaking';
 import './AuthenticatedHome.css';
 
 // ── SVG Icons ───────────────────────────────────────────────────────────────
@@ -116,7 +117,17 @@ export default function AuthenticatedHome({ session, onSignOut }) {
         {!isDoctor && activeView === 'dashboard' && (
           <PatientDashboard
             patientData={{ patientId: accountId }}
-            onNavigateToCaseTaking={() => alert('Redirecting to Case-Taking Module...')}
+            onNavigateToCaseTaking={() => setActiveView('case-taking')}
+            onNavigateToNewVisit={() => setActiveView('case-taking')}
+            onSignOut={onSignOut}
+          />
+        )}
+
+        {activeView === 'case-taking' && (
+          <NewVisitCaseTaking
+            session={session}
+            onSignOut={onSignOut}
+            onReturnToDashboard={() => setActiveView('dashboard')}
           />
         )}
 
