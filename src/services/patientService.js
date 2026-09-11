@@ -20,6 +20,7 @@ const INITIAL_PATIENTS = [
     totalVisits: 5,
     reportsCount: 2,
     activeFollowUp: 1,
+    registrationComplete: true,
     createdAt: '2026-01-15T09:30:00.000Z',
     recentComplaint: 'Fever (since 3 days)',
     timeline: [
@@ -44,6 +45,7 @@ const INITIAL_PATIENTS = [
     totalVisits: 2,
     reportsCount: 1,
     activeFollowUp: 0,
+    registrationComplete: true,
     createdAt: '2026-02-10T11:15:00.000Z',
     recentComplaint: 'Seasonal Allergy',
     timeline: [
@@ -66,6 +68,7 @@ const INITIAL_PATIENTS = [
     totalVisits: 3,
     reportsCount: 4,
     activeFollowUp: 1,
+    registrationComplete: true,
     createdAt: '2026-03-01T14:20:00.000Z',
     recentComplaint: 'Blood Pressure Monitoring',
     timeline: [
@@ -92,6 +95,20 @@ export function getPatients() {
 }
 
 /**
+ * Check if a patient profile has all required fields completed
+ */
+export function isProfileComplete(patient) {
+  if (!patient) return false;
+  if (patient.registrationComplete === true) return true;
+  const hasName = Boolean(patient.name && patient.name.trim());
+  const hasGender = Boolean(patient.gender && patient.gender.trim());
+  const hasDob = Boolean(patient.dob && patient.dob.trim());
+  const hasPhone = Boolean(patient.phone && patient.phone.trim());
+  const hasAddress = Boolean(patient.address && patient.address.trim());
+  return hasName && hasGender && hasDob && hasPhone && hasAddress;
+}
+
+/**
  * Save updated patients list
  */
 function savePatients(patients) {
@@ -104,6 +121,7 @@ function savePatients(patients) {
 
 /**
  * Generate next unique Patient ID: CV2026-XXXXXX
+ * Checks both patient records and auth accounts to ensure uniqueness
  */
 export function generateNextPatientId() {
   const year = new Date().getFullYear();
@@ -117,6 +135,24 @@ export function generateNextPatientId() {
       if (num > maxNum) maxNum = num;
     }
   });
+
+  try {
+    const rawAccounts = localStorage.getItem('carevault_accounts');
+    if (rawAccounts) {
+      const accounts = JSON.parse(rawAccounts);
+      accounts.forEach((acc) => {
+        if (acc.role === 'patient' && acc.patientId) {
+          const match = acc.patientId.match(/CV\d{4}-(\d+)/i);
+          if (match) {
+            const num = parseInt(match[1], 10);
+            if (num > maxNum) maxNum = num;
+          }
+        }
+      });
+    }
+  } catch {
+    // Fallback
+  }
 
   const nextNum = maxNum + 1;
   return `CV${year}-${String(nextNum).padStart(6, '0')}`;
@@ -180,16 +216,20 @@ export function registerPatient(patientData) {
   const newPatient = {
     patientId,
     tokenNumber,
-    name: patientData.name.trim(),
+    name: (patientData.name || '').trim(),
     age: parseInt(patientData.age, 10) || 0,
     dob: patientData.dob || '',
     gender: patientData.gender || 'Male',
     phone: (patientData.phone || '').trim(),
+    email: (patientData.email || '').trim(),
     address: (patientData.address || '').trim(),
     aadhaar: (patientData.aadhaar || '').trim(),
     bloodGroup: patientData.bloodGroup || 'Not Specified',
+    emergencyContact: (patientData.emergencyContact || '').trim(),
+    emergencyContactRelationship: (patientData.emergencyContactRelationship || '').trim(),
     knownConditions: patientData.knownConditions?.trim() || 'None',
     allergies: patientData.allergies?.trim() || 'None Reported',
+    registrationComplete: true,
     totalVisits: 1,
     reportsCount: 0,
     activeFollowUp: 0,
@@ -208,7 +248,7 @@ export function registerPatient(patientData) {
 
   const existingIndex = patients.findIndex((p) => p.patientId === patientId);
   if (existingIndex >= 0) {
-    patients[existingIndex] = { ...patients[existingIndex], ...newPatient };
+    patients[existingIndex] = { ...patients[existingIndex], ...newPatient, registrationComplete: true };
     savePatients([...patients]);
   } else {
     savePatients([newPatient, ...patients]);

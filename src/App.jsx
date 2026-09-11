@@ -95,6 +95,7 @@ function App() {
         {currentScreen === 'create-account' && (
           <CreateAccount
             onReturnToLogin={() => setCurrentScreen('login')}
+            onLoginSuccess={handleLoginSuccess}
           />
         )}
 

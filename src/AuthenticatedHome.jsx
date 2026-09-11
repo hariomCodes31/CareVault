@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import PatientRegistrationDashboard from './components/PatientRegistrationDashboard';
 import PatientDashboard from './PatientDashboard';
 import NewVisitCaseTaking from './NewVisitCaseTaking';
+import { getPatientById, isProfileComplete } from './services/patientService';
 import './AuthenticatedHome.css';
 
 // ── SVG Icons ───────────────────────────────────────────────────────────────
@@ -41,8 +42,44 @@ export default function AuthenticatedHome({ session, onSignOut }) {
   const idLabel = isDoctor ? 'Doctor ID:' : 'Patient ID:';
   const accountId = session?.id || session?.doctorId || session?.patientId;
 
-  // View state: for patient (dashboard, registration, session), for doctor (registration, session)
-  const [activeView, setActiveView] = useState(() => (isDoctor ? 'registration' : 'dashboard'));
+  // Check existing patient profile completion
+  const [profileComplete, setProfileComplete] = useState(() => {
+    if (isDoctor) return true;
+    const p = getPatientById(accountId);
+    return isProfileComplete(p);
+  });
+
+  // Default active view: Doctor -> 'registration', Patient -> 'dashboard' (if complete) or 'registration' (if incomplete)
+  const [activeView, setActiveView] = useState(() => {
+    if (isDoctor) return 'registration';
+    return profileComplete ? 'dashboard' : 'registration';
+  });
+
+  // Re-check profile completeness on accountId change
+  useEffect(() => {
+    if (!isDoctor && accountId) {
+      const p = getPatientById(accountId);
+      const complete = isProfileComplete(p);
+      setProfileComplete(complete);
+      if (!complete) {
+        setActiveView('registration');
+      }
+    }
+  }, [accountId, isDoctor]);
+
+  const handlePatientViewSwitch = (view) => {
+    if (view === 'dashboard' && !profileComplete) {
+      alert('Please complete your Patient Registration profile before accessing the Patient Dashboard.');
+      setActiveView('registration');
+      return;
+    }
+    setActiveView(view);
+  };
+
+  const handleRegistrationComplete = () => {
+    setProfileComplete(true);
+    setActiveView('dashboard');
+  };
 
   return (
     <div className="auth-home-container">
@@ -71,7 +108,7 @@ export default function AuthenticatedHome({ session, onSignOut }) {
               <button
                 type="button"
                 className={`auth-signout-btn ${activeView === 'dashboard' ? 'active' : ''}`}
-                onClick={() => setActiveView('dashboard')}
+                onClick={() => handlePatientViewSwitch('dashboard')}
               >
                 Patient Dashboard
               </button>
@@ -79,9 +116,9 @@ export default function AuthenticatedHome({ session, onSignOut }) {
               <button
                 type="button"
                 className={`auth-signout-btn ${activeView === 'registration' ? 'active' : ''}`}
-                onClick={() => setActiveView('registration')}
+                onClick={() => handlePatientViewSwitch('registration')}
               >
-                Search / Registration
+                {profileComplete ? 'Edit Profile' : 'Complete Registration'}
               </button>
             </div>
           )}
@@ -135,6 +172,7 @@ export default function AuthenticatedHome({ session, onSignOut }) {
           <PatientRegistrationDashboard
             userRole={isDoctor ? 'doctor' : 'patient'}
             currentId={accountId}
+            onRegistrationComplete={handleRegistrationComplete}
           />
         )}
 

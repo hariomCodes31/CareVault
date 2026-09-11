@@ -190,11 +190,14 @@ function calculateAge(dobInput) {
   return age >= 0 ? String(age) : '0';
 }
 
-export default function PatientRegistrationDashboard({ userRole = 'doctor', currentId = 'DR2026-000100' }) {
+export default function PatientRegistrationDashboard({
+  userRole = 'doctor',
+  currentId = 'DR2026-000100',
+  onRegistrationComplete,
+}) {
   const isPatient = userRole === 'patient';
   // If patient, directly start on 'register' tab; if doctor, start on 'search'
   const [activeTab, setActiveTab] = useState(isPatient ? 'register' : 'search');
-  const datePickerRef = useRef(null);
 
   // Check if this patient already has a record in storage
   const existingPatient = isPatient && currentId ? getPatientById(currentId) : null;
@@ -212,13 +215,37 @@ export default function PatientRegistrationDashboard({ userRole = 'doctor', curr
     dob: toDDMMYYYY(existingPatient?.dob || ''),
     gender: existingPatient?.gender || 'Male',
     phone: existingPatient?.phone || '',
+    email: existingPatient?.email || '',
     address: existingPatient?.address || '',
     aadhaar: existingPatient?.aadhaar || '',
     bloodGroup: existingPatient?.bloodGroup || 'O+',
+    emergencyContact: existingPatient?.emergencyContact || '',
+    emergencyContactRelationship: existingPatient?.emergencyContactRelationship || '',
     knownConditions: existingPatient?.knownConditions || 'None',
     allergies: existingPatient?.allergies || 'Not Reported',
     chiefComplaint: existingPatient?.recentComplaint || 'General OPD Registration',
   }));
+
+  useEffect(() => {
+    if (existingPatient) {
+      setFormData({
+        name: existingPatient.name || '',
+        age: existingPatient.age ? String(existingPatient.age) : '',
+        dob: toDDMMYYYY(existingPatient.dob || ''),
+        gender: existingPatient.gender || 'Male',
+        phone: existingPatient.phone || '',
+        email: existingPatient.email || '',
+        address: existingPatient.address || '',
+        aadhaar: existingPatient.aadhaar || '',
+        bloodGroup: existingPatient.bloodGroup || 'O+',
+        emergencyContact: existingPatient.emergencyContact || '',
+        emergencyContactRelationship: existingPatient.emergencyContactRelationship || '',
+        knownConditions: existingPatient.knownConditions || 'None',
+        allergies: existingPatient.allergies || 'Not Reported',
+        chiefComplaint: existingPatient.recentComplaint || 'General OPD Registration',
+      });
+    }
+  }, [existingPatient?.patientId]);
   const [formErrors, setFormErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [nextPatientIdPreview, setNextPatientIdPreview] = useState(() =>
@@ -415,6 +442,10 @@ export default function PatientRegistrationDashboard({ userRole = 'doctor', curr
 
   const handleCloseSlipModal = (viewInSearch = false) => {
     setShowSlipModal(false);
+    if (isPatient && onRegistrationComplete) {
+      onRegistrationComplete(newlyRegisteredRecord?.patient);
+      return;
+    }
     if (!isPatient && viewInSearch && newlyRegisteredRecord) {
       setActiveTab('search');
       setSearchQuery(newlyRegisteredRecord.patient.patientId);
@@ -430,9 +461,12 @@ export default function PatientRegistrationDashboard({ userRole = 'doctor', curr
         dob: '',
         gender: 'Male',
         phone: '',
+        email: '',
         address: '',
         aadhaar: '',
         bloodGroup: 'O+',
+        emergencyContact: '',
+        emergencyContactRelationship: '',
         knownConditions: 'None',
         allergies: 'Not Reported',
         chiefComplaint: 'General OPD Consultation',

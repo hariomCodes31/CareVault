@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { generateDoctorId, generatePatientId, createAccount } from './services/authService';
+import { registerPatient, parseAadhaarCard, SAMPLE_AADHAAR_PRESETS } from './services/patientService';
 import './CreateAccount.css';
 
 // ── SVG Icons ───────────────────────────────────────────────────────────────
@@ -75,7 +76,121 @@ const IconArrowLeft = () => (
   </svg>
 );
 
-// ── Roles ────────────────────────────────────────────────────────────────────
+const IconSparkles = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z" />
+  </svg>
+);
+
+const IconScan = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 7V5a2 2 0 0 1 2-2h2" />
+    <path d="M17 3h2a2 2 0 0 1 2 2v2" />
+    <path d="M21 17v2a2 2 0 0 1-2 2h-2" />
+    <path d="M7 21H5a2 2 0 0 1-2-2v-2" />
+    <line x1="7" y1="12" x2="17" y2="12" />
+  </svg>
+);
+
+const IconUpload = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+    <polyline points="17 8 12 3 7 8" />
+    <line x1="12" y1="3" x2="12" y2="15" />
+  </svg>
+);
+
+// Format Aadhaar: XXXX XXXX XXXX
+function formatAadhaar(val) {
+  const digits = (val || '').replace(/\D/g, '').slice(0, 12);
+  const parts = [];
+  for (let i = 0; i < digits.length; i += 4) {
+    parts.push(digits.slice(i, i + 4));
+  }
+  return parts.join(' ');
+}
+
+// Convert YYYY-MM-DD to DD-MM-YYYY
+function toDDMMYYYY(val) {
+  if (!val) return '';
+  if (/^\d{2}-\d{2}-\d{4}$/.test(val)) return val;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(val)) {
+    const [y, m, d] = val.split('-');
+    return `${d}-${m}-${y}`;
+  }
+  return val;
+}
+
+// Convert DD-MM-YYYY to YYYY-MM-DD
+function toYYYYMMDD(val) {
+  if (!val) return '';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(val)) return val;
+  if (/^\d{2}-\d{2}-\d{4}$/.test(val)) {
+    const [d, m, y] = val.split('-');
+    return `${y}-${m}-${d}`;
+  }
+  return '';
+}
+
+// Format raw digits to DD-MM-YYYY
+function formatDob(val) {
+  if (!val) return '';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(val)) {
+    return toDDMMYYYY(val);
+  }
+  const clean = val.replace(/\D/g, '').slice(0, 8);
+  if (clean.length <= 2) return clean;
+  if (clean.length <= 4) return `${clean.slice(0, 2)}-${clean.slice(2)}`;
+  return `${clean.slice(0, 2)}-${clean.slice(2, 4)}-${clean.slice(4)}`;
+}
+
+// Calculate age from DOB
+function calculateAge(dobInput) {
+  if (!dobInput) return '';
+  const str = String(dobInput).trim();
+
+  let day, month, year;
+  if (/^\d{4}[-/.]\d{1,2}[-/.]\d{1,2}$/.test(str)) {
+    const parts = str.split(/[-/.]/);
+    year = parseInt(parts[0], 10);
+    month = parseInt(parts[1], 10);
+    day = parseInt(parts[2], 10);
+  } else if (/^\d{1,2}[-/.]\d{1,2}[-/.]\d{4}$/.test(str)) {
+    const parts = str.split(/[-/.]/);
+    day = parseInt(parts[0], 10);
+    month = parseInt(parts[1], 10);
+    year = parseInt(parts[2], 10);
+  } else if (/^\d{8}$/.test(str)) {
+    day = parseInt(str.slice(0, 2), 10);
+    month = parseInt(str.slice(2, 4), 10);
+    year = parseInt(str.slice(4, 8), 10);
+  } else if (/^\d{4}$/.test(str)) {
+    year = parseInt(str, 10);
+    const currentYear = new Date().getFullYear();
+    if (year >= 1900 && year <= currentYear) return String(currentYear - year);
+    return '';
+  } else {
+    return '';
+  }
+
+  const currentYear = new Date().getFullYear();
+  if (!year || year < 1900 || year > currentYear) return '';
+  if (!month || month < 1 || month > 12) return '';
+  if (!day || day < 1 || day > 31) return '';
+
+  const birth = new Date(year, month - 1, day);
+  if (isNaN(birth.getTime())) return '';
+
+  const today = new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  const m = today.getMonth() - birth.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+
+  return age >= 0 ? String(age) : '0';
+}
+
 const ROLES = [
   {
     id: 'doctor',
@@ -86,32 +201,102 @@ const ROLES = [
   {
     id: 'patient',
     name: 'Patient',
-    desc: 'View your health records, prescriptions, appointments and follow-up information.',
+    desc: 'Register health profile and access health locker',
     Icon: IconUser,
   },
 ];
 
-export default function CreateAccount({ onReturnToLogin }) {
+export default function CreateAccount({ onReturnToLogin, onLoginSuccess }) {
   const [selectedRole, setSelectedRole] = useState('doctor');
-  // Auto-generate role-specific unique ID (Doctor ID vs Patient ID)
-  const [generatedId, setGeneratedId] = useState(() => generateDoctorId());
+  
+  // Single permanent ID generation per role selection session
+  const [doctorCandidateId, setDoctorCandidateId] = useState(() => generateDoctorId());
+  const [patientCandidateId, setPatientCandidateId] = useState(() => generatePatientId());
+
+  // Credentials
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // Patient Registration Details
+  const [patientForm, setPatientForm] = useState({
+    name: '',
+    gender: 'Male',
+    dob: '',
+    age: '',
+    aadhaar: '',
+    phone: '',
+    email: '',
+    address: '',
+    bloodGroup: 'O+',
+    emergencyContact: '',
+    emergencyContactRelationship: '',
+  });
+
+  // OCR state
+  const [isScanningAadhaar, setIsScanningAadhaar] = useState(false);
+  const [scanStepText, setScanStepText] = useState('');
+  const [aadhaarExtractedInfo, setAadhaarExtractedInfo] = useState(null);
+  const fileInputRef = useRef(null);
+
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [createdSuccess, setCreatedSuccess] = useState(null);
 
-  // When role selection changes, update the generated ID to match the selected role
+  const currentGeneratedId = selectedRole === 'doctor' ? doctorCandidateId : patientCandidateId;
+
+  // Auto-calculate age from DOB
+  useEffect(() => {
+    if (patientForm.dob) {
+      const calculated = calculateAge(patientForm.dob);
+      if (calculated && calculated !== patientForm.age) {
+        setPatientForm((prev) => ({ ...prev, age: calculated }));
+        if (errors.age) setErrors((prev) => ({ ...prev, age: undefined }));
+      }
+    }
+  }, [patientForm.dob]);
+
   const handleRoleSelect = (roleId) => {
     setSelectedRole(roleId);
-    if (roleId === 'doctor') {
-      setGeneratedId(generateDoctorId());
-    } else {
-      setGeneratedId(generatePatientId());
+    setErrors({});
+    if (roleId === 'doctor' && !doctorCandidateId) {
+      setDoctorCandidateId(generateDoctorId());
+    } else if (roleId === 'patient' && !patientCandidateId) {
+      setPatientCandidateId(generatePatientId());
     }
-    if (errors.role) setErrors((prev) => ({ ...prev, role: undefined }));
+  };
+
+  // OCR Scan handler
+  const triggerAadhaarScan = async (fileOrPreset) => {
+    setIsScanningAadhaar(true);
+    setScanStepText('Initializing Aadhaar OCR engine...');
+    try {
+      const result = await parseAadhaarCard(fileOrPreset, (step) => {
+        setScanStepText(step.text);
+      });
+
+      if (result.success && result.data) {
+        setAadhaarExtractedInfo(result.data);
+        setPatientForm((prev) => ({
+          ...prev,
+          name: result.data.name || prev.name,
+          age: result.data.age ? String(result.data.age) : prev.age,
+          dob: result.data.dob ? toDDMMYYYY(result.data.dob) : prev.dob,
+          gender: result.data.gender || prev.gender,
+          aadhaar: result.data.aadhaar ? formatAadhaar(result.data.aadhaar) : prev.aadhaar,
+          address: result.data.address || prev.address,
+          phone: result.data.phone || prev.phone,
+          bloodGroup: result.data.bloodGroup || prev.bloodGroup,
+        }));
+        setErrors({});
+      }
+    } catch (err) {
+      console.error('OCR Scanning error:', err);
+    } finally {
+      setIsScanningAadhaar(false);
+      setScanStepText('');
+    }
   };
 
   const validate = () => {
@@ -133,6 +318,30 @@ export default function CreateAccount({ onReturnToLogin }) {
       errs.confirmPassword = 'Passwords do not match.';
     }
 
+    // Additional validations for Patient
+    if (selectedRole === 'patient') {
+      if (!patientForm.name.trim()) errs.name = 'Patient Full Name is required.';
+      if (!patientForm.gender) errs.gender = 'Gender is required.';
+      if (!patientForm.dob || !patientForm.dob.trim()) {
+        errs.dob = 'Date of Birth is required.';
+      } else if (patientForm.dob.trim().length < 10) {
+        errs.dob = 'Complete DD-MM-YYYY format.';
+      }
+      if (!patientForm.phone.trim()) {
+        errs.phone = 'Mobile phone number is required.';
+      } else if (!/^\d{10}$/.test(patientForm.phone.replace(/[- ]/g, ''))) {
+        errs.phone = 'Enter a valid 10-digit mobile number.';
+      }
+      if (!patientForm.address.trim()) errs.address = 'Residential Address is required.';
+
+      if (patientForm.aadhaar && patientForm.aadhaar.trim()) {
+        const cleanAadhaar = patientForm.aadhaar.replace(/\D/g, '');
+        if (cleanAadhaar.length !== 12) {
+          errs.aadhaar = `Aadhaar must be 12 digits (currently ${cleanAadhaar.length}).`;
+        }
+      }
+    }
+
     return errs;
   };
 
@@ -148,11 +357,31 @@ export default function CreateAccount({ onReturnToLogin }) {
     setLoading(true);
     setErrors({});
 
-    await new Promise((res) => setTimeout(res, 600));
+    await new Promise((res) => setTimeout(res, 500));
 
+    if (selectedRole === 'patient') {
+      // 1. Register Patient Profile in patientService
+      registerPatient({
+        patientId: currentGeneratedId,
+        name: patientForm.name,
+        gender: patientForm.gender,
+        dob: patientForm.dob,
+        age: patientForm.age,
+        phone: patientForm.phone,
+        email: patientForm.email,
+        address: patientForm.address,
+        aadhaar: patientForm.aadhaar,
+        bloodGroup: patientForm.bloodGroup,
+        emergencyContact: patientForm.emergencyContact,
+        emergencyContactRelationship: patientForm.emergencyContactRelationship,
+        fromAadhaar: Boolean(aadhaarExtractedInfo),
+      });
+    }
+
+    // 2. Create Auth Account in authService
     const result = createAccount({
       role: selectedRole,
-      id: generatedId,
+      id: currentGeneratedId,
       password,
     });
 
@@ -163,10 +392,15 @@ export default function CreateAccount({ onReturnToLogin }) {
       return;
     }
 
-    setCreatedSuccess({
-      id: result.id,
-      role: result.user.role,
-    });
+    if (selectedRole === 'patient' && onLoginSuccess && result.session) {
+      onLoginSuccess(result.session);
+    } else {
+      setCreatedSuccess({
+        id: result.id,
+        role: result.user.role,
+        session: result.session,
+      });
+    }
   };
 
   const isDoctor = selectedRole === 'doctor';
@@ -175,32 +409,26 @@ export default function CreateAccount({ onReturnToLogin }) {
 
   return (
     <div className="create-account-page">
-      <main className="create-account-center-wrapper">
+      <main className={`create-account-center-wrapper ${!isDoctor ? 'patient-wide' : ''}`}>
         <div className="create-account-card">
-          {/* Top Bar with Back Button */}
+          {/* Top Bar */}
           <div className="create-account-top-bar">
-            <button
-              type="button"
-              className="back-to-signin-btn"
-              onClick={onReturnToLogin}
-            >
+            <button type="button" className="back-to-signin-btn" onClick={onReturnToLogin}>
               <IconArrowLeft /> Back to Sign In
             </button>
           </div>
 
           {/* Logo Header */}
           <div className="create-account-brand-header">
-            <img
-              src="/logo.jpeg"
-              alt="CareVault Logo"
-              className="create-account-logo-img"
-            />
+            <img src="/logo.jpeg" alt="CareVault Logo" className="create-account-logo-img" />
           </div>
 
           <header className="create-account-card-header">
             <h1 className="create-account-welcome">Create New Account</h1>
             <p className="create-account-subtitle">
-              Create your CareVault login credentials
+              {isDoctor
+                ? 'Create your CareVault doctor login credentials'
+                : 'Create your CareVault patient account and register your health profile'}
             </p>
           </header>
 
@@ -226,18 +454,19 @@ export default function CreateAccount({ onReturnToLogin }) {
               <button
                 type="button"
                 className="create-account-btn-primary"
-                onClick={onReturnToLogin}
+                onClick={() => {
+                  if (createdSuccess.session && onLoginSuccess) {
+                    onLoginSuccess(createdSuccess.session);
+                  } else {
+                    onReturnToLogin();
+                  }
+                }}
               >
-                Continue to Sign In <IconArrow />
+                {createdSuccess.role === 'patient' ? 'Go to Patient Dashboard' : 'Continue to Sign In'} <IconArrow />
               </button>
             </div>
           ) : (
-            <form
-              className="create-account-form"
-              onSubmit={handleSubmit}
-              noValidate
-              aria-label="Create account form"
-            >
+            <form className="create-account-form" onSubmit={handleSubmit} noValidate aria-label="Create account form">
               {errors.form && (
                 <div className="create-form-error" role="alert">
                   <IconAlert />
@@ -245,9 +474,9 @@ export default function CreateAccount({ onReturnToLogin }) {
                 </div>
               )}
 
-              {/* Role Selection */}
+              {/* Step 1: Role Selection */}
               <div className="role-section" role="group" aria-labelledby="create-role-label">
-                <span className="role-label" id="create-role-label">SELECT YOUR ROLE</span>
+                <span className="role-label" id="create-role-label">STEP 1: SELECT YOUR ROLE</span>
 
                 <div className="role-grid" role="radiogroup" aria-label="User role">
                   {ROLES.map(({ id, name, desc, Icon }) => (
@@ -282,7 +511,7 @@ export default function CreateAccount({ onReturnToLogin }) {
                 )}
               </div>
 
-              {/* Role-Specific ID Field (Read-only / Immutable) */}
+              {/* Patient ID Preview */}
               <div className="field-group">
                 <label className="field-label" htmlFor="create-accountId">
                   {idLabelText}
@@ -292,18 +521,300 @@ export default function CreateAccount({ onReturnToLogin }) {
                     id="create-accountId"
                     type="text"
                     className="field-input readonly-input"
-                    value={generatedId}
+                    value={currentGeneratedId}
                     readOnly
                     disabled
-                    aria-describedby="create-accountId-hint"
                   />
                   <span className="field-icon" aria-hidden="true">
                     {isDoctor ? <IconDoctor /> : <IconUser />}
                   </span>
                 </div>
-                <span id="create-accountId-hint" className="field-hint">
-                  {idHintText}
-                </span>
+                <span className="field-hint">{idHintText}</span>
+              </div>
+
+              {/* ── PATIENT REGISTRATION SECTION (If role === 'patient') ── */}
+              {!isDoctor && (
+                <div className="patient-registration-step-wrap">
+                  <div className="create-account-section-title">
+                    STEP 2: PATIENT REGISTRATION INFORMATION
+                  </div>
+
+                  {/* Smart Aadhaar Card OCR Scanner */}
+                  <div className="aadhaar-scanner-card" style={{ marginBottom: '1rem', marginTop: '0.5rem' }}>
+                    <div className="aadhaar-header">
+                      <div className="aadhaar-title-group">
+                        <span className="aadhaar-badge-smart"><IconSparkles /> AI-Powered Auto-Fill</span>
+                        <h3 className="aadhaar-heading">Smart Aadhaar Card OCR Scanner</h3>
+                        <p className="aadhaar-desc">
+                          Upload your Aadhaar card or pick a demo card to extract information into the registration form.
+                        </p>
+                      </div>
+
+                      <div className="aadhaar-demo-presets">
+                        <span className="demo-hint">Quick Demo Cards:</span>
+                        <div className="demo-preset-btns">
+                          {SAMPLE_AADHAAR_PRESETS.map((preset) => (
+                            <button
+                              key={preset.id}
+                              type="button"
+                              className="btn-sample-aadhaar"
+                              disabled={isScanningAadhaar}
+                              onClick={() => triggerAadhaarScan(preset.id)}
+                            >
+                              <IconScan /> {preset.name}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div
+                      className={`aadhaar-dropzone ${isScanningAadhaar ? 'scanning' : ''}`}
+                      onClick={() => !isScanningAadhaar && fileInputRef.current?.click()}
+                    >
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        style={{ display: 'none' }}
+                        accept="image/*,application/pdf"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) triggerAadhaarScan(file);
+                        }}
+                      />
+                      {isScanningAadhaar ? (
+                        <div className="ocr-progress-box">
+                          <div className="ocr-pulse-spinner" />
+                          <div className="ocr-step-title">{scanStepText}</div>
+                          <span className="ocr-subtitle">CareVault Intelligent Extraction in progress...</span>
+                        </div>
+                      ) : (
+                        <div className="dropzone-content">
+                          <div className="dropzone-icon"><IconUpload /></div>
+                          <div className="dropzone-text">
+                            <strong>Click to upload Aadhaar Card (Image / PDF)</strong>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {aadhaarExtractedInfo && (
+                      <div className="aadhaar-success-banner" style={{ marginTop: '0.6rem' }}>
+                        <div className="success-banner-icon"><IconCheckCircle /></div>
+                        <div className="success-banner-body">
+                          <strong>Aadhaar Card Successfully Parsed!</strong> Please review and edit the autofilled details below before submitting.
+                        </div>
+                        <button
+                          type="button"
+                          className="banner-revert-btn"
+                          onClick={() => setAadhaarExtractedInfo(null)}
+                        >
+                          Clear
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 1. PATIENT INFORMATION */}
+                  <div className="create-account-section-title">PATIENT INFORMATION</div>
+                  <div className="create-account-form-grid">
+                    <div className="field-group">
+                      <label className="field-label" htmlFor="patient-name">Patient Full Name *</label>
+                      <input
+                        id="patient-name"
+                        type="text"
+                        className={`field-input${errors.name ? ' error' : ''}`}
+                        placeholder="e.g. Rahul Kumar"
+                        value={patientForm.name}
+                        onChange={(e) => {
+                          setPatientForm({ ...patientForm, name: e.target.value });
+                          if (errors.name) setErrors((p) => ({ ...p, name: undefined }));
+                        }}
+                      />
+                      {errors.name && <span className="field-error"><IconAlert />{errors.name}</span>}
+                    </div>
+
+                    <div className="field-group">
+                      <label className="field-label" htmlFor="patient-gender">Gender *</label>
+                      <select
+                        id="patient-gender"
+                        className="field-input"
+                        value={patientForm.gender}
+                        onChange={(e) => setPatientForm({ ...patientForm, gender: e.target.value })}
+                      >
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+
+                    <div className="field-group">
+                      <label className="field-label" htmlFor="patient-dob">Date of Birth (DD-MM-YYYY) *</label>
+                      <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                        <input
+                          id="patient-dob"
+                          type="text"
+                          maxLength={10}
+                          className={`field-input${errors.dob ? ' error' : ''}`}
+                          placeholder="DD-MM-YYYY"
+                          value={patientForm.dob}
+                          onChange={(e) => {
+                            const formatted = formatDob(e.target.value);
+                            setPatientForm((prev) => ({ ...prev, dob: formatted }));
+                            if (errors.dob) setErrors((p) => ({ ...p, dob: undefined }));
+                          }}
+                        />
+                        <input
+                          type="date"
+                          aria-label="Pick date from calendar"
+                          style={{ width: '38px', height: '38px', padding: 0, cursor: 'pointer', border: '1px solid #cbd5e1', borderRadius: '6px' }}
+                          value={toYYYYMMDD(patientForm.dob)}
+                          onChange={(e) => {
+                            if (e.target.value) {
+                              const ddmmyyyy = toDDMMYYYY(e.target.value);
+                              setPatientForm((prev) => ({ ...prev, dob: ddmmyyyy }));
+                              if (errors.dob) setErrors((p) => ({ ...p, dob: undefined }));
+                            }
+                          }}
+                        />
+                      </div>
+                      {errors.dob && <span className="field-error"><IconAlert />{errors.dob}</span>}
+                    </div>
+
+                    <div className="field-group">
+                      <label className="field-label" htmlFor="patient-age">Age (Years)</label>
+                      <input
+                        id="patient-age"
+                        type="text"
+                        className="field-input"
+                        placeholder="Auto-calculated"
+                        value={patientForm.age}
+                        onChange={(e) => setPatientForm({ ...patientForm, age: e.target.value.replace(/\D/g, '') })}
+                      />
+                    </div>
+
+                    <div className="field-group">
+                      <label className="field-label" htmlFor="patient-bloodGroup">Blood Group</label>
+                      <select
+                        id="patient-bloodGroup"
+                        className="field-input"
+                        value={patientForm.bloodGroup}
+                        onChange={(e) => setPatientForm({ ...patientForm, bloodGroup: e.target.value })}
+                      >
+                        <option value="O+">O+ (Positive)</option>
+                        <option value="O-">O- (Negative)</option>
+                        <option value="A+">A+ (Positive)</option>
+                        <option value="A-">A- (Negative)</option>
+                        <option value="B+">B+ (Positive)</option>
+                        <option value="B-">B- (Negative)</option>
+                        <option value="AB+">AB+ (Positive)</option>
+                        <option value="AB-">AB- (Negative)</option>
+                        <option value="Unknown">Unknown / Not Tested</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* 2. CONTACT INFORMATION */}
+                  <div className="create-account-section-title">CONTACT INFORMATION</div>
+                  <div className="create-account-form-grid">
+                    <div className="field-group">
+                      <label className="field-label" htmlFor="patient-phone">Mobile Phone *</label>
+                      <input
+                        id="patient-phone"
+                        type="tel"
+                        maxLength={10}
+                        className={`field-input${errors.phone ? ' error' : ''}`}
+                        placeholder="e.g. 9876543210"
+                        value={patientForm.phone}
+                        onChange={(e) => {
+                          setPatientForm({ ...patientForm, phone: e.target.value.replace(/\D/g, '').slice(0, 10) });
+                          if (errors.phone) setErrors((p) => ({ ...p, phone: undefined }));
+                        }}
+                      />
+                      {errors.phone && <span className="field-error"><IconAlert />{errors.phone}</span>}
+                    </div>
+
+                    <div className="field-group">
+                      <label className="field-label" htmlFor="patient-email">Email Address</label>
+                      <input
+                        id="patient-email"
+                        type="email"
+                        className="field-input"
+                        placeholder="e.g. patient@example.com"
+                        value={patientForm.email}
+                        onChange={(e) => setPatientForm({ ...patientForm, email: e.target.value })}
+                      />
+                    </div>
+
+                    <div className="field-group" style={{ gridColumn: '1 / -1' }}>
+                      <label className="field-label" htmlFor="patient-address">Residential Address *</label>
+                      <input
+                        id="patient-address"
+                        type="text"
+                        className={`field-input${errors.address ? ' error' : ''}`}
+                        placeholder="e.g. Patna, Bihar"
+                        value={patientForm.address}
+                        onChange={(e) => {
+                          setPatientForm({ ...patientForm, address: e.target.value });
+                          if (errors.address) setErrors((p) => ({ ...p, address: undefined }));
+                        }}
+                      />
+                      {errors.address && <span className="field-error"><IconAlert />{errors.address}</span>}
+                    </div>
+                  </div>
+
+                  {/* 3. IDENTIFICATION */}
+                  <div className="create-account-section-title">IDENTIFICATION</div>
+                  <div className="field-group">
+                    <label className="field-label" htmlFor="patient-aadhaar">Aadhaar Number / Government ID</label>
+                    <input
+                      id="patient-aadhaar"
+                      type="text"
+                      maxLength={14}
+                      className={`field-input${errors.aadhaar ? ' error' : ''}`}
+                      placeholder="e.g. 7845 9612 9012"
+                      value={patientForm.aadhaar}
+                      onChange={(e) => {
+                        setPatientForm({ ...patientForm, aadhaar: formatAadhaar(e.target.value) });
+                        if (errors.aadhaar) setErrors((p) => ({ ...p, aadhaar: undefined }));
+                      }}
+                    />
+                    {errors.aadhaar && <span className="field-error"><IconAlert />{errors.aadhaar}</span>}
+                  </div>
+
+                  {/* 4. EMERGENCY CONTACT */}
+                  <div className="create-account-section-title">EMERGENCY CONTACT</div>
+                  <div className="create-account-form-grid">
+                    <div className="field-group">
+                      <label className="field-label" htmlFor="patient-emergencyContact">Emergency Contact Number</label>
+                      <input
+                        id="patient-emergencyContact"
+                        type="tel"
+                        className="field-input"
+                        placeholder="e.g. 9876543211"
+                        value={patientForm.emergencyContact}
+                        onChange={(e) => setPatientForm({ ...patientForm, emergencyContact: e.target.value })}
+                      />
+                    </div>
+
+                    <div className="field-group">
+                      <label className="field-label" htmlFor="patient-emergencyRelationship">Relationship</label>
+                      <input
+                        id="patient-emergencyRelationship"
+                        type="text"
+                        className="field-input"
+                        placeholder="e.g. Spouse / Parent"
+                        value={patientForm.emergencyContactRelationship}
+                        onChange={(e) => setPatientForm({ ...patientForm, emergencyContactRelationship: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 3 / Credentials: Password & Confirm Password */}
+              <div className="create-account-section-title">
+                {isDoctor ? 'ACCOUNT SECURITY' : 'STEP 3: ACCOUNT SECURITY'}
               </div>
 
               {/* Password */}
@@ -322,8 +833,6 @@ export default function CreateAccount({ onReturnToLogin }) {
                       setPassword(e.target.value);
                       if (errors.password) setErrors((prev) => ({ ...prev, password: undefined }));
                     }}
-                    aria-describedby={errors.password ? 'create-password-error' : undefined}
-                    aria-invalid={!!errors.password}
                     disabled={loading}
                   />
                   <span className="field-icon" aria-hidden="true">
@@ -333,14 +842,13 @@ export default function CreateAccount({ onReturnToLogin }) {
                     type="button"
                     className="field-toggle"
                     onClick={() => setShowPassword((v) => !v)}
-                    aria-label={showPassword ? 'Hide password' : 'Show password'}
                     disabled={loading}
                   >
                     {showPassword ? <IconEyeOff /> : <IconEye />}
                   </button>
                 </div>
                 {errors.password && (
-                  <span id="create-password-error" className="field-error" role="alert">
+                  <span className="field-error" role="alert">
                     <IconAlert />
                     {errors.password}
                   </span>
@@ -363,8 +871,6 @@ export default function CreateAccount({ onReturnToLogin }) {
                       setConfirmPassword(e.target.value);
                       if (errors.confirmPassword) setErrors((prev) => ({ ...prev, confirmPassword: undefined }));
                     }}
-                    aria-describedby={errors.confirmPassword ? 'confirm-password-error' : undefined}
-                    aria-invalid={!!errors.confirmPassword}
                     disabled={loading}
                   />
                   <span className="field-icon" aria-hidden="true">
@@ -374,14 +880,13 @@ export default function CreateAccount({ onReturnToLogin }) {
                     type="button"
                     className="field-toggle"
                     onClick={() => setShowConfirmPassword((v) => !v)}
-                    aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
                     disabled={loading}
                   >
                     {showConfirmPassword ? <IconEyeOff /> : <IconEye />}
                   </button>
                 </div>
                 {errors.confirmPassword && (
-                  <span id="confirm-password-error" className="field-error" role="alert">
+                  <span className="field-error" role="alert">
                     <IconAlert />
                     {errors.confirmPassword}
                   </span>
@@ -403,7 +908,7 @@ export default function CreateAccount({ onReturnToLogin }) {
                   </>
                 ) : (
                   <>
-                    Create Account
+                    {isDoctor ? 'Create Doctor Account' : 'Create Patient Account & Proceed'}
                     <IconArrow />
                   </>
                 )}
@@ -412,11 +917,7 @@ export default function CreateAccount({ onReturnToLogin }) {
               {/* Return to Login */}
               <div className="create-account-footer-row">
                 <span>Already have an account?</span>
-                <button
-                  type="button"
-                  className="login-return-btn"
-                  onClick={onReturnToLogin}
-                >
+                <button type="button" className="login-return-btn" onClick={onReturnToLogin}>
                   Sign In
                 </button>
               </div>
