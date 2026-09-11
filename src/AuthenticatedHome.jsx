@@ -157,7 +157,7 @@ export default function AuthenticatedHome({ session, onSignOut, onReturnToCreate
                 className={`auth-signout-btn ${activeView === 'registration' ? 'active' : ''}`}
                 onClick={() => setActiveView('registration')}
               >
-                Doctor Search & Registration
+                Doctor Search Workspace
               </button>
 
               {selectedDoctorPatientId && (

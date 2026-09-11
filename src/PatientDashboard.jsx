@@ -4,6 +4,13 @@ import { getPatientProfile, getPatientVisits } from './services/visitService';
 import { getPatientById } from './services/patientService';
 
 // ── SVG Icons ───────────────────────────────────────────────────────────────
+const IconUser = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+    <circle cx="12" cy="7" r="4" />
+  </svg>
+);
+
 const IconActivity = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
@@ -47,13 +54,6 @@ const IconFileText = () => (
 const IconFolder = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
-  </svg>
-);
-
-const IconUser = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-    <circle cx="12" cy="7" r="4" />
   </svg>
 );
 
@@ -121,7 +121,7 @@ const IconLogOut = () => (
   </svg>
 );
 
-// Default patient fallback
+// Default patient fallback (Vikram Malhotra)
 const DEFAULT_PATIENT = {
   name: 'Vikram Malhotra',
   patientId: 'CV2026-000110',
@@ -198,7 +198,7 @@ export default function PatientDashboard({
   const [serviceVisits, setServiceVisits] = useState([]);
   const [selectedVisitModal, setSelectedVisitModal] = useState(null);
 
-  // Load and sync patient details from services
+  // Sync and load patient details from services / props
   useEffect(() => {
     const regPatient = getPatientById(targetId);
     const profile = getPatientProfile(targetId);
@@ -242,6 +242,10 @@ export default function PatientDashboard({
     } else if (onNavigateToNewVisit) {
       onNavigateToNewVisit();
     }
+  };
+
+  const handlePrintPrescription = () => {
+    window.print();
   };
 
   // Initials for avatar
@@ -360,7 +364,7 @@ export default function PatientDashboard({
 
   return (
     <div className="patient-dashboard-container">
-      {/* ── Top Header Navbar (if Sign Out is available) ── */}
+      {/* ── Top Header Navbar (if Sign Out is available directly) ── */}
       {onSignOut && (
         <nav className="pd-navbar" style={{ marginBottom: '1.25rem', borderRadius: '12px' }}>
           <div className="pd-nav-brand">
@@ -785,7 +789,7 @@ export default function PatientDashboard({
                 <h2 className="pd-card-title">Active & Past Prescriptions</h2>
                 <p className="pd-card-subtitle">Medications prescribed by attending doctors</p>
               </div>
-              <button type="button" className="pd-btn pd-btn-outline" onClick={() => window.print()}>
+              <button type="button" className="pd-btn pd-btn-outline" onClick={handlePrintPrescription}>
                 <IconPrinter /> Print Prescription
               </button>
             </div>

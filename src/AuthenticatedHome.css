@@ -5,17 +5,18 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: var(--cv-slate-50);
+  background-color: var(--cv-ivory);
 }
 
 .auth-nav {
-  background: var(--cv-blue-900);
+  background: var(--cv-green-primary);
   color: var(--cv-white);
-  padding: 0.75rem 1.75rem;
+  padding: 0.85rem clamp(1rem, 3vw, 2.5rem);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 20px rgba(18, 40, 29, 0.15);
+  border-bottom: 1px solid rgba(192, 161, 92, 0.25);
   flex-wrap: wrap;
   gap: 1rem;
 }
@@ -29,7 +30,8 @@
 .auth-nav-logo {
   height: 36px;
   width: auto;
-  object-fit: contain;
+  border-radius: var(--radius-xs);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
 
 .auth-brand-text {
@@ -38,8 +40,9 @@
 }
 
 .auth-nav-title {
+  font-family: var(--font-display);
   font-size: 1.2rem;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--cv-white);
   line-height: 1.1;
@@ -47,7 +50,7 @@
 
 .auth-nav-tagline {
   font-size: 0.65rem;
-  color: var(--cv-teal-400);
+  color: var(--cv-gold);
   font-weight: 500;
   letter-spacing: 0.02em;
 }
@@ -69,7 +72,7 @@
 
 .auth-nav-role-badge.doctor {
   background: rgba(14, 165, 233, 0.2);
-  color: var(--cv-teal-400);
+  color: #38bdf8;
   border: 1px solid rgba(14, 165, 233, 0.4);
 }
 
@@ -83,6 +86,7 @@
   display: flex;
   align-items: center;
   gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .auth-user-chip {
@@ -107,17 +111,18 @@
 }
 
 .auth-signout-btn {
-  background: transparent;
-  border: 1px solid rgba(255,255,255,0.25);
-  color: rgba(255,255,255,0.9);
-  padding: 0.45rem 0.9rem;
-  border-radius: var(--radius-sm);
-  font-size: 0.78rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.9);
+  padding: 0.45rem 0.95rem;
+  border-radius: var(--radius-full);
+  font-family: var(--font-body);
+  font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.45rem;
   transition: all var(--transition-fast);
 }
 
@@ -127,14 +132,15 @@
 }
 
 .auth-signout-btn:hover {
-  background: rgba(255,255,255,0.12);
+  background: rgba(255, 255, 255, 0.2);
   color: var(--cv-white);
+  border-color: rgba(255, 255, 255, 0.35);
 }
 
 .auth-signout-btn.active {
-  background: rgba(255,255,255,0.2);
+  background: rgba(255, 255, 255, 0.25);
   color: var(--cv-white);
-  border-color: rgba(255,255,255,0.5);
+  border-color: var(--cv-gold);
 }
 
 .auth-main-content {
@@ -143,7 +149,6 @@
   overflow-y: auto;
 }
 
-/* ── Patient Portal Styles (Dedicated & Private) ────────────────────────── */
 .patient-portal-view {
   width: 100%;
   max-width: 1000px;
@@ -215,7 +220,7 @@
 
 .portal-header-id .id-sub {
   font-size: 0.68rem;
-  color: var(--cv-teal-400);
+  color: var(--cv-gold);
   font-weight: 700;
   text-transform: uppercase;
 }
@@ -227,56 +232,129 @@
   color: var(--cv-white);
 }
 
-.portal-step-notice-card {
+.auth-home-card {
+  max-width: 500px;
+  width: 100%;
   background: var(--cv-white);
-  border: 1.5px dashed var(--cv-slate-300);
-  border-radius: var(--radius-lg);
-  padding: 3.5rem 2rem;
+  border: 1px solid var(--cv-sage-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  padding: 2.25rem 2rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  box-shadow: var(--shadow-sm);
-  max-width: 650px;
   margin: 1.5rem auto;
 }
 
-.step-notice-icon {
-  width: 64px;
-  height: 64px;
-  border-radius: var(--radius-full);
-  background: rgba(16, 185, 129, 0.12);
-  color: var(--cv-success);
-  display: flex;
+.auth-status-badge {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.85rem;
+  background: var(--cv-status-success-bg);
+  color: var(--cv-status-success);
+  border-radius: var(--radius-full);
+  font-size: 0.78rem;
+  font-weight: 600;
   margin-bottom: 1.25rem;
 }
 
-.step-notice-icon svg {
-  width: 32px;
-  height: 32px;
+.auth-status-badge svg {
+  width: 15px;
+  height: 15px;
 }
 
-.step-notice-title {
-  font-size: 1.35rem;
+.auth-welcome-title {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
   font-weight: 800;
-  color: var(--cv-slate-900);
-  margin-bottom: 0.5rem;
+  color: var(--cv-green-primary);
+  margin-bottom: 0.35rem;
 }
 
-.step-notice-desc {
-  font-size: 0.92rem;
-  color: var(--cv-slate-600);
-  line-height: 1.55;
-  max-width: 480px;
-  margin-bottom: 1.5rem;
+.auth-welcome-desc {
+  font-size: 0.88rem;
+  color: var(--cv-text-muted);
+  margin-bottom: 1.75rem;
 }
 
-.step-notice-meta {
-  font-size: 0.76rem;
-  color: var(--cv-slate-400);
+.auth-user-info-box {
+  width: 100%;
+  background: var(--cv-ivory-light);
+  border: 1px solid var(--cv-sage-border);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-bottom: 1.75rem;
+  text-align: left;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+}
+
+.info-label {
+  color: var(--cv-text-muted);
+  font-weight: 500;
+}
+
+.info-val {
+  color: var(--cv-text-primary);
+}
+
+.info-val.status-active {
+  color: var(--cv-status-success);
+  font-weight: 700;
+}
+
+.auth-actions-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.auth-action-btn {
+  width: 100%;
+  height: 44px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 0.88rem;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-base);
+}
+
+.auth-action-btn.primary {
+  background: var(--cv-green-primary);
+  color: var(--cv-white);
+  border: 1px solid var(--cv-green-hover);
+  box-shadow: 0 4px 14px -2px rgba(28, 59, 43, 0.28);
+}
+
+.auth-action-btn.primary:hover {
+  background: var(--cv-green-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px -3px rgba(28, 59, 43, 0.35);
+}
+
+.auth-action-btn.secondary {
+  background: var(--cv-white);
+  color: var(--cv-text-secondary);
+  border: 1px solid var(--cv-sage-border);
+}
+
+.auth-action-btn.secondary:hover {
+  background: var(--cv-sage-subtle);
+  color: var(--cv-green-primary);
+  border-color: var(--cv-sage);
 }

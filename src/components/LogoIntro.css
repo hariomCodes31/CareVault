@@ -1,0 +1,136 @@
+/* LogoIntro.css — Premium CareVault Brand Intro Animation */
+
+.logo-intro-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--cv-ivory);
+  transition: opacity 700ms cubic-bezier(0.16, 1, 0.3, 1),
+              transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+  user-select: none;
+}
+
+.logo-intro-overlay.dismissing {
+  opacity: 0;
+  transform: scale(1.02);
+  pointer-events: none;
+}
+
+/* Subtle architectural warm glow in the background */
+.logo-intro-ambient {
+  position: absolute;
+  width: 650px;
+  height: 650px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(192, 161, 92, 0.08) 0%, rgba(88, 128, 101, 0.04) 45%, transparent 70%);
+  pointer-events: none;
+  animation: cvPulseSoft 4s ease-in-out infinite;
+}
+
+.logo-intro-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+  max-width: 520px;
+}
+
+/* Logo image container with subtle blur-to-clear & growth */
+.logo-intro-img-wrap {
+  width: min(220px, 46vw);
+  max-height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  opacity: 0;
+  transform: scale(0.92);
+  filter: blur(8px);
+  animation: logoIntroReveal 1.6s cubic-bezier(0.16, 1, 0.3, 1) 0.15s forwards;
+}
+
+.logo-intro-img {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 10px 30px -8px rgba(28, 59, 43, 0.08);
+}
+
+.logo-intro-caption {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: logoCaptionReveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.7s forwards;
+}
+
+.logo-intro-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 3.5vw, 1.85rem);
+  font-weight: 700;
+  color: var(--cv-green-primary);
+  letter-spacing: -0.02em;
+  margin-bottom: 0.35rem;
+}
+
+.logo-intro-tagline {
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cv-gold-dark);
+}
+
+.logo-intro-skip {
+  position: absolute;
+  bottom: 2.5rem;
+  padding: 0.5rem 1.25rem;
+  background: transparent;
+  border: 1px solid var(--cv-sage-border);
+  border-radius: var(--radius-full);
+  color: var(--cv-text-muted);
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  opacity: 0;
+  animation: cvFadeIn 0.8s ease 1.2s forwards;
+  transition: all var(--transition-fast);
+}
+
+.logo-intro-skip:hover {
+  background: var(--cv-white);
+  color: var(--cv-green-primary);
+  border-color: var(--cv-sage);
+}
+
+@keyframes logoIntroReveal {
+  0% {
+    opacity: 0;
+    transform: scale(0.92);
+    filter: blur(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0px);
+  }
+}
+
+@keyframes logoCaptionReveal {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

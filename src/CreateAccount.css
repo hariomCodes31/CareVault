@@ -6,14 +6,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--cv-slate-50);
-  padding: clamp(0.75rem, 2vh, 1.5rem) 1rem;
+  background-color: var(--cv-ivory);
+  padding: clamp(1rem, 3vh, 2rem) 1rem;
   box-sizing: border-box;
 }
 
 .create-account-center-wrapper {
   width: 100%;
-  max-width: 440px;
+  max-width: 460px;
   display: flex;
   justify-content: center;
 }
@@ -21,148 +21,156 @@
 .create-account-card {
   width: 100%;
   background: var(--cv-white);
-  border: 1px solid var(--cv-slate-200);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-  padding: clamp(1.1rem, 2.2vh, 1.65rem);
+  border: 1px solid var(--cv-sage-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  padding: clamp(1.75rem, 3.5vh, 2.25rem);
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
+  transition: box-shadow var(--transition-base);
+}
+
+.create-account-card:hover {
+  box-shadow: var(--shadow-hover);
 }
 
 /* Top Navigation Bar */
 .create-account-top-bar {
   display: flex;
   align-items: center;
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.75rem;
 }
 
 .back-to-signin-btn {
   background: transparent;
   border: none;
-  color: var(--cv-slate-600);
-  font-family: var(--font-base);
-  font-size: 0.775rem;
+  color: var(--cv-text-muted);
+  font-family: var(--font-body);
+  font-size: 0.825rem;
   font-weight: 600;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  padding: 0.2rem 0;
+  gap: 0.4rem;
+  padding: 0.25rem 0.5rem;
   border-radius: var(--radius-sm);
-  transition: color var(--transition-fast);
+  transition: all var(--transition-fast);
 }
 
 .back-to-signin-btn:hover {
-  color: var(--cv-blue-600);
+  color: var(--cv-green-primary);
+  background: var(--cv-sage-light);
 }
 
 .create-account-brand-header {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-bottom: clamp(0.5rem, 1.2vh, 0.85rem);
+  margin-bottom: 1rem;
 }
 
 .create-account-logo-img {
-  max-height: 44px;
+  max-height: 52px;
   width: auto;
   object-fit: contain;
   display: block;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 4px 12px rgba(28, 59, 43, 0.08);
 }
 
 .create-account-card-header {
-  margin-bottom: clamp(0.55rem, 1.2vh, 0.85rem);
+  margin-bottom: 1.25rem;
   text-align: center;
 }
 
 .create-account-welcome {
-  font-size: clamp(1.3rem, 2.3vh, 1.5rem);
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 2.4vh, 1.65rem);
   font-weight: 800;
-  color: var(--cv-slate-900);
+  color: var(--cv-green-primary);
   letter-spacing: -0.03em;
   line-height: 1.2;
-  margin-bottom: 0.15rem;
+  margin-bottom: 0.25rem;
 }
 
 .create-account-subtitle {
-  font-size: clamp(0.78rem, 1.2vh, 0.825rem);
-  color: var(--cv-slate-500);
+  font-size: 0.85rem;
+  color: var(--cv-text-muted);
   font-weight: 400;
 }
 
 .create-account-form {
   display: flex;
   flex-direction: column;
-  gap: clamp(0.55rem, 1.3vh, 0.8rem);
+  gap: 1rem;
 }
 
 /* Read-Only Patient ID Input Styling */
 .field-input.readonly-input {
-  background-color: var(--cv-slate-100);
-  color: var(--cv-blue-900);
+  background-color: var(--cv-ivory-light);
+  color: var(--cv-green-primary);
   font-weight: 700;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.04em;
   cursor: not-allowed;
-  border-color: var(--cv-slate-200);
+  border-color: var(--cv-sage-border);
 }
 
 .field-hint {
-  font-size: 0.7rem;
-  color: var(--cv-slate-500);
-  margin-top: 0.1rem;
-  font-style: italic;
+  font-size: 0.72rem;
+  color: var(--cv-text-muted);
+  margin-top: 0.2rem;
 }
 
 .create-form-error {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.5rem 0.75rem;
-  background: var(--cv-error-light);
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  gap: 0.45rem;
+  padding: 0.6rem 0.85rem;
+  background: var(--cv-status-danger-bg);
+  border: 1px solid rgba(190, 18, 60, 0.2);
   border-radius: var(--radius-md);
-  font-size: 0.75rem;
-  color: var(--cv-error);
+  font-size: 0.78rem;
+  color: var(--cv-status-danger);
   font-weight: 500;
 }
 
 .create-form-error svg {
-  width: 14px;
-  height: 14px;
+  width: 15px;
+  height: 15px;
   flex-shrink: 0;
 }
 
 .create-account-btn-primary {
   width: 100%;
-  height: 42px;
+  height: 44px;
   padding: 0 1.25rem;
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  background: var(--cv-green-primary);
   color: var(--cv-white);
-  font-family: var(--font-base);
-  font-size: 0.85rem;
-  font-weight: 600;
-  border: none;
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  font-weight: 700;
+  border: 1px solid var(--cv-green-hover);
   border-radius: var(--radius-md);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.22);
+  box-shadow: 0 4px 14px -2px rgba(28, 59, 43, 0.28);
   transition: all var(--transition-base);
   box-sizing: border-box;
-  margin-top: 0.25rem;
+  margin-top: 0.4rem;
 }
 
 .create-account-btn-primary:hover:not(:disabled) {
-  background: linear-gradient(135deg, #1d4ed8, #1e40af);
-  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
-  transform: translateY(-1px);
+  background: var(--cv-green-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px -3px rgba(28, 59, 43, 0.35);
 }
 
 .create-account-btn-primary:disabled {
-  opacity: 0.7;
+  opacity: 0.65;
   cursor: not-allowed;
 }
 
@@ -172,34 +180,37 @@
   border: 2px solid rgba(255,255,255,0.3);
   border-top-color: var(--cv-white);
   border-radius: 50%;
-  animation: spin 0.7s linear infinite;
+  animation: cvSpin 0.7s linear infinite;
 }
 
 .create-account-footer-row {
-  margin-top: clamp(0.45rem, 1vh, 0.65rem);
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--cv-grey-200);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.4rem;
-  font-size: 0.78rem;
-  color: var(--cv-slate-500);
+  gap: 0.45rem;
+  font-size: 0.82rem;
+  color: var(--cv-text-muted);
 }
 
 .login-return-btn {
   background: none;
   border: none;
-  color: var(--cv-blue-600);
-  font-family: var(--font-base);
-  font-size: 0.78rem;
+  color: var(--cv-green-primary);
+  font-family: var(--font-body);
+  font-size: 0.82rem;
   font-weight: 700;
   cursor: pointer;
   padding: 0;
   text-decoration: underline;
   text-underline-offset: 3px;
+  transition: color var(--transition-fast);
 }
 
 .login-return-btn:hover {
-  color: var(--cv-blue-800);
+  color: var(--cv-gold-dark);
 }
 
 /* Success Card */
@@ -208,65 +219,67 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 1.25rem 1rem;
-  background: var(--cv-slate-50);
-  border: 1px dashed var(--cv-success);
-  border-radius: var(--radius-md);
-  animation: fadeIn 0.3s ease-out;
+  padding: 1.5rem 1.25rem;
+  background: var(--cv-sage-subtle);
+  border: 1.5px dashed var(--cv-sage);
+  border-radius: var(--radius-lg);
+  animation: cvFadeIn 0.35s ease-out;
 }
 
 .create-success-icon-wrap {
-  width: 48px;
-  height: 48px;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
-  background: rgba(16, 185, 129, 0.12);
-  color: var(--cv-success);
+  background: var(--cv-status-success-bg);
+  color: var(--cv-status-success);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 0.65rem;
+  margin-bottom: 0.75rem;
 }
 
 .create-success-icon-wrap svg {
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
 }
 
 .create-success-title {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--cv-slate-900);
-  margin-bottom: 0.25rem;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--cv-green-primary);
+  margin-bottom: 0.35rem;
 }
 
 .create-success-subtext {
-  font-size: 0.78rem;
-  color: var(--cv-slate-600);
-  margin-bottom: 0.85rem;
+  font-size: 0.82rem;
+  color: var(--cv-text-secondary);
+  margin-bottom: 1rem;
+  line-height: 1.5;
 }
 
 .create-success-id-badge {
   display: inline-block;
-  padding: 0.45rem 0.9rem;
+  padding: 0.5rem 1.1rem;
   background: var(--cv-white);
-  border: 1.5px solid var(--cv-slate-300);
+  border: 1.5px solid var(--cv-sage-border);
   border-radius: var(--radius-md);
-  font-size: 0.875rem;
-  color: var(--cv-slate-700);
-  margin-bottom: 1.25rem;
+  font-size: 0.95rem;
+  color: var(--cv-text-primary);
+  margin-bottom: 1.35rem;
   box-shadow: var(--shadow-sm);
 }
 
 .create-success-id-badge strong {
-  color: var(--cv-blue-600);
-  letter-spacing: 0.03em;
+  color: var(--cv-green-primary);
+  letter-spacing: 0.04em;
 }
 
 .create-account-card-footer {
-  margin-top: clamp(0.55rem, 1.2vh, 0.85rem);
+  margin-top: 1.25rem;
   text-align: center;
-  font-size: 0.7rem;
-  color: var(--cv-slate-400);
+  font-size: 0.74rem;
+  color: var(--cv-text-light);
 }
 
 /* Patient Form Expansion */
