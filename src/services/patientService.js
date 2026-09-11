@@ -1,9 +1,10 @@
 // patientService.js — CareVault Patient Data & Aadhaar OCR Service
+import { savePatientToBackend } from './api';
 
 const PATIENTS_STORAGE_KEY = 'carevault_patients';
 const TOKENS_STORAGE_KEY = 'carevault_tokens_counter';
 
-// Initial Seed Patients based on the SIH 2026 Workflow Poster
+// Initial Seed Patients based on the SIH 2026 Workflow Poster & CareVault Demo
 const INITIAL_PATIENTS = [
   {
     patientId: 'CV2026-000110',
@@ -277,6 +278,13 @@ export function registerPatient(patientData) {
   } else {
     savePatients([newPatient, ...patients]);
   }
+
+  // Push to MongoDB Atlas backend asynchronously
+  savePatientToBackend(newPatient).then((res) => {
+    if (res?.success) {
+      console.log('✅ Patient synced to MongoDB Atlas:', res.patient?.patientId);
+    }
+  }).catch((err) => console.warn('Backend sync notice:', err));
 
   return { success: true, patient: newPatient, tokenNumber };
 }

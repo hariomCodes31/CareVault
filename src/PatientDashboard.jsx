@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import './PatientDashboard.css';
 import { getPatientProfile, getPatientVisits } from './services/visitService';
 import { getPatientById } from './services/patientService';
+import { getPatientDashboardFromBackend } from './services/api';
 
 // ── SVG Icons ───────────────────────────────────────────────────────────────
 const IconUser = () => (
@@ -198,8 +199,34 @@ export default function PatientDashboard({
   const [serviceVisits, setServiceVisits] = useState([]);
   const [selectedVisitModal, setSelectedVisitModal] = useState(null);
 
-  // Sync and load patient details from services / props
+  // Sync and load patient details from MongoDB Express Backend, services, & props
   useEffect(() => {
+    let isMounted = true;
+
+    // 1. Fetch directly from MongoDB Express Backend if available
+    getPatientDashboardFromBackend(targetId)
+      .then((res) => {
+        if (isMounted && res?.success && res?.patient) {
+          const dbPatient = res.patient;
+          setPatient((prev) => ({
+            ...prev,
+            name: dbPatient.name || prev.name,
+            patientId: dbPatient.patientId || prev.patientId,
+            age: dbPatient.age || prev.age,
+            gender: dbPatient.gender || prev.gender,
+            phone: dbPatient.phone || prev.phone,
+            address: dbPatient.address || prev.address,
+            aadhaar: dbPatient.aadhaar || prev.aadhaar,
+            bloodGroup: dbPatient.bloodGroup || prev.bloodGroup,
+            knownConditions: dbPatient.knownConditions || prev.knownConditions,
+            allergies: dbPatient.allergies || prev.allergies,
+            vitals: dbPatient.vitals || prev.vitals,
+          }));
+        }
+      })
+      .catch((err) => console.warn('MongoDB fetch notice:', err));
+
+    // 2. Local fallback sync
     const regPatient = getPatientById(targetId);
     const profile = getPatientProfile(targetId);
     const vList = getPatientVisits(targetId);
@@ -234,6 +261,10 @@ export default function PatientDashboard({
         activeFollowUps: profile.activeFollowUpCount || prev.stats.activeFollowUps,
       },
     }));
+
+    return () => {
+      isMounted = false;
+    };
   }, [customPatientData, targetId, selectedVisitIdToOpen]);
 
   const handleNewVisitAction = () => {
