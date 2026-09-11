@@ -192,12 +192,7 @@ export default function LoginPage({ onLoginSuccess, onNavigateToCreateAccount })
     }, 400);
   };
 
-  const handleQuickFill = (role, id) => {
-    setSelectedRole(role);
-    setAccountId(id);
-    setPassword('password123');
-    setErrors({});
-  };
+
 
   const idLabelText = selectedRole === 'doctor' ? 'Doctor ID' : 'Patient ID';
   const idPlaceholderText = selectedRole === 'doctor' ? 'Enter your Doctor ID' : 'Enter your Patient ID';
@@ -256,27 +251,6 @@ export default function LoginPage({ onLoginSuccess, onNavigateToCreateAccount })
               Sign in to access your CareVault account.
             </p>
           </header>
-
-          {/* Quick Demo Helper */}
-          <div className="login-demo-helper">
-            <span className="login-demo-helper-title">One-Click Demo Access</span>
-            <div className="login-demo-helper-pills">
-              <button
-                type="button"
-                className="login-demo-pill"
-                onClick={() => handleQuickFill('doctor', 'DR2026-000100')}
-              >
-                🩺 Doctor Demo
-              </button>
-              <button
-                type="button"
-                className="login-demo-pill"
-                onClick={() => handleQuickFill('patient', 'CV2026-000101')}
-              >
-                👤 Patient Demo
-              </button>
-            </div>
-          </div>
 
           <form
             className="login-form"
