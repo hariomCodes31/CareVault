@@ -1,0 +1,1326 @@
+/* PatientRegistrationDashboard.css — CareVault Step 2 Styles */
+
+.patient-reg-dashboard {
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ── Banner / Control Header ────────────────────────────────────────────── */
+.prd-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--cv-white);
+  border: 1px solid var(--cv-slate-200);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.75rem;
+  box-shadow: var(--shadow-sm);
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.prd-banner-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.prd-badge-step {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  background: var(--cv-blue-50);
+  color: var(--cv-blue-700);
+  border: 1px solid var(--cv-blue-200);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.18rem 0.6rem;
+  border-radius: var(--radius-full);
+}
+
+.prd-title {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--cv-slate-900);
+  letter-spacing: -0.02em;
+}
+
+.prd-subtitle {
+  font-size: 0.85rem;
+  color: var(--cv-slate-500);
+}
+
+.prd-banner-stats {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.prd-stat-chip {
+  background: var(--cv-slate-100);
+  border: 1px solid var(--cv-slate-200);
+  border-radius: var(--radius-md);
+  padding: 0.45rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.prd-stat-chip .chip-label {
+  font-size: 0.68rem;
+  color: var(--cv-slate-500);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.prd-stat-chip .chip-val {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--cv-slate-800);
+}
+
+.prd-stat-chip.highlight {
+  background: var(--cv-blue-50);
+  border-color: var(--cv-blue-200);
+}
+
+.prd-stat-chip.highlight .chip-val {
+  color: var(--cv-blue-600);
+}
+
+/* ── Tab Switcher Bar (Matches Card 2 of Poster) ────────────────────────── */
+.prd-tab-bar {
+  display: flex;
+  gap: 0.5rem;
+  background: var(--cv-slate-200);
+  padding: 0.35rem;
+  border-radius: var(--radius-md);
+  width: fit-content;
+}
+
+.prd-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.25rem;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-base);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--cv-slate-600);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.prd-tab-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.prd-tab-btn:hover {
+  color: var(--cv-slate-900);
+}
+
+.prd-tab-btn.active {
+  background: var(--cv-white);
+  color: var(--cv-blue-600);
+  box-shadow: var(--shadow-sm);
+}
+
+.prd-tab-count {
+  background: var(--cv-blue-600);
+  color: var(--cv-white);
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.1rem 0.45rem;
+  border-radius: var(--radius-full);
+}
+
+.prd-tab-badge {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--cv-success);
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-full);
+}
+
+/* ── Tab 1: Search Section ──────────────────────────────────────────────── */
+.prd-content-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.prd-search-card {
+  background: var(--cv-white);
+  border: 1px solid var(--cv-slate-200);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.5rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.prd-search-form {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.prd-search-input-wrap {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.prd-search-input-wrap .search-icon {
+  position: absolute;
+  left: 1rem;
+  color: var(--cv-slate-400);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+}
+
+.prd-search-input-wrap .search-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.prd-search-input {
+  width: 100%;
+  height: 48px;
+  padding: 0 2.5rem 0 2.75rem;
+  font-family: var(--font-base);
+  font-size: 0.95rem;
+  border: 1.5px solid var(--cv-slate-300);
+  border-radius: var(--radius-md);
+  background: var(--cv-slate-50);
+  color: var(--cv-slate-900);
+  transition: all var(--transition-fast);
+}
+
+.prd-search-input:focus {
+  outline: none;
+  background: var(--cv-white);
+  border-color: var(--cv-blue-500);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.prd-clear-btn {
+  position: absolute;
+  right: 0.85rem;
+  background: transparent;
+  border: none;
+  color: var(--cv-slate-400);
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0.25rem;
+}
+
+.prd-clear-btn:hover {
+  color: var(--cv-slate-700);
+}
+
+.prd-search-presets {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  font-size: 0.78rem;
+}
+
+.presets-label {
+  color: var(--cv-slate-500);
+  font-weight: 600;
+}
+
+.preset-chip {
+  background: var(--cv-slate-100);
+  border: 1px solid var(--cv-slate-300);
+  color: var(--cv-slate-700);
+  padding: 0.2rem 0.65rem;
+  border-radius: var(--radius-full);
+  font-size: 0.76rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.preset-chip:hover {
+  background: var(--cv-blue-50);
+  border-color: var(--cv-blue-300);
+  color: var(--cv-blue-700);
+}
+
+/* ── Privacy Default State ──────────────────────────────────────────────── */
+.prd-privacy-empty-state {
+  background: var(--cv-white);
+  border: 2px dashed var(--cv-slate-300);
+  border-radius: var(--radius-lg);
+  padding: 3.5rem 2rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 640px;
+  margin: 1rem auto;
+}
+
+.privacy-icon-box {
+  width: 64px;
+  height: 64px;
+  background: var(--cv-blue-50);
+  color: var(--cv-blue-600);
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+}
+
+.privacy-icon-box svg {
+  width: 32px;
+  height: 32px;
+}
+
+.privacy-heading {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--cv-slate-900);
+  margin-bottom: 0.5rem;
+}
+
+.privacy-desc {
+  font-size: 0.9rem;
+  color: var(--cv-slate-600);
+  line-height: 1.5;
+  margin-bottom: 1.75rem;
+}
+
+.privacy-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* ── No Results State ───────────────────────────────────────────────────── */
+.prd-no-results {
+  background: var(--cv-white);
+  border: 1px solid var(--cv-slate-200);
+  border-radius: var(--radius-lg);
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.no-results-icon svg {
+  width: 42px;
+  height: 42px;
+  color: var(--cv-slate-400);
+}
+
+.prd-multiple-results-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--cv-white);
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--cv-slate-200);
+  overflow-x: auto;
+}
+
+.results-count-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--cv-slate-500);
+  white-space: nowrap;
+}
+
+.results-chips-list {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.patient-selector-btn {
+  background: var(--cv-slate-100);
+  border: 1px solid var(--cv-slate-300);
+  color: var(--cv-slate-700);
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+}
+
+.patient-selector-btn.active {
+  background: var(--cv-blue-600);
+  border-color: var(--cv-blue-600);
+  color: var(--cv-white);
+}
+
+/* ── Step 2: Patient Record Card (Verified Record Retrieval) ─────────────── */
+.prd-patient-record-card {
+  background: var(--cv-white);
+  border: 1px solid var(--cv-slate-200);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.patient-record-header {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  background: linear-gradient(to right, #f8fafc, #ffffff);
+  border-bottom: 1px solid var(--cv-slate-200);
+  flex-wrap: wrap;
+}
+
+.patient-avatar-box {
+  width: 54px;
+  height: 54px;
+  border-radius: var(--radius-full);
+  background: #1e3a8a;
+  color: var(--cv-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(30, 58, 138, 0.25);
+}
+
+.patient-header-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.patient-name-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.patient-name {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--cv-slate-900);
+}
+
+.patient-status-chip {
+  background: rgba(16, 185, 129, 0.12);
+  color: var(--cv-success);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-full);
+}
+
+.patient-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--cv-slate-600);
+  flex-wrap: wrap;
+}
+
+.patient-id-badge {
+  font-weight: 700;
+  color: var(--cv-blue-700);
+  background: var(--cv-blue-50);
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-sm);
+  font-family: monospace;
+}
+
+.meta-sep {
+  color: var(--cv-slate-300);
+}
+
+.patient-header-actions {
+  display: flex;
+  gap: 0.65rem;
+  align-items: center;
+}
+
+.patient-record-details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.25rem;
+  padding: 1.75rem;
+  background: #ffffff;
+}
+
+.record-detail-item {
+  background: var(--cv-slate-50);
+  border: 1px solid var(--cv-slate-200);
+  border-radius: var(--radius-md);
+  padding: 0.85rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.detail-label {
+  font-size: 0.72rem;
+  color: var(--cv-slate-500);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.detail-value {
+  font-size: 0.92rem;
+  color: var(--cv-slate-800);
+}
+
+.detail-value.bold {
+  font-weight: 700;
+}
+
+.detail-value.mono {
+  font-family: monospace;
+}
+
+.detail-value.text-blue {
+  color: var(--cv-blue-600);
+}
+
+.patient-record-footer-note {
+  background: var(--cv-blue-50);
+  border-top: 1px solid var(--cv-blue-100);
+  padding: 0.85rem 1.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  color: var(--cv-blue-900);
+}
+
+.patient-record-footer-note svg {
+  width: 16px;
+  height: 16px;
+  color: var(--cv-blue-600);
+  flex-shrink: 0;
+}
+
+/* ── Tab 2: New Patient Registration & Aadhaar Scanner ──────────────────── */
+.prd-registration-workspace {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.aadhaar-scanner-card {
+  background: linear-gradient(135deg, #0f2040 0%, #163060 100%);
+  color: var(--cv-white);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.aadhaar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.aadhaar-title-group {
+  max-width: 620px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.aadhaar-badge-smart {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: rgba(56, 189, 248, 0.2);
+  color: var(--cv-teal-400);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-full);
+  width: fit-content;
+}
+
+.aadhaar-badge-smart svg {
+  width: 13px;
+  height: 13px;
+}
+
+.aadhaar-heading {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--cv-white);
+}
+
+.aadhaar-desc {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.45;
+}
+
+.aadhaar-demo-presets {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4rem;
+}
+
+.demo-hint {
+  font-size: 0.72rem;
+  color: var(--cv-teal-400);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.demo-preset-btns {
+  display: flex;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.btn-sample-aadhaar {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: var(--cv-white);
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all var(--transition-fast);
+}
+
+.btn-sample-aadhaar svg {
+  width: 14px;
+  height: 14px;
+}
+
+.btn-sample-aadhaar:hover {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: var(--cv-white);
+}
+
+/* Aadhaar Dropzone */
+.aadhaar-dropzone {
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px dashed rgba(255, 255, 255, 0.25);
+  border-radius: var(--radius-md);
+  padding: 1.75rem 1.5rem;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.aadhaar-dropzone:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--cv-teal-400);
+}
+
+.aadhaar-dropzone.scanning {
+  background: rgba(14, 165, 233, 0.12);
+  border-color: var(--cv-teal-400);
+  cursor: wait;
+}
+
+.dropzone-content {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.dropzone-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--cv-teal-400);
+}
+
+.dropzone-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.dropzone-text {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.dropzone-text strong {
+  font-size: 0.95rem;
+  color: var(--cv-white);
+}
+
+.dropzone-text span {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.dropzone-browse-btn {
+  background: var(--cv-blue-500);
+  color: var(--cv-white);
+  border: none;
+  padding: 0.45rem 1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* OCR Progress animation */
+.ocr-progress-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  max-width: 400px;
+}
+
+.ocr-step-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--cv-teal-400);
+}
+
+.ocr-progress-bar {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  position: relative;
+}
+
+.ocr-progress-fill {
+  height: 100%;
+  width: 60%;
+  background: var(--cv-teal-400);
+  border-radius: var(--radius-full);
+  animation: ocrProgress 1.4s infinite ease-in-out;
+}
+
+@keyframes ocrProgress {
+  0% { transform: translateX(-100%); width: 30%; }
+  50% { width: 70%; }
+  100% { transform: translateX(250%); width: 30%; }
+}
+
+.ocr-subtitle {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Aadhaar Extracted Confirmation Banner */
+.aadhaar-success-banner {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  border-radius: var(--radius-md);
+  padding: 0.85rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.success-banner-icon svg {
+  width: 24px;
+  height: 24px;
+  color: #34d399;
+}
+
+.success-banner-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.success-banner-body strong {
+  font-size: 0.88rem;
+  color: #a7f3d0;
+}
+
+.extracted-chips {
+  display: flex;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.verified-chip {
+  background: rgba(255, 255, 255, 0.15);
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-full);
+  font-size: 0.72rem;
+  color: var(--cv-white);
+}
+
+.banner-revert-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.8);
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+/* ── Registration Form Card (Card 2) ────────────────────────────────────── */
+.prd-form-card {
+  background: var(--cv-white);
+  border: 1px solid var(--cv-slate-200);
+  border-radius: var(--radius-lg);
+  padding: 1.75rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.form-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--cv-slate-200);
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.form-title {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--cv-slate-900);
+}
+
+.form-subtitle {
+  font-size: 0.82rem;
+  color: var(--cv-slate-500);
+}
+
+.form-id-preview-badge {
+  background: var(--cv-blue-50);
+  border: 1px solid var(--cv-blue-200);
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  color: var(--cv-blue-800);
+}
+
+.form-id-preview-badge strong {
+  font-family: monospace;
+  color: var(--cv-blue-600);
+}
+
+.form-grid-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .form-grid-2col {
+    grid-template-columns: 1fr;
+  }
+}
+
+.prd-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.prd-form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.prd-form-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--cv-slate-700);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.autofill-tag {
+  font-size: 0.68rem;
+  color: var(--cv-success);
+  font-weight: 600;
+  background: rgba(16, 185, 129, 0.1);
+  padding: 0.1rem 0.4rem;
+  border-radius: var(--radius-full);
+}
+
+.prd-input,
+.prd-select {
+  height: 44px;
+  padding: 0 0.85rem;
+  border: 1.5px solid var(--cv-slate-300);
+  border-radius: var(--radius-md);
+  font-family: var(--font-base);
+  font-size: 0.9rem;
+  color: var(--cv-slate-900);
+  background: var(--cv-slate-50);
+  transition: all var(--transition-fast);
+}
+
+.prd-input:focus,
+.prd-select:focus {
+  outline: none;
+  background: var(--cv-white);
+  border-color: var(--cv-blue-500);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.prd-input.mono {
+  font-family: monospace;
+}
+
+.prd-input.input-error {
+  border-color: var(--cv-error);
+  background: var(--cv-error-light);
+}
+
+.input-with-addon {
+  display: flex;
+  align-items: center;
+  position: relative;
+  width: 100%;
+}
+
+.input-with-addon .prd-input {
+  width: 100%;
+  padding-right: 4.5rem;
+}
+
+.input-addon-badge {
+  position: absolute;
+  right: 0.65rem;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--cv-slate-600);
+  background: var(--cv-slate-200);
+  padding: 0.15rem 0.55rem;
+  border-radius: var(--radius-sm);
+  pointer-events: none;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.date-picker-wrapper {
+  position: absolute;
+  right: 0.5rem;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  overflow: hidden;
+  transition: all var(--transition-fast);
+}
+
+.date-picker-wrapper:hover {
+  background: var(--cv-slate-200);
+}
+
+.native-calendar-picker-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.calendar-icon-indicator {
+  font-size: 1.15rem;
+  pointer-events: none;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.date-picker-toggle-btn {
+  position: absolute;
+  right: 0.5rem;
+  background: transparent;
+  border: none;
+  font-size: 1.15rem;
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+  color: var(--cv-slate-600);
+}
+
+.date-picker-toggle-btn:hover {
+  background: var(--cv-slate-200);
+  color: var(--cv-blue-600);
+}
+
+.form-error-msg {
+  font-size: 0.74rem;
+  color: var(--cv-error);
+  font-weight: 600;
+}
+
+.form-footer-action {
+  margin-top: 1.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--cv-slate-200);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.footer-patient-note {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.82rem;
+  color: var(--cv-slate-600);
+}
+
+.footer-patient-note svg {
+  width: 16px;
+  height: 16px;
+  color: var(--cv-success);
+}
+
+/* ── Buttons ────────────────────────────────────────────────────────────── */
+.prd-btn-primary {
+  background: var(--cv-blue-600);
+  color: var(--cv-white);
+  border: none;
+  padding: 0.65rem 1.35rem;
+  border-radius: var(--radius-md);
+  font-family: var(--font-base);
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  transition: all var(--transition-fast);
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
+}
+
+.prd-btn-primary:hover:not(:disabled) {
+  background: var(--cv-blue-700);
+}
+
+.prd-btn-primary.large {
+  padding: 0.85rem 1.85rem;
+  font-size: 0.95rem;
+}
+
+.prd-btn-secondary {
+  background: var(--cv-slate-100);
+  color: var(--cv-slate-700);
+  border: 1px solid var(--cv-slate-300);
+  padding: 0.6rem 1.15rem;
+  border-radius: var(--radius-md);
+  font-family: var(--font-base);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  transition: all var(--transition-fast);
+}
+
+.prd-btn-secondary:hover {
+  background: var(--cv-slate-200);
+  color: var(--cv-slate-900);
+}
+
+.prd-btn-outline {
+  background: transparent;
+  color: var(--cv-slate-700);
+  border: 1px solid var(--cv-slate-300);
+  padding: 0.55rem 1rem;
+  border-radius: var(--radius-md);
+  font-family: var(--font-base);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all var(--transition-fast);
+}
+
+.prd-btn-outline:hover {
+  border-color: var(--cv-blue-500);
+  color: var(--cv-blue-700);
+}
+
+.prd-btn-outline svg,
+.prd-btn-primary svg,
+.prd-btn-secondary svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ── Modal / Printable OPD Slip ─────────────────────────────────────────── */
+.prd-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 9999;
+}
+
+.prd-modal-slip {
+  background: var(--cv-white);
+  border-radius: var(--radius-xl);
+  max-width: 540px;
+  width: 100%;
+  box-shadow: var(--shadow-xl);
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.slip-printable {
+  background: #ffffff;
+  border: 1.5px solid var(--cv-slate-300);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.slip-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.slip-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.slip-logo {
+  height: 38px;
+  width: auto;
+  object-fit: contain;
+}
+
+.slip-hospital-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--cv-slate-900);
+}
+
+.slip-hospital-subtitle {
+  font-size: 0.72rem;
+  color: var(--cv-slate-500);
+}
+
+.slip-token-badge {
+  background: #eff6ff;
+  border: 1.5px solid #93c5fd;
+  border-radius: var(--radius-md);
+  padding: 0.35rem 0.75rem;
+  text-align: center;
+}
+
+.token-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--cv-blue-600);
+  display: block;
+}
+
+.token-number {
+  font-size: 1.3rem;
+  font-weight: 900;
+  color: var(--cv-blue-800);
+}
+
+.slip-divider {
+  height: 1px;
+  background: var(--cv-slate-200);
+}
+
+.slip-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.65rem 1rem;
+  font-size: 0.82rem;
+}
+
+.slip-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.slip-field.full {
+  grid-column: 1 / -1;
+}
+
+.field-key {
+  font-size: 0.7rem;
+  color: var(--cv-slate-500);
+  text-transform: uppercase;
+}
+
+.field-val {
+  color: var(--cv-slate-800);
+}
+
+.field-val.bold {
+  font-weight: 700;
+}
+
+.field-val.text-blue {
+  color: var(--cv-blue-600);
+  font-family: monospace;
+}
+
+.field-val.mono {
+  font-family: monospace;
+}
+
+.slip-barcode-box {
+  background: var(--cv-slate-50);
+  border: 1px dashed var(--cv-slate-300);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.mock-barcode {
+  width: 180px;
+  height: 36px;
+  background: repeating-linear-gradient(
+    90deg,
+    #0f172a 0px,
+    #0f172a 2px,
+    transparent 2px,
+    transparent 4px,
+    #0f172a 4px,
+    #0f172a 7px,
+    transparent 7px,
+    transparent 9px,
+    #0f172a 9px,
+    #0f172a 12px,
+    transparent 12px,
+    transparent 13px
+  );
+}
+
+.barcode-code {
+  font-family: monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  color: var(--cv-slate-700);
+}
+
+.slip-notice {
+  font-size: 0.7rem;
+  color: var(--cv-slate-500);
+  text-align: center;
+  margin-top: 0.2rem;
+}
+
+.slip-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+/* ── Print Styles ───────────────────────────────────────────────────────── */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #printable-opd-slip, #printable-opd-slip * {
+    visibility: visible;
+  }
+  #printable-opd-slip {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    border: none;
+  }
+}

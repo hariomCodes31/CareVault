@@ -1,8 +1,67 @@
-import { useState } from 'react';
+import { useState, Component } from 'react';
 import LoginPage from './LoginPage';
 import CreateAccount from './CreateAccount';
 import AuthenticatedHome from './AuthenticatedHome';
 import { getSession, clearSession } from './services/authService';
+
+class ErrorBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error('CareVault Error Boundary caught error:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '2rem',
+          fontFamily: 'sans-serif',
+          background: '#f8fafc',
+          color: '#0f172a',
+          textAlign: 'center'
+        }}>
+          <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>Something went wrong</h2>
+          <p style={{ color: '#64748b', marginBottom: '1.5rem', maxWidth: '400px' }}>
+            {this.state.error?.message || 'An unexpected error occurred.'}
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              this.setState({ hasError: false, error: null });
+              window.location.reload();
+            }}
+            style={{
+              background: '#2563eb',
+              color: '#ffffff',
+              border: 'none',
+              padding: '0.6rem 1.25rem',
+              borderRadius: '8px',
+              fontSize: '0.9rem',
+              fontWeight: 600,
+              cursor: 'pointer'
+            }}
+          >
+            Reload CareVault
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 function App() {
   const [sessionData, setSessionData] = useState(() => getSession());
@@ -22,27 +81,29 @@ function App() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      {currentScreen === 'login' && (
-        <LoginPage
-          onLoginSuccess={handleLoginSuccess}
-          onNavigateToCreateAccount={() => setCurrentScreen('create-account')}
-        />
-      )}
+    <ErrorBoundary>
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        {currentScreen === 'login' && (
+          <LoginPage
+            onLoginSuccess={handleLoginSuccess}
+            onNavigateToCreateAccount={() => setCurrentScreen('create-account')}
+          />
+        )}
 
-      {currentScreen === 'create-account' && (
-        <CreateAccount
-          onReturnToLogin={() => setCurrentScreen('login')}
-        />
-      )}
+        {currentScreen === 'create-account' && (
+          <CreateAccount
+            onReturnToLogin={() => setCurrentScreen('login')}
+          />
+        )}
 
-      {currentScreen === 'authenticated' && (
-        <AuthenticatedHome
-          session={sessionData}
-          onSignOut={handleSignOut}
-        />
-      )}
-    </div>
+        {currentScreen === 'authenticated' && (
+          <AuthenticatedHome
+            session={sessionData}
+            onSignOut={handleSignOut}
+          />
+        )}
+      </div>
+    </ErrorBoundary>
   );
 }
 
