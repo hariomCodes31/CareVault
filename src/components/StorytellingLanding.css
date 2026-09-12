@@ -1,0 +1,1083 @@
+/* StorytellingLanding.css — CareVault Visual Storytelling & Smooth Scroll Experience */
+
+.story-wrapper {
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--cv-ivory);
+  color: var(--cv-text-primary);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* ── Sticky Top Navigation ── */
+.story-nav {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: rgba(250, 248, 245, 0.92);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(203, 222, 210, 0.5);
+  transition: all var(--transition-base);
+}
+
+.story-nav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 72px;
+  gap: 1.5rem;
+}
+
+.story-nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.story-nav-logo {
+  height: 42px;
+  width: auto;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 2px 8px rgba(28, 59, 43, 0.08);
+}
+
+.story-nav-title {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--cv-green-primary);
+  letter-spacing: -0.02em;
+}
+
+.story-nav-tag {
+  display: none;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.2rem 0.65rem;
+  background: var(--cv-gold-light);
+  color: var(--cv-gold-dark);
+  border: 1px solid var(--cv-gold-border);
+  border-radius: var(--radius-full);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+@media (min-width: 768px) {
+  .story-nav-tag {
+    display: inline-block;
+  }
+}
+
+.story-nav-links {
+  display: none;
+  align-items: center;
+  gap: 2rem;
+}
+
+@media (min-width: 900px) {
+  .story-nav-links {
+    display: flex;
+  }
+}
+
+.story-nav-link {
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--cv-text-secondary);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+  position: relative;
+}
+
+.story-nav-link:hover {
+  color: var(--cv-green-primary);
+}
+
+.story-nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: var(--cv-gold);
+  transition: width var(--transition-base);
+}
+
+.story-nav-link:hover::after {
+  width: 100%;
+}
+
+.story-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.story-btn-text {
+  background: transparent;
+  border: none;
+  font-family: var(--font-body);
+  font-size: 0.825rem;
+  font-weight: 500;
+  color: var(--cv-text-muted);
+  cursor: pointer;
+  padding: 0.45rem 0.75rem;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.story-btn-text:hover {
+  color: var(--cv-green-primary);
+  background: var(--cv-sage-light);
+}
+
+.story-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: var(--cv-green-primary);
+  color: var(--cv-white);
+  padding: 0.6rem 1.25rem;
+  border-radius: var(--radius-full);
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  border: 1px solid var(--cv-green-hover);
+  box-shadow: 0 4px 14px -3px rgba(28, 59, 43, 0.25);
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.story-btn-primary:hover {
+  background-color: var(--cv-green-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px -4px rgba(28, 59, 43, 0.32);
+}
+
+/* ── NEW 1: Top Navigation "About" Button ── */
+.story-btn-about {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: transparent;
+  color: var(--cv-green-primary);
+  padding: 0.55rem 1.1rem;
+  border-radius: var(--radius-full);
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: 1px solid var(--cv-sage-border);
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.story-btn-about:hover,
+.story-btn-about.active {
+  background-color: var(--cv-sage-subtle);
+  border-color: var(--cv-sage);
+  color: var(--cv-green-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(28, 59, 43, 0.08);
+}
+
+.story-btn-about-icon {
+  width: 15px;
+  height: 15px;
+  color: var(--cv-sage);
+  transition: transform var(--transition-fast), color var(--transition-fast);
+}
+
+.story-btn-about:hover .story-btn-about-icon {
+  transform: scale(1.1);
+  color: var(--cv-green-primary);
+}
+
+/* ── NEW 2 & 5: Smooth, Elegant About CareVault Panel & Backdrop ── */
+.about-panel-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(18, 38, 27, 0.42);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  animation: cvAboutBackdropFade 280ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes cvAboutBackdropFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.about-panel-card {
+  width: 100%;
+  max-width: 620px;
+  background: var(--cv-white);
+  border: 1px solid var(--cv-sage-border);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 24px 60px -12px rgba(28, 59, 43, 0.22), 0 4px 16px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: cvAboutCardSlideIn 320ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes cvAboutCardSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-24px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.about-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.4rem 1.75rem;
+  border-bottom: 1px solid var(--cv-grey-200);
+  background: var(--cv-ivory-light);
+}
+
+.about-panel-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.about-panel-logo {
+  height: 38px;
+  width: auto;
+  border-radius: var(--radius-xs);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.about-panel-title {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--cv-green-primary);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.about-panel-tag {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--cv-gold-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.about-panel-close {
+  background: transparent;
+  border: 1px solid var(--cv-grey-200);
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--cv-text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.about-panel-close:hover {
+  background: var(--cv-sage-light);
+  color: var(--cv-green-primary);
+  border-color: var(--cv-sage-border);
+  transform: rotate(90deg);
+}
+
+.about-panel-close svg {
+  width: 16px;
+  height: 16px;
+}
+
+.about-panel-body {
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.about-panel-badge {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.25rem 0.75rem;
+  background: var(--cv-sage-subtle);
+  border: 1px solid var(--cv-sage-border);
+  border-radius: var(--radius-full);
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--cv-green-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.about-panel-badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--cv-gold);
+}
+
+.about-panel-heading {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--cv-green-primary);
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.about-panel-desc {
+  font-size: 0.92rem;
+  color: var(--cv-text-secondary);
+  line-height: 1.65;
+  margin: 0;
+}
+
+.about-panel-features {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.about-feature-chip {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  padding: 0.85rem 1rem;
+  background: var(--cv-ivory-light);
+  border: 1px solid var(--cv-sage-border);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+.about-feature-chip:hover {
+  background: var(--cv-white);
+  border-color: var(--cv-sage);
+  transform: translateX(4px);
+}
+
+.about-chip-icon {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.about-feature-chip strong {
+  display: block;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--cv-green-primary);
+  margin-bottom: 0.15rem;
+}
+
+.about-feature-chip p {
+  font-size: 0.8rem;
+  color: var(--cv-text-muted);
+  line-height: 1.45;
+  margin: 0;
+}
+
+.about-panel-footer {
+  padding: 1.25rem 1.75rem;
+  border-top: 1px solid var(--cv-grey-200);
+  background: var(--cv-ivory-light);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.about-panel-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  background-color: var(--cv-green-primary);
+  color: var(--cv-white);
+  padding: 0.65rem 1.35rem;
+  border-radius: var(--radius-full);
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  font-weight: 600;
+  border: 1px solid var(--cv-green-hover);
+  cursor: pointer;
+  box-shadow: 0 4px 14px -3px rgba(28, 59, 43, 0.25);
+  transition: all var(--transition-base);
+}
+
+.about-panel-action:hover {
+  background-color: var(--cv-green-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px -4px rgba(28, 59, 43, 0.32);
+}
+
+/* ── Hero Scene: Children & Pediatric Healthcare Visual ── */
+.story-hero-section {
+  position: relative;
+  padding: clamp(3rem, 6vh, 5rem) 0 4rem;
+  overflow: hidden;
+}
+
+.story-hero-ambient {
+  position: absolute;
+  top: -150px;
+  right: -100px;
+  width: 550px;
+  height: 550px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(192, 161, 92, 0.07) 0%, rgba(88, 128, 101, 0.05) 50%, transparent 70%);
+  pointer-events: none;
+}
+
+.story-hero-header {
+  text-align: center;
+  max-width: 820px;
+  margin: 0 auto 2.5rem;
+}
+
+.story-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.95rem;
+  background: var(--cv-sage-subtle);
+  border: 1px solid var(--cv-sage-border);
+  border-radius: var(--radius-full);
+  color: var(--cv-green-primary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  margin-bottom: 1.25rem;
+}
+
+.story-hero-badge svg {
+  width: 15px;
+  height: 15px;
+  color: var(--cv-gold);
+}
+
+.story-hero-title {
+  font-size: clamp(2rem, 4.5vw, 3.25rem);
+  font-weight: 800;
+  line-height: 1.18;
+  color: var(--cv-green-primary);
+  letter-spacing: -0.03em;
+  margin-bottom: 1.25rem;
+}
+
+.story-hero-subtitle {
+  font-size: clamp(1rem, 2vw, 1.15rem);
+  color: var(--cv-text-secondary);
+  line-height: 1.65;
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+/* Visual Canvas & Scene Transition Frame */
+.story-visual-canvas {
+  position: relative;
+  max-width: 1100px;
+  margin: 0 auto;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: 0 20px 50px -10px rgba(28, 59, 43, 0.12),
+              0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(192, 161, 92, 0.25);
+  background: var(--cv-white);
+  transition: transform var(--transition-slow), box-shadow var(--transition-slow);
+}
+
+.story-visual-canvas:hover {
+  box-shadow: 0 26px 65px -12px rgba(28, 59, 43, 0.16),
+              0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.story-main-img-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  max-height: 600px;
+  overflow: hidden;
+}
+
+.story-main-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 30%;
+  transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1), filter 0.8s ease;
+}
+
+.story-visual-canvas:hover .story-main-img {
+  transform: scale(1.02);
+}
+
+/* Subtle gradient vignette overlay on the image for clean readability */
+.story-img-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(26, 49, 36, 0.05) 0%,
+    rgba(26, 49, 36, 0.15) 60%,
+    rgba(26, 49, 36, 0.55) 100%
+  );
+  pointer-events: none;
+}
+
+.story-img-badge-overlay {
+  position: absolute;
+  bottom: clamp(1.25rem, 3vw, 2rem);
+  left: clamp(1.25rem, 3vw, 2.5rem);
+  right: clamp(1.25rem, 3vw, 2.5rem);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  color: var(--cv-white);
+}
+
+.story-caption-content h3 {
+  color: var(--cv-white);
+  font-size: clamp(1.1rem, 2vw, 1.45rem);
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.35);
+}
+
+.story-caption-content p {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: clamp(0.825rem, 1.3vw, 0.925rem);
+  margin: 0;
+}
+
+.story-trust-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 0.4rem 0.95rem;
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--cv-white);
+}
+
+/* ── Metric Strip ── */
+.story-metric-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+  padding: 1.75rem 2rem;
+  background: var(--cv-white);
+  border: 1px solid var(--cv-sage-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.story-metric-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding-left: 1rem;
+  border-left: 3px solid var(--cv-sage);
+}
+
+.story-metric-val {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--cv-green-primary);
+  letter-spacing: -0.02em;
+}
+
+.story-metric-label {
+  font-size: 0.8rem;
+  color: var(--cv-text-muted);
+  font-weight: 500;
+}
+
+/* ── Scene 3: Philosophy / CareVault Introduction ── */
+.story-mission-section {
+  padding: clamp(4rem, 8vh, 6rem) 0;
+  position: relative;
+  background: linear-gradient(180deg, var(--cv-ivory) 0%, var(--cv-ivory-light) 50%, var(--cv-ivory) 100%);
+}
+
+.story-mission-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 3.5rem;
+  align-items: center;
+}
+
+@media (min-width: 960px) {
+  .story-mission-grid {
+    grid-template-columns: 1.15fr 1fr;
+  }
+}
+
+.story-mission-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.story-section-eyebrow {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cv-gold-dark);
+}
+
+.story-mission-title {
+  font-size: clamp(1.85rem, 3.5vw, 2.65rem);
+  font-weight: 800;
+  color: var(--cv-green-primary);
+  line-height: 1.22;
+  letter-spacing: -0.025em;
+}
+
+.story-mission-desc {
+  font-size: 1.025rem;
+  color: var(--cv-text-secondary);
+  line-height: 1.7;
+}
+
+.story-mission-points {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.story-point-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+}
+
+.story-point-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--cv-sage-light);
+  color: var(--cv-green-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.story-point-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.story-point-content h4 {
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--cv-green-primary);
+  margin-bottom: 0.15rem;
+}
+
+.story-point-content p {
+  font-size: 0.85rem;
+  color: var(--cv-text-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Mission Interactive Visual Showcase Card */
+.story-showcase-card {
+  position: relative;
+  background: var(--cv-white);
+  border: 1px solid var(--cv-sage-border);
+  border-radius: var(--radius-xl);
+  padding: 2.25rem;
+  box-shadow: var(--shadow-card);
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+
+.story-showcase-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-hover);
+}
+
+.story-showcase-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.75rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--cv-grey-200);
+}
+
+.story-showcase-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.story-showcase-logo {
+  height: 34px;
+  width: auto;
+  border-radius: var(--radius-xs);
+}
+
+.story-showcase-brand-name {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--cv-green-primary);
+}
+
+.story-badge-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.74rem;
+  font-weight: 600;
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-full);
+  background: var(--cv-status-success-bg);
+  color: var(--cv-status-success);
+}
+
+.story-badge-pulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--cv-status-success);
+  animation: cvPulseSoft 2s infinite;
+}
+
+.story-showcase-tiles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.story-tile {
+  padding: 1rem;
+  background: var(--cv-ivory-light);
+  border: 1px solid var(--cv-sage-border);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.story-tile-label {
+  font-size: 0.75rem;
+  color: var(--cv-text-muted);
+  font-weight: 600;
+}
+
+.story-tile-val {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--cv-green-primary);
+}
+
+/* ── Scene 4: Pillars & Feature Storytelling ── */
+.story-features-section {
+  padding: clamp(4rem, 8vh, 6rem) 0;
+  background-color: var(--cv-ivory);
+}
+
+.story-features-header {
+  text-align: center;
+  max-width: 760px;
+  margin: 0 auto 3.5rem;
+}
+
+.story-features-title {
+  font-size: clamp(1.85rem, 3.5vw, 2.5rem);
+  font-weight: 800;
+  color: var(--cv-green-primary);
+  letter-spacing: -0.025em;
+  margin-bottom: 1rem;
+}
+
+.story-features-subtitle {
+  font-size: 1.025rem;
+  color: var(--cv-text-secondary);
+  line-height: 1.65;
+}
+
+.story-pillars-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  gap: 1.75rem;
+}
+
+.story-pillar-card {
+  background: var(--cv-white);
+  border: 1px solid var(--cv-sage-border);
+  border-radius: var(--radius-lg);
+  padding: 2rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-base);
+  position: relative;
+}
+
+.story-pillar-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 2rem;
+  right: 2rem;
+  height: 3px;
+  background: transparent;
+  border-radius: 0 0 4px 4px;
+  transition: background-color var(--transition-base);
+}
+
+.story-pillar-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-hover);
+  border-color: var(--cv-sage);
+}
+
+.story-pillar-card:hover::before {
+  background-color: var(--cv-gold);
+}
+
+.story-pillar-icon-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  background: var(--cv-sage-light);
+  color: var(--cv-green-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.story-pillar-card:hover .story-pillar-icon-wrap {
+  background: var(--cv-green-primary);
+  color: var(--cv-white);
+}
+
+.story-pillar-icon-wrap svg {
+  width: 24px;
+  height: 24px;
+}
+
+.story-pillar-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--cv-green-primary);
+  letter-spacing: -0.015em;
+}
+
+.story-pillar-desc {
+  font-size: 0.88rem;
+  color: var(--cv-text-secondary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.story-pillar-meta {
+  margin-top: auto;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--cv-grey-200);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--cv-gold-dark);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+/* ── Scene 5: Gateway to Authentication Portal ── */
+.story-portal-section {
+  padding: clamp(4rem, 8vh, 6rem) 0 5rem;
+  background: linear-gradient(180deg, var(--cv-ivory) 0%, var(--cv-ivory-soft) 100%);
+  position: relative;
+}
+
+.story-portal-header {
+  text-align: center;
+  max-width: 680px;
+  margin: 0 auto 2.5rem;
+}
+
+.story-portal-title {
+  font-size: clamp(1.85rem, 3vw, 2.4rem);
+  font-weight: 800;
+  color: var(--cv-green-primary);
+  letter-spacing: -0.025em;
+  margin-bottom: 0.75rem;
+}
+
+.story-portal-subtitle {
+  font-size: 0.98rem;
+  color: var(--cv-text-secondary);
+  line-height: 1.6;
+}
+
+.story-login-container {
+  max-width: 1180px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ── Demo Quick Fill Helper Strip ── */
+.story-demo-strip {
+  max-width: 480px;
+  margin: 1.5rem auto 0;
+  padding: 1rem 1.25rem;
+  background: var(--cv-white);
+  border: 1px dashed var(--cv-sage-border);
+  border-radius: var(--radius-md);
+  text-align: center;
+}
+
+.story-demo-strip-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--cv-green-primary);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 0.65rem;
+  display: block;
+}
+
+.story-demo-buttons {
+  display: flex;
+  gap: 0.65rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.story-demo-btn {
+  background: var(--cv-sage-subtle);
+  border: 1px solid var(--cv-sage-border);
+  border-radius: var(--radius-full);
+  padding: 0.35rem 0.85rem;
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--cv-green-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.story-demo-btn:hover {
+  background: var(--cv-green-primary);
+  color: var(--cv-white);
+  border-color: var(--cv-green-primary);
+}
+
+/* ── Footer ── */
+.story-footer {
+  background: var(--cv-green-dark);
+  color: rgba(255, 255, 255, 0.75);
+  padding: 3.5rem 0 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.story-footer-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.story-footer-top {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.story-footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.story-footer-logo {
+  height: 38px;
+  width: auto;
+  border-radius: var(--radius-xs);
+}
+
+.story-footer-name {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--cv-white);
+}
+
+.story-footer-tagline {
+  font-size: 0.85rem;
+  color: var(--cv-gold);
+}
+
+.story-footer-badges {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.story-footer-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.story-footer-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.55);
+}

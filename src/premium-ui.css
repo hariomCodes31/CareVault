@@ -1,0 +1,246 @@
+/* Shared presentation layer. Clinical data, authentication, and services are unchanged. */
+:root {
+  --cv-ivory: #f6f8f4;
+  --cv-ivory-light: #fbfcf9;
+  --cv-ivory-soft: #eef3ec;
+  --cv-green-primary: #133e3c;
+  --cv-green-dark: #0a302e;
+  --cv-green-hover: #086d63;
+  --cv-green-light: #277366;
+  --cv-sage: #488d78;
+  --cv-sage-light: #e6f2e9;
+  --cv-sage-subtle: #f0f6ee;
+  --cv-sage-border: #d4e2d5;
+  --cv-sage-muted: #739c85;
+  --cv-gold: #a78c54;
+  --cv-gold-dark: #79662f;
+  --cv-text-primary: #173e36;
+  --cv-text-secondary: #4e6c5d;
+  --cv-text-muted: #627b65;
+  --cv-text-light: #6e8066;
+  --cv-slate-50: #f6f8f4;
+  --cv-slate-100: #edf3ed;
+  --cv-slate-200: #dee8dc;
+  --cv-slate-300: #c6d6c5;
+  --cv-slate-400: #829c81;
+  --cv-slate-500: #647d64;
+  --cv-slate-600: #4c6955;
+  --cv-slate-700: #345641;
+  --cv-slate-800: #244b37;
+  --cv-slate-900: #163e32;
+  --cv-blue-50: #edf6f1;
+  --cv-blue-100: #e0f0e7;
+  --cv-blue-200: #c4e2d4;
+  --cv-blue-300: #94c7b0;
+  --cv-blue-400: #5ba888;
+  --cv-blue-600: #08796b;
+  --cv-blue-700: #0c6558;
+  --cv-blue-800: #135246;
+  --cv-blue-900: #153f35;
+  --pd-primary: #133e3c;
+  --pd-primary-hover: #086d63;
+  --pd-sage: #488d78;
+  --pd-sage-light: #e6f2e9;
+  --pd-bg: #f6f8f4;
+  --pd-border: #dce6d9;
+  --pd-text-main: #173e36;
+  --pd-text-muted: #627b65;
+  --pd-radius: 16px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 22px;
+  --shadow-card: 0 4px 24px -8px #173e3610;
+  --pd-shadow: 0 4px 24px -8px #173e3610;
+  --shadow-hover: 0 16px 35px -10px #173e3620;
+}
+body { background:var(--cv-ivory); }
+button,input,select,textarea { font:inherit; }
+button,a,input,select,textarea { touch-action:manipulation; }
+button:disabled { cursor:not-allowed; }
+::selection { background:#c9e7d8;color:#163f31; }
+:focus-visible { outline:3px solid #439b84;outline-offset:4px; }
+.cv-screen { min-height:100vh;animation:cvFadeIn .3s ease-out; }
+.cv-screen:focus { outline:none; }
+.cv-error-screen { min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:30px;gap:22px;text-align:center; }
+.cv-error-mark { width:72px;height:72px;border-radius:20px;background:#e0efe2;color:#286f51;font-size:50px;line-height:1.4; }
+.cv-error-screen p { max-width:410px; }
+
+/* Authentication */
+.cv-portal-section .login-about-intro { display:none; }
+.login-page { padding:40px 24px 70px; }
+.login-center-wrapper { max-width:1000px; }
+.login-landscape-card { grid-template-columns:40% 60%;border:1px solid #dbe5d7;border-radius:18px;box-shadow:0 20px 55px -25px #123f392b; }
+.login-doctor-panel { min-height:100%;background:#174a40;border:0; }
+.login-doctor-img-container { position:absolute;inset:0; }
+.login-doctor-photo { object-position:45% center;filter:saturate(.6); }
+.login-doctor-gradient { background:linear-gradient(180deg,#0b45330a 25%,#103b32b0 75%,#0e362fe6); }
+.login-doctor-overlay-card { bottom:35px;left:30px;right:30px;gap:19px; }
+.login-doctor-chip { font-size:8px;font-weight:500;letter-spacing:1.6px;background:#ffffff12;border-color:#ffffff40;padding:7px 12px; }
+.login-doctor-quote { font-family:Georgia,serif;font-size:30px;line-height:1.3;font-style:italic; }
+.login-form-panel { padding:36px 42px; }
+.login-brand-header { justify-content:flex-start;margin-bottom:22px; }
+.login-logo-img { max-height:42px;border-radius:8px;box-shadow:none; }
+.login-card-header { text-align:left;margin-bottom:22px; }
+.login-welcome { font-size:29px;font-weight:550;letter-spacing:-1px; }
+.login-subtitle { margin-top:7px;font-size:12px; }
+.login-demo-helper { background:#f4f7f0;border:1px solid #e0e8da;border-radius:9px;padding:12px;gap:8px; }
+.login-demo-helper-title { font-size:8px;letter-spacing:1px; }
+.login-demo-pill { font-size:10px;padding:6px 12px; }
+.role-grid { grid-template-columns:repeat(2,minmax(0,1fr));gap:10px; }
+.role-card { padding:14px 12px;gap:9px;align-items:flex-start;background:#fff;border:1px solid #dce5d8;border-radius:10px;min-width:0;transition:background .2s,border-color .2s,box-shadow .2s; }
+.role-card.active { border-color:#398c70;background:#edf5ec;box-shadow:0 0 0 1px #398c7010; }
+.role-icon-wrap { height:30px;width:30px;flex-shrink:0;border-radius:8px; }
+.role-icon-wrap svg { width:16px;height:16px; }
+.role-name { font-size:12px; }
+.role-desc { font-size:9px;line-height:1.5;margin-top:4px; }
+.role-check { position:absolute;right:8px;top:8px;width:13px;height:13px; }
+.role-check svg { width:8px;height:8px; }
+.role-label { font-size:9px;letter-spacing:1px;margin-bottom:10px; }
+.field-label { font-size:11px;font-weight:600; }
+.field-input { min-height:46px;border:1px solid #d5e0d0;border-radius:9px;background:#fbfcf9;font-size:13px;transition:border-color .2s,box-shadow .2s; }
+.field-input:focus,.prd-input:focus,.prd-select:focus,.prd-search-input:focus,.ct-input:focus,.ct-select:focus,.ct-textarea:focus { border-color:#398c70;box-shadow:0 0 0 3px #398c7014;outline:none;background:#fff; }
+.field-toggle { min-width:34px;min-height:34px; }
+.login-btn,.create-account-btn-primary { min-height:48px;border-radius:9px;box-shadow:0 5px 15px #143f3914;font-size:13px; }
+.login-help { font-size:11px;color:#52765d; }
+.login-help summary { cursor:pointer;list-style-position:inside;padding-block:3px; }
+.login-help p { background:#f4f7f0;padding:12px;border-radius:8px;line-height:1.8;margin-top:7px;font-size:11px; }
+.login-create-account-wrap { font-size:11px; }
+.create-account-text,.create-account-btn { font-size:11px; }
+.login-card-footer { font-size:9px;color:#6b7f61;padding-top:16px; }
+.create-account-page { padding:48px 24px;background:radial-gradient(ellipse at 10% 0%,#dcecdf 0%,transparent 50%),radial-gradient(ellipse at 100% 60%,#edf1dc 0%,transparent 45%),#f7f9f4;align-items:flex-start; }
+.create-account-center-wrapper { max-width:550px; }
+.create-account-center-wrapper.patient-wide { max-width:900px; }
+.create-account-card { padding:35px 42px;border-color:#dce6d7;box-shadow:0 18px 65px -25px #234e3e26; }
+.create-account-welcome { font-size:30px;font-weight:550;margin-top:18px; }
+.create-account-subtitle { font-size:12px;line-height:1.7;margin-top:9px; }
+.create-account-brand-header { margin-top:15px; }
+.create-account-logo-img { box-shadow:none; }
+.create-account-form { gap:19px; }
+.create-account-form-grid { gap:18px; }
+.create-account-section-title { font-size:10px;letter-spacing:1px;padding:12px 0;border-bottom:1px solid #e1e9dc; }
+.create-account-card-footer { font-size:10px;line-height:1.8; }
+
+/* Portal shell: restrained motion and generous spacing for daily clinical work. */
+.auth-home-container { background:#f5f8f3; }
+.auth-nav { background:#133e3c;border:0;padding:19px 32px;gap:19px;box-shadow:0 3px 18px #0e302010; }
+.auth-nav-logo { height:40px;border-radius:8px;box-shadow:none; }
+.auth-nav-title { font-size:22px;font-weight:600; }
+.auth-nav-tagline { color:#b0d2bc;font-size:9px;margin-top:4px; }
+.auth-nav-role-badge.doctor,.auth-nav-role-badge.patient { background:#ffffff0d;border-color:#ffffff20;color:#c0e5d2;font-size:10px;padding:6px 11px; }
+.auth-nav-right { gap:12px; }
+.auth-nav-right .auth-signout-btn { font-size:11px;border-color:#ffffff26;padding:9px 12px;min-height:38px; }
+.auth-nav-right .auth-signout-btn.active { color:#123f35;background:#e0f0e4;border-color:#e0f0e4; }
+.auth-user-chip { font-size:10px;padding:8px 11px; }
+.workspace-welcome { max-width:1240px;padding:35px 32px 12px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:25px; }
+.workspace-eyebrow { display:block;font-size:9px;letter-spacing:1.8px;color:#648063;font-weight:650;margin-bottom:9px; }
+.workspace-welcome h1 { font-weight:500;font-size:30px;letter-spacing:-1.1px; }
+.workspace-welcome p { font-size:12px;color:#667e62;margin-top:9px; }
+.workspace-date { font-size:11px;color:#678360;border:1px solid #dce6d7;border-radius:8px;background:#fff9;padding:10px 14px;white-space:nowrap; }
+.patient-reg-dashboard { max-width:1240px;padding:20px 32px 45px;gap:22px; }
+.patient-dashboard-container { max-width:1240px;padding:20px 32px 50px; }
+.prd-banner,.pd-header-card { border-radius:16px;background:linear-gradient(110deg,#fff,#eef5ea);border:1px solid #dce7d7;box-shadow:none;padding:26px; }
+.prd-title,.pd-patient-name { font-size:25px;font-weight:550;letter-spacing:-.8px; }
+.prd-subtitle { font-size:12px;margin-top:6px; }
+.prd-badge-step { font-size:8px;letter-spacing:1px;padding:4px 9px;margin-bottom:6px; }
+.prd-stat-chip { border-radius:10px;padding:10px 14px;background:#fff9; }
+.prd-tab-bar,.pd-tabs-nav { padding:6px;border:1px solid #dce6d7;background:#eaf1e6;border-radius:12px;gap:6px; }
+.prd-tab-btn,.pd-tab-btn { border:0!important;border-radius:8px;font-size:12px;font-weight:550;padding:12px 18px;transition:background .2s,color .2s; }
+.prd-tab-btn.active,.pd-tab-btn.active { background:#fff;color:#166448;box-shadow:0 2px 8px #123f3910; }
+.prd-search-card,.prd-patient-record-card,.prd-registration-card,.pd-card,.ct-section-card,.auth-home-card { border-color:#dce6d7;border-radius:16px;box-shadow:0 4px 20px -12px #1a4e321c; }
+.prd-search-card { padding:25px; }
+.prd-search-input,.prd-input,.prd-select,.ct-input,.ct-select { min-height:46px;border-radius:9px;background:#fbfcf9;border-color:#d5e0d0;font-size:13px; }
+.prd-search-input { padding-block:13px; }
+.prd-input,.prd-select { padding:11px 13px; }
+.prd-form-label,.ct-label { font-size:12px;margin-bottom:8px; }
+.prd-privacy-empty-state { padding:50px 24px;background:radial-gradient(ellipse at center,#edf5e8,transparent 65%); }
+.privacy-icon-box { background:#e7f1e2;border:1px solid #d4e5cd;border-radius:18px;color:#52815c; }
+.privacy-heading { font-size:21px;font-weight:500; }
+.privacy-desc { max-width:420px;font-size:12px;line-height:1.9; }
+.preset-chip { background:#f7faf3;border-color:#d8e6d0;padding:7px 12px;border-radius:8px;font-size:10px; }
+.prd-btn-primary,.pd-btn-primary,.ct-btn-primary { background:#14634e;border-color:#14634e;box-shadow:0 4px 10px #16433212;border-radius:9px; }
+.prd-btn-primary:hover,.pd-btn-primary:hover,.ct-btn-primary:hover { background:#0c4b3b;border-color:#0c4b3b; }
+.prd-btn-primary,.prd-btn-secondary,.prd-btn-outline,.pd-btn { min-height:40px;font-size:12px; }
+.pd-card { padding:24px; }
+.pd-card-title { font-size:16px;font-weight:600; }
+.pd-stat-card { border-radius:13px;background:#f5f8f0;box-shadow:none;border:1px solid #e1e9d8; }
+.pd-stat-number { font-weight:500;letter-spacing:-1.5px;font-size:33px; }
+.pd-stat-card.highlight { background:#e6f2e5;border-color:#cee2cc; }
+.pd-stat-label,.pd-vital-name { font-size:10px;color:#637d5b; }
+.pd-vital-tile { background:#f5f8f1;border:1px solid #e0e8d9;border-radius:11px; }
+.pd-vital-val { font-size:20px;font-weight:550; }
+.pd-avatar,.patient-avatar-box { background:linear-gradient(140deg,#d2e8d4,#a9cdb5);color:#235e42;border-radius:17px;border:3px solid #fff;box-shadow:0 0 0 1px #dce7d9; }
+.pd-action-banner { background:linear-gradient(115deg,#153e36,#286a52);border-radius:14px; }
+.pd-action-banner .pd-banner-content h3 { color:#fff; }
+.pd-action-banner .pd-banner-content p { color:#d2e6d3; }
+.pd-timeline-content { border-radius:12px;border-color:#dde7d8; }
+.pd-tab-content,.prd-content-section { animation:cvFadeInUp .35s both; }
+.aadhaar-dropzone { background:#f5f9ef;border-color:#c8dcbc;border-radius:13px; }
+.ct-navbar,.pd-navbar { position:static;height:auto;min-height:58px;padding:13px 28px;border-color:#dce6d6;box-shadow:none;flex-wrap:wrap;gap:12px; }
+.ct-header-banner { background:#edf4e9;border-color:#dbe7d4;padding:26px; }
+.ct-page-title { font-size:27px;font-weight:550;letter-spacing:-1px; }
+.ct-page-subtitle { font-size:12px;margin-top:8px; }
+.ct-main { padding:25px 24px 110px; }
+.ct-summary-card { background:linear-gradient(110deg,#fff,#edf5e9);border:1px solid #d9e6d3;border-radius:14px; }
+.ct-section-card { padding:26px;margin-bottom:20px;scroll-margin-top:20px; }
+.ct-section-header { border-bottom:1px solid #e4ecdd;padding-bottom:16px;margin-bottom:22px; }
+.ct-section-title { font-size:12px;font-weight:650;letter-spacing:.6px; }
+.ct-section-num { background:#e9f3e3;color:#396e44;border:1px solid #d2e4c7;border-radius:9px;width:29px;height:29px;font-size:11px; }
+.ct-textarea { padding:13px;border-radius:10px;background:#fbfcf8;border-color:#d5e0d0;font-size:13px;line-height:1.8; }
+.ct-chip-checkbox { border-radius:8px;padding:9px 13px;font-size:12px; }
+.ct-new-visit-badge { background:#1c7454; }
+.ct-empty-list-msg { padding:21px;border-radius:9px;background:#f6f9f2;color:#6b805d;font-size:12px;border:1px dashed #d8e5cd; }
+.ct-add-row-btn { background:#eef5e8;border-color:#cfdfc3;color:#376f42;border-radius:8px;font-size:12px;min-height:38px; }
+.ct-bottom-actions { background:#fffffff0;backdrop-filter:blur(16px);border-top:1px solid #d4e3cb;box-shadow:0 -5px 20px #1c462008; }
+.ct-btn-primary,.ct-btn-secondary,.ct-btn-draft { min-height:44px;font-size:12px; }
+.ct-modal-card,.prd-modal-slip { border-radius:20px;box-shadow:0 30px 80px #102f3030; }
+.auth-home-card { padding:40px; }
+
+@media(min-width:1600px) { .auth-nav { padding-inline:max(32px,calc((100vw - 1500px)/2)); } }
+@media(max-width:1100px) { .auth-nav { align-items:flex-start; }.auth-nav-right { width:100%; }.login-form-panel { padding:30px; }.workspace-welcome { padding-top:27px; } }
+@media(max-width:760px) {
+  .login-landscape-card { grid-template-columns:1fr; }.login-doctor-panel { display:none; }.login-form-panel { padding:30px; }.login-page { padding:30px 22px 50px; }
+  .auth-nav { padding:18px 20px; }.auth-nav-brand { flex-wrap:wrap;gap:10px; }.auth-nav-right { gap:9px; }.auth-nav-right>div[style] { flex-wrap:wrap; }.auth-nav-right .auth-signout-btn { font-size:10px;padding:9px 10px; }
+  .workspace-welcome { padding:26px 20px 8px; }.workspace-welcome h1 { font-size:25px; }.workspace-welcome p { font-size:11px;line-height:1.7; }.workspace-date { display:none; }
+  .patient-reg-dashboard,.patient-dashboard-container { padding:20px 18px 40px; }.prd-banner,.pd-header-card { padding:21px; }.prd-title,.pd-patient-name { font-size:22px; }
+  .pd-tabs-nav,.prd-tab-bar { display:flex;overflow-x:auto;flex-wrap:nowrap;max-width:100%; }.pd-tab-btn,.prd-tab-btn { white-space:nowrap;flex-shrink:0;padding:12px 15px; }
+  .ct-main { padding:20px 16px 150px; }.ct-section-card { padding:20px; }.ct-page-title { font-size:24px; }.ct-actions-inner { flex-wrap:wrap;gap:9px; }.ct-summary-card,.ct-summary-right { flex-wrap:wrap; }.ct-patient-title-group { flex-wrap:wrap; }
+  .ct-grid-3 { grid-template-columns:repeat(2,minmax(0,1fr)); }.ct-table-row { flex-wrap:wrap; }.ct-table-row>.ct-form-group { flex:1 1 140px!important;min-width:0; }.ct-table-row-remove-btn { align-self:center; }
+  .create-account-page { padding:25px 18px; }.create-account-card { padding:26px; }
+}
+@media(max-width:480px) {
+  .login-page { padding-inline:18px; }.login-form-panel { padding:25px 20px; }.login-welcome { font-size:27px; }.role-grid { gap:8px; }.role-card { padding:13px 9px;gap:7px; }.role-desc { font-size:9px; }.role-icon-wrap { width:24px;height:24px; }.role-icon-wrap svg { width:14px;height:14px; }
+  .field-input,.prd-input,.prd-select,.prd-search-input,.ct-input,.ct-select,.ct-textarea { font-size:16px; }.field-label,.ct-label { font-size:11px; }
+  .create-account-card { padding:22px 18px; }.create-account-welcome { font-size:26px; }.create-account-form-grid { gap:15px; }
+  .auth-nav-role-badge { margin-left:0; }.workspace-welcome h1 { font-size:23px; }.prd-banner { padding:18px; }.prd-banner-stats { gap:8px; }.prd-stat-chip { padding:8px 10px; }.prd-search-card { padding:18px; }.prd-search-form { flex-direction:column;align-items:stretch; }.prd-search-input-wrap { min-width:0; }.pd-card { padding:18px; }.pd-stat-number { font-size:27px; }
+  .ct-grid-2,.ct-grid-3 { grid-template-columns:1fr; }.ct-header-banner { padding:22px 18px; }.ct-section-card { padding:18px 15px; }.ct-section-title { font-size:10px;letter-spacing:.3px; }.ct-section-header { gap:9px; }.ct-section-required-badge { font-size:9px; }.ct-summary-meta { gap:7px; }.ct-meta-item { white-space:normal; }.ct-actions-inner { justify-content:center; }.ct-bottom-actions { padding:12px; }
+}
+@media(prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important; } }
+@media print { .workspace-welcome,.cv-header,.cv-footer { display:none!important; }.cv-screen { animation:none; } }
+
+/* Final layout refinements from browser verification. */
+.pd-btn svg,.pd-btn-text svg,.prd-btn-primary svg,.prd-btn-secondary svg,.prd-btn-outline svg { width:18px;height:18px;flex-shrink:0; }
+.pd-header-actions .pd-btn { white-space:nowrap; }
+.auth-main-content .pd-navbar { display:none; }
+.pd-header-actions { width:100%;justify-content:space-between;border-top:1px solid #dfe8d8;padding-top:17px; }
+.auth-main-content .ct-nav-brand { display:none; }
+.ct-navbar { justify-content:space-between; }
+.ct-navbar .ct-back-btn { font-size:12px;background:#fff;border-color:#d4e2cf; }
+.pd-rx-table-wrapper { max-width:100%;overflow-x:auto; }
+.pd-card-header-flex { gap:12px;flex-wrap:wrap; }
+.pd-report-card { border-radius:12px;border-color:#dce6d7; }
+@media(max-width:480px) {
+  .cv-hero h1 { font-size:46px;letter-spacing:-2.5px; }
+  .pd-header-actions .pd-btn { white-space:normal; }
+  .pd-profile-left { align-items:flex-start;gap:12px; }
+  .pd-avatar { width:46px;height:46px;font-size:18px; }
+  .pd-profile-info { min-width:0; }
+  .pd-meta-row { font-size:11px;line-height:1.8; }
+}
+:root { --cv-red-50:#fff1f2;--cv-red-100:#ffe4e6;--cv-red-200:#fecdd3;--cv-red-500:#e11d48;--cv-red-600:#be123c;--cv-red-700:#9f1239; }
+.login-doctor-photo { object-position:15% center; }
+.auth-main-content .ct-navbar>.pd-signout-btn { display:none; }
+.ct-section-card.has-error { border-color:#e5a0ac; }
+.ct-input.is-invalid,.ct-textarea.is-invalid { border-color:#cd5c76; }
+.ct-error-msg { color:#a92848; }
+.login-brand-header::after { content:'CareVault';font-family:var(--font-display);font-size:20px;font-weight:550;color:#133e3c;margin-left:10px;letter-spacing:-.7px; }
+.create-account-logo-img { width:45px;height:45px; }
