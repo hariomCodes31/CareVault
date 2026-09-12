@@ -210,7 +210,7 @@ export default function PatientRegistrationDashboard({
     email: existingPatient?.email || '',
     address: existingPatient?.address || '',
     aadhaar: existingPatient?.aadhaar || '',
-    bloodGroup: existingPatient?.bloodGroup || 'O+',
+    bloodGroup: existingPatient?.bloodGroup || '',
     emergencyContact: existingPatient?.emergencyContact || '',
     emergencyContactRelationship: existingPatient?.emergencyContactRelationship || '',
     knownConditions: existingPatient?.knownConditions || 'None',
@@ -229,7 +229,7 @@ export default function PatientRegistrationDashboard({
         email: existingPatient.email || '',
         address: existingPatient.address || '',
         aadhaar: existingPatient.aadhaar || '',
-        bloodGroup: existingPatient.bloodGroup || 'O+',
+        bloodGroup: existingPatient.bloodGroup || '',
         emergencyContact: existingPatient.emergencyContact || '',
         emergencyContactRelationship: existingPatient.emergencyContactRelationship || '',
         knownConditions: existingPatient.knownConditions || 'None',
@@ -456,7 +456,7 @@ export default function PatientRegistrationDashboard({
         email: '',
         address: '',
         aadhaar: '',
-        bloodGroup: 'O+',
+        bloodGroup: '',
         emergencyContact: '',
         emergencyContactRelationship: '',
         knownConditions: 'None',
@@ -1057,6 +1057,7 @@ export default function PatientRegistrationDashboard({
                     value={formData.bloodGroup}
                     onChange={(e) => setFormData({ ...formData, bloodGroup: e.target.value })}
                   >
+                    <option value="">Select Blood Group...</option>
                     <option value="O+">O+ (Positive)</option>
                     <option value="O-">O- (Negative)</option>
                     <option value="A+">A+ (Positive)</option>

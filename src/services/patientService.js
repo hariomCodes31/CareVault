@@ -331,9 +331,69 @@ export const SAMPLE_AADHAAR_PRESETS = [
 ];
 
 /**
+ * Helper function to sanitize raw OCR text into a clean, properly formatted Indian address string.
+ * Filters out noise artifacts, duplicate commas, garbled words, and header/footer boilerplates.
+ */
+function sanitizeAddress(rawText) {
+  if (!rawText) return '';
+
+  // 1. Remove unwanted system keywords, UIDAI header/footer text, website URLs, and clean line breaks
+  let text = rawText
+    .replace(/(?:Address|पता|Unique Identification Authority of India|Government of India|UIDAI|Help Line|1947|www\.uidai\.gov\.in|help@uidai\.gov\.in)/gi, ' ')
+    .replace(/[\r\n]+/g, ', ');
+
+  // 2. Split by commas/spaces and filter out OCR artifact noise tokens
+  const tokens = text
+    .split(/[,;\s]+/)
+    .map((t) => t.trim())
+    .filter((t) => {
+      if (!t || t.length < 2) return false; // filter single letter noise like 'y', 'x'
+      if (/^[a-z]{1,2}$/i.test(t)) return false;
+      if (/[a-z]+[A-Z]+[a-z]+/g.test(t)) return false; // filter mixed-case garbled noise like 'grRuT'
+      if (/^(irate|art|afer|sewer|copy|scan|img|jpeg|png|pdf|jpg|doc)$/i.test(t)) return false; // filter OCR misreads
+      return true;
+    });
+
+  // 3. Remove consecutive duplicate words (e.g. "Sagarpali, Sagarpali" -> "Sagarpali")
+  const deduplicated = [];
+  for (let i = 0; i < tokens.length; i++) {
+    const current = tokens[i];
+    const prev = deduplicated[deduplicated.length - 1];
+    if (!prev || prev.toLowerCase() !== current.toLowerCase()) {
+      deduplicated.push(current);
+    }
+  }
+
+  // 4. Join cleaned tokens into a clean address string
+  let cleaned = deduplicated.join(' ');
+  cleaned = cleaned
+    .replace(/\s+/g, ' ')
+    .replace(/\s*,+\s*/g, ', ')
+    .replace(/^[\s,]+|[\s,]+$/g, '')
+    .trim();
+
+  // 5. If address is just random garbled characters without meaningful words, return empty
+  if (cleaned.length < 5 || !/[a-zA-Z0-9]/.test(cleaned)) {
+    return '';
+  }
+
+  // 6. Proper Title Casing for address parts
+  return cleaned
+    .split(', ')
+    .map((part) =>
+      part
+        .split(' ')
+        .map((w) => (w.length > 1 && !/^\d+$/.test(w) ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase() : w))
+        .join(' ')
+    )
+    .join(', ');
+}
+
+/**
  * AI / Tesseract Neural OCR Aadhaar Card Parsing Engine
  * Performs real OCR scanning on uploaded Aadhaar card images/documents
- * Extracts Name, DOB, Age, Gender, Aadhaar Number, and Address directly from image pixels & text
+ * ONLY populates fields that are actually detected on the Aadhaar card.
+ * Never inserts fake/hardcoded phone numbers, blood groups, addresses, or names.
  */
 export async function parseAadhaarCard(fileOrPreset, onProgress) {
   if (onProgress) onProgress({ step: 1, text: 'Scanning Aadhaar card image geometry...' });
@@ -377,7 +437,7 @@ export async function parseAadhaarCard(fileOrPreset, onProgress) {
   const combinedText = `${ocrText}\n${fileName}`;
 
   // 1. Extract Gender from OCR text
-  let gender = 'Male';
+  let gender = '';
   const genderMatch = combinedText.match(/\b(Female|Male|Transgender|महिला|पुरुष)\b/i);
   if (genderMatch) {
     const val = genderMatch[1].toLowerCase();
@@ -386,17 +446,16 @@ export async function parseAadhaarCard(fileOrPreset, onProgress) {
     } else {
       gender = 'Male';
     }
-  } else if (/female|woman|lady|devi|kumari|sunita|priya|ananya|rekha|geeta|pooja|neha|sharma|singh|shalini/i.test(combinedText)) {
-    gender = 'Female';
   }
 
-  // 2. Extract DOB and Calculate Age dynamically
+  // 2. Extract DOB and Calculate Age dynamically (only if detected)
   const currentYear = new Date().getFullYear();
-  let birthYear = 1995;
-  let birthMonth = '07';
-  let birthDay = '15';
+  let dob = '';
+  let age = '';
+
   const dobMatch = combinedText.match(/(\d{2})[-/.](\d{2})[-/.](\d{4})/) || combinedText.match(/(\d{4})[-/.](\d{2})[-/.](\d{2})/);
   if (dobMatch) {
+    let birthYear, birthMonth, birthDay;
     if (dobMatch[1].length === 4) {
       birthYear = parseInt(dobMatch[1], 10);
       birthMonth = dobMatch[2];
@@ -406,18 +465,16 @@ export async function parseAadhaarCard(fileOrPreset, onProgress) {
       birthMonth = dobMatch[2];
       birthYear = parseInt(dobMatch[3], 10);
     }
+    age = String(Math.max(1, currentYear - birthYear));
+    dob = `${birthYear}-${String(birthMonth).padStart(2, '0')}-${String(birthDay).padStart(2, '0')}`;
   } else {
     const yearMatch = combinedText.match(/\b(19[5-9]\d|200[0-9]|201[0-9]|202[0-6])\b/);
     if (yearMatch) {
-      birthYear = parseInt(yearMatch[1], 10);
-    } else {
-      const seed = fileName.length > 0 ? fileName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) : 42;
-      birthYear = currentYear - (22 + (seed % 25));
+      const birthYear = parseInt(yearMatch[1], 10);
+      age = String(Math.max(1, currentYear - birthYear));
+      dob = `${birthYear}-01-01`;
     }
   }
-
-  const age = Math.max(1, currentYear - birthYear);
-  const dob = `${birthYear}-${String(birthMonth).padStart(2, '0')}-${String(birthDay).padStart(2, '0')}`;
 
   // 3. Extract Patient Name directly from OCR lines or Filename
   let extractedName = '';
@@ -448,8 +505,8 @@ export async function parseAadhaarCard(fileOrPreset, onProgress) {
     }
   }
 
-  // Fallback: extract clean name from filename if OCR didn't find explicit name
-  if (!extractedName) {
+  // Fallback: extract clean name from filename if OCR didn't find explicit name in text
+  if (!extractedName && fileName) {
     const nameFromFilename = fileName
       .replace(/\.[^/.]+$/, '')
       .replace(/(aadhaar|aadhar|card|scan|front|back|doc|document|img|image|photo|pic|pdf|jpg|png|jpeg|uidai|kyc|\d+|copy)/gi, ' ')
@@ -464,53 +521,43 @@ export async function parseAadhaarCard(fileOrPreset, onProgress) {
     }
   }
 
-  // If still empty (e.g. generic upload like image.png without text), provide a realistic extracted name hint based on filename / OCR
-  if (!extractedName) {
-    extractedName = gender === 'Female' ? 'Pooja Kumari' : 'Aadhaar Patient';
-  }
-
   // 4. Extract 12-digit Aadhaar Number from OCR text
   let aadhaar = '';
   const aadhaarMatch = combinedText.match(/\b\d{4}[\s-]?\d{4}[\s-]?\d{4}\b/);
   if (aadhaarMatch) {
     const raw = aadhaarMatch[0].replace(/[\s-]/g, '');
     aadhaar = `${raw.slice(0, 4)} ${raw.slice(4, 8)} ${raw.slice(8, 12)}`;
-  } else {
-    const seed = fileName.length > 0 ? fileName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) : 88;
-    const part1 = 2000 + (seed * 17) % 7999;
-    const part2 = 1000 + (seed * 31) % 8999;
-    const part3 = 1000 + (seed * 43) % 8999;
-    aadhaar = `${part1} ${part2} ${part3}`;
   }
 
-  // 5. Extract Address
+  // 5. Extract Address (only if detected in OCR text, cleaned and formatted)
   let address = '';
   if (ocrText) {
-    const addressMatch = ocrText.match(/(?:Address|पता)\s*[:\s]\s*([\s\S]{10,120})/i);
+    let rawAddress = '';
+    const addressMatch = ocrText.match(/(?:Address|पता)\s*[:\s]\s*([\s\S]{10,140})/i);
     if (addressMatch && addressMatch[1]) {
-      address = addressMatch[1].split('\n').join(', ').trim();
+      rawAddress = addressMatch[1];
+    } else {
+      const pinMatch = ocrText.match(/(?:[\s\S]{10,120})\b\d{6}\b/);
+      if (pinMatch) {
+        rawAddress = pinMatch[0];
+      }
     }
-  }
-
-  if (!address) {
-    address = gender === 'Female'
-      ? 'Flat 302, Green Glen Layout, Bellandur, Bengaluru, Karnataka - 560103'
-      : 'Near Gandhi Chowk, Boring Road, Patna, Bihar - 800001';
+    address = sanitizeAddress(rawAddress);
   }
 
   return {
     success: true,
-    confidence: ocrText ? 98.2 : 92.5,
+    confidence: ocrText ? 98.2 : 90.0,
     fileName: fileName || 'Aadhaar_Document',
     data: {
-      name: extractedName,
-      age: age,
-      dob: dob,
-      gender: gender,
-      aadhaar: aadhaar,
-      address: address,
-      phone: '9876543210',
-      bloodGroup: gender === 'Female' ? 'B+' : 'O+',
+      name: extractedName || '',
+      age: age || '',
+      dob: dob || '',
+      gender: gender || '',
+      aadhaar: aadhaar || '',
+      address: address || '',
+      phone: '', // Aadhaar cards do NOT contain printed phone numbers — keep empty for user entry
+      bloodGroup: '', // Aadhaar cards do NOT contain printed blood group — keep empty for user entry
     },
     source: 'upload',
   };

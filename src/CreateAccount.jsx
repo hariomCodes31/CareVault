@@ -215,7 +215,7 @@ export default function CreateAccount({ onReturnToLogin, onLoginSuccess }) {
     phone: '',
     email: '',
     address: '',
-    bloodGroup: 'O+',
+    bloodGroup: '',
     emergencyContact: '',
     emergencyContactRelationship: '',
   });
@@ -669,6 +669,7 @@ export default function CreateAccount({ onReturnToLogin, onLoginSuccess }) {
                         value={patientForm.bloodGroup}
                         onChange={(e) => setPatientForm({ ...patientForm, bloodGroup: e.target.value })}
                       >
+                        <option value="">Select Blood Group...</option>
                         <option value="O+">O+ (Positive)</option>
                         <option value="O-">O- (Negative)</option>
                         <option value="A+">A+ (Positive)</option>
