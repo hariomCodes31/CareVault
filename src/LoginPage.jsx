@@ -1,5 +1,8 @@
+import { refreshAuthorizedPatients } from './services/patientService.js';
 import { useState } from 'react';
-import { authenticate } from './services/authService';
+import { setSession } from './services/authService';
+import { authRequest } from './services/api.js';
+import PasswordReset from './components/PasswordReset.jsx';
 import './LoginPage.css';
 
 // ── SVG Icons ───────────────────────────────────────────────────────────────
@@ -118,6 +121,7 @@ function validate({ accountId, password, role }) {
 // ── Main Component ───────────────────────────────────────────────────────────
 export default function LoginPage({ onLoginSuccess, onNavigateToCreateAccount }) {
   // Default selected role is Doctor
+  const [resetOpen, setResetOpen] = useState(false);
   const [selectedRole, setSelectedRole] = useState('doctor');
   const [accountId, setAccountId] = useState('');
   const [password, setPassword] = useState('');
@@ -169,7 +173,7 @@ export default function LoginPage({ onLoginSuccess, onNavigateToCreateAccount })
     await new Promise((res) => setTimeout(res, 600));
 
     // Call authentication service with role, id, and password
-    const authResult = authenticate({
+    const authResult = await authRequest('login', {
       role: selectedRole,
       id: accountId,
       password,
@@ -182,6 +186,8 @@ export default function LoginPage({ onLoginSuccess, onNavigateToCreateAccount })
       return;
     }
 
+    setSession({ ...authResult.session, token: authResult.token });
+    await refreshAuthorizedPatients();
     const roleName = ROLES.find((r) => r.id === selectedRole)?.name;
     showToast(`Welcome! Signed in as ${roleName}.`);
 
@@ -199,6 +205,7 @@ export default function LoginPage({ onLoginSuccess, onNavigateToCreateAccount })
 
   return (
     <div className="login-page">
+      {resetOpen && <PasswordReset role={selectedRole} initialId={accountId} onClose={() => setResetOpen(false)} />}
       <main className="login-center-wrapper">
         {/* CHANGE 2: Small and elegant About CareVault introduction */}
         <div className="login-about-intro" aria-label="About CareVault">
@@ -387,7 +394,7 @@ export default function LoginPage({ onLoginSuccess, onNavigateToCreateAccount })
               <a
                 href="#forgot"
                 className="forgot-link"
-                onClick={(e) => e.preventDefault()}
+                onClick={(e) => { e.preventDefault(); setResetOpen(true); }}
                 aria-label="Reset your password"
               >
                 Forgot password?

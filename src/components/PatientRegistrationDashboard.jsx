@@ -1,4 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
+import { refreshAuthorizedPatients } from '../services/patientService.js';
+import { calculateAge, validatePatientDetails, todayISO } from '../services/patientValidation.js';
+import { useState, useRef } from 'react';
 import {
   getPatients,
   getPatientById,
@@ -115,63 +117,9 @@ function formatDob(val) {
 }
 
 // Calculate age instantly from DOB in any format (DD-MM-YYYY, YYYY-MM-DD, D-M-YYYY, DD/MM/YYYY, continuous 8 digits)
-function calculateAge(dobInput) {
-  if (!dobInput) return '';
-  const str = String(dobInput).trim();
 
-  let day, month, year;
 
-  // Case 1: YYYY-MM-DD (ISO)
-  if (/^\d{4}[-/.]\d{1,2}[-/.]\d{1,2}$/.test(str)) {
-    const parts = str.split(/[-/.]/);
-    year = parseInt(parts[0], 10);
-    month = parseInt(parts[1], 10);
-    day = parseInt(parts[2], 10);
-  }
-  // Case 2: DD-MM-YYYY or D-M-YYYY or DD/MM/YYYY
-  else if (/^\d{1,2}[-/.]\d{1,2}[-/.]\d{4}$/.test(str)) {
-    const parts = str.split(/[-/.]/);
-    day = parseInt(parts[0], 10);
-    month = parseInt(parts[1], 10);
-    year = parseInt(parts[2], 10);
-  }
-  // Case 3: 8 continuous digits like 15081998 (DDMMYYYY)
-  else if (/^\d{8}$/.test(str)) {
-    day = parseInt(str.slice(0, 2), 10);
-    month = parseInt(str.slice(2, 4), 10);
-    year = parseInt(str.slice(4, 8), 10);
-  }
-  // Case 4: 4 digit birth year e.g. 1998
-  else if (/^\d{4}$/.test(str)) {
-    year = parseInt(str, 10);
-    const currentYear = new Date().getFullYear();
-    if (year >= 1900 && year <= currentYear) {
-      return String(currentYear - year);
-    }
-    return '';
-  } else {
-    return '';
-  }
-
-  const currentYear = new Date().getFullYear();
-  if (!year || year < 1900 || year > currentYear) return '';
-  if (!month || month < 1 || month > 12) return '';
-  if (!day || day < 1 || day > 31) return '';
-
-  const birth = new Date(year, month - 1, day);
-  if (isNaN(birth.getTime())) return '';
-
-  const today = new Date();
-  let age = today.getFullYear() - birth.getFullYear();
-  const m = today.getMonth() - birth.getMonth();
-  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
-    age--;
-  }
-
-  return age >= 0 ? String(age) : '0';
-}
-
-export default function PatientRegistrationDashboard({
+function PatientRegistrationContent({
   userRole = 'doctor',
   currentId = 'DR2026-000100',
   onRegistrationComplete,
@@ -213,31 +161,12 @@ export default function PatientRegistrationDashboard({
     bloodGroup: existingPatient?.bloodGroup || '',
     emergencyContact: existingPatient?.emergencyContact || '',
     emergencyContactRelationship: existingPatient?.emergencyContactRelationship || '',
-    knownConditions: existingPatient?.knownConditions || 'None',
-    allergies: existingPatient?.allergies || 'Not Reported',
-    chiefComplaint: existingPatient?.recentComplaint || 'General OPD Registration',
+    knownConditions: existingPatient?.knownConditions || '',
+    allergies: existingPatient?.allergies || '',
+    chiefComplaint: existingPatient?.recentComplaint || '',
   }));
 
-  useEffect(() => {
-    if (existingPatient) {
-      setFormData({
-        name: existingPatient.name || '',
-        age: existingPatient.age ? String(existingPatient.age) : '',
-        dob: toDDMMYYYY(existingPatient.dob || ''),
-        gender: existingPatient.gender || 'Male',
-        phone: existingPatient.phone || '',
-        email: existingPatient.email || '',
-        address: existingPatient.address || '',
-        aadhaar: existingPatient.aadhaar || '',
-        bloodGroup: existingPatient.bloodGroup || '',
-        emergencyContact: existingPatient.emergencyContact || '',
-        emergencyContactRelationship: existingPatient.emergencyContactRelationship || '',
-        knownConditions: existingPatient.knownConditions || 'None',
-        allergies: existingPatient.allergies || 'Not Reported',
-        chiefComplaint: existingPatient.recentComplaint || 'General OPD Registration',
-      });
-    }
-  }, [existingPatient?.patientId]);
+
   const [formErrors, setFormErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [nextPatientIdPreview, setNextPatientIdPreview] = useState(() =>
@@ -258,20 +187,10 @@ export default function PatientRegistrationDashboard({
   const [allPatientsCount, setAllPatientsCount] = useState(() => getPatients().length);
 
   // Live Auto-Calculation: Compute Age instantly whenever DOB is entered or changed
-  useEffect(() => {
-    if (formData.dob) {
-      const calculated = calculateAge(formData.dob);
-      if (calculated && calculated !== formData.age) {
-        setFormData((prev) => ({ ...prev, age: calculated }));
-        if (formErrors.age) {
-          setFormErrors((prev) => ({ ...prev, age: undefined }));
-        }
-      }
-    }
-  }, [formData.dob]);
+
 
   // ── Handle Search ──────────────────────────────────────────────────────────
-  const handleSearchSubmit = (e) => {
+  const handleSearchSubmit = async (e) => {
     if (e) e.preventDefault();
     if (!searchQuery.trim()) {
       setHasSearched(false);
@@ -280,6 +199,7 @@ export default function PatientRegistrationDashboard({
       return;
     }
 
+    await refreshAuthorizedPatients();
     const results = searchPatients(searchQuery);
     setSearchResults(results);
     setHasSearched(true);
@@ -300,15 +220,6 @@ export default function PatientRegistrationDashboard({
     setSelectedPatient(null);
   };
 
-  const handlePresetSearch = (term) => {
-    setSearchQuery(term);
-    const results = searchPatients(term);
-    setSearchResults(results);
-    setHasSearched(true);
-    if (results.length > 0) {
-      setSelectedPatient(results[0]);
-    }
-  };
 
   // ── Handle Aadhaar OCR Scan ────────────────────────────────────────────────
   const triggerAadhaarScan = async (fileOrPreset) => {
@@ -353,49 +264,10 @@ export default function PatientRegistrationDashboard({
 
   // ── Handle Form Validation & Submission ────────────────────────────────────
   const validateForm = () => {
-    const errors = {};
+    const errors = validatePatientDetails(formData);
     if (!formData.name.trim()) errors.name = 'Patient Full Name is required.';
-    if (!formData.age || !formData.age.trim()) {
-      errors.age = 'Age is required.';
-    } else {
-      const ageNum = parseInt(formData.age, 10);
-      if (isNaN(ageNum) || ageNum <= 0 || ageNum > 120) {
-        errors.age = 'Please enter a valid age (1 - 120).';
-      }
-    }
     if (!formData.gender) errors.gender = 'Gender is required.';
-    if (!formData.phone.trim()) {
-      errors.phone = 'Phone number is required.';
-    } else if (!/^\d{10}$/.test(formData.phone.replace(/[- ]/g, ''))) {
-      errors.phone = 'Enter a valid 10-digit mobile number.';
-    }
-    if (!formData.address.trim()) errors.address = 'Address / Location is required.';
-
-    if (formData.dob && formData.dob.trim()) {
-      if (formData.dob.length < 10) {
-        errors.dob = 'Complete DD-MM-YYYY format.';
-      } else {
-        const parts = formData.dob.split('-');
-        if (parts.length === 3) {
-          const d = parseInt(parts[0], 10);
-          const m = parseInt(parts[1], 10);
-          const y = parseInt(parts[2], 10);
-          const currentYear = new Date().getFullYear();
-          if (isNaN(d) || isNaN(m) || isNaN(y) || d < 1 || d > 31 || m < 1 || m > 12 || y < 1900 || y > currentYear) {
-            errors.dob = 'Enter a valid date (DD-MM-YYYY).';
-          }
-        } else {
-          errors.dob = 'Format must be DD-MM-YYYY.';
-        }
-      }
-    }
-
-    if (formData.aadhaar && formData.aadhaar.trim()) {
-      const cleanAadhaar = formData.aadhaar.replace(/\D/g, '');
-      if (cleanAadhaar.length !== 12) {
-        errors.aadhaar = `Aadhaar must be exactly 12 digits (currently ${cleanAadhaar.length}).`;
-      }
-    }
+    if (!formData.address.trim()) errors.address = 'Address is required.';
 
     return errors;
   };
@@ -414,7 +286,7 @@ export default function PatientRegistrationDashboard({
     // Simulate database write
     await new Promise((r) => setTimeout(r, 600));
 
-    const result = registerPatient({
+    const result = await registerPatient({
       ...formData,
       patientId: isPatient ? currentId : undefined,
       fromAadhaar: Boolean(aadhaarExtractedInfo),
@@ -459,9 +331,9 @@ export default function PatientRegistrationDashboard({
         bloodGroup: '',
         emergencyContact: '',
         emergencyContactRelationship: '',
-        knownConditions: 'None',
-        allergies: 'Not Reported',
-        chiefComplaint: 'General OPD Consultation',
+        knownConditions: '',
+        allergies: '',
+        chiefComplaint: '',
       });
       setAadhaarExtractedInfo(null);
     }
@@ -500,7 +372,7 @@ export default function PatientRegistrationDashboard({
               </div>
               <div className="prd-stat-chip">
                 <span className="chip-label">KYC Status</span>
-                <span className="chip-val">{formData.aadhaar || aadhaarExtractedInfo ? 'Aadhaar Verified' : 'Pending Verification'}</span>
+                <span className="chip-val">{formData.aadhaar || aadhaarExtractedInfo ? 'Aadhaar Provided' : 'Pending Verification'}</span>
               </div>
             </div>
           </>
@@ -545,7 +417,7 @@ export default function PatientRegistrationDashboard({
                 <input
                   type="text"
                   className="prd-search-input"
-                  placeholder="Enter Patient ID (e.g. CV2026-000110), Name, or Phone..."
+                  placeholder="Enter Patient ID, Name, or Phone..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   autoFocus
@@ -561,38 +433,6 @@ export default function PatientRegistrationDashboard({
               </button>
             </form>
 
-            {/* Instant Demo Suggestion Chips */}
-            <div className="prd-search-presets">
-              <span className="presets-label">Quick Lookups (Demo):</span>
-              <button
-                type="button"
-                className="preset-chip"
-                onClick={() => handlePresetSearch('CV2026-000110')}
-              >
-                CV2026-000110 (Vikram Malhotra)
-              </button>
-              <button
-                type="button"
-                className="preset-chip"
-                onClick={() => handlePresetSearch('CV2026-000452')}
-              >
-                CV2026-000452 (Rahul Kumar)
-              </button>
-              <button
-                type="button"
-                className="preset-chip"
-                onClick={() => handlePresetSearch('CV2026-000101')}
-              >
-                CV2026-000101 (Ananya Verma)
-              </button>
-              <button
-                type="button"
-                className="preset-chip"
-                onClick={() => handlePresetSearch('CV2026-000214')}
-              >
-                CV2026-000214 (Rajesh Sharma)
-              </button>
-            </div>
           </div>
 
           {/* PRIVACY DEFAULT STATE: If doctor hasn't searched yet */}
@@ -604,17 +444,8 @@ export default function PatientRegistrationDashboard({
               <h3 className="privacy-heading">Patient Data Privacy Protection Active</h3>
               <p className="privacy-desc">
                 In accordance with CareVault clinical protocols, patient records are <strong>hidden by default</strong> upon login.
-                Please enter a Patient ID (CV2026-000110), Name, or Phone in the search bar above to look up records.
+                Please enter a Patient ID, Name, or Phone in the search bar above to look up records.
               </p>
-              <div className="privacy-actions">
-                <button
-                  type="button"
-                  className="prd-btn-primary"
-                  onClick={() => handlePresetSearch('CV2026-000110')}
-                >
-                  <IconSearch /> Search Demo Patient (CV2026-000110)
-                </button>
-              </div>
             </div>
           )}
 
@@ -622,8 +453,8 @@ export default function PatientRegistrationDashboard({
           {hasSearched && searchResults.length === 0 && (
             <div className="prd-no-results">
               <div className="no-results-icon"><IconAlertCircle /></div>
-              <h3>Patient Not Found</h3>
-              <p>No CareVault patient was found with this Patient ID. Please verify the ID and try again.</p>
+              <h3>No accessible patient found</h3>
+              <p>No matching patient is available to this account. Check the Patient ID; the record may exist but require access.</p>
             </div>
           )}
 
@@ -729,7 +560,7 @@ export default function PatientRegistrationDashboard({
                 </div>
                 <div className="record-detail-item">
                   <span className="detail-label">Aadhaar (KYC Status)</span>
-                  <span className="detail-value mono">{selectedPatient.aadhaar ? `${selectedPatient.aadhaar} (Verified)` : 'Not Linked'}</span>
+                  <span className="detail-value mono">{selectedPatient.aadhaar ? `${selectedPatient.aadhaar} (Provided)` : 'Not Linked'}</span>
                 </div>
               </div>
 
@@ -799,7 +630,7 @@ export default function PatientRegistrationDashboard({
               <div className="aadhaar-success-banner">
                 <div className="success-banner-icon"><IconCheckCircle /></div>
                 <div className="success-banner-body">
-                  <strong>Aadhaar Card Successfully Parsed & Verified!</strong>
+                  <strong>Aadhaar Card Parsed ? Please Review Details</strong>
                   <div className="extracted-chips">
                     <span className="verified-chip">Name: {aadhaarExtractedInfo.name}</span>
                     <span className="verified-chip">Age: {aadhaarExtractedInfo.age} Yrs</span>
@@ -924,7 +755,7 @@ export default function PatientRegistrationDashboard({
                         type="date"
                         aria-label="Pick date from calendar"
                         className="native-calendar-picker-input"
-                        max={new Date().toISOString().split('T')[0]}
+                        min="1900-01-01" max={todayISO()}
                         value={toYYYYMMDD(formData.dob)}
                         onChange={(e) => {
                           const isoVal = e.target.value;
@@ -965,7 +796,8 @@ export default function PatientRegistrationDashboard({
                       maxLength={3}
                       className={`prd-input ${formErrors.age ? 'input-error' : ''}`}
                       placeholder="Auto-calculated (e.g. 28)"
-                      value={formData.age}
+                      readOnly
+                      value={calculateAge(formData.dob)}
                       onChange={(e) => {
                         const cleanAge = e.target.value.replace(/\D/g, '').slice(0, 3);
                         let estimatedDob = formData.dob;
@@ -982,6 +814,8 @@ export default function PatientRegistrationDashboard({
                   {formErrors.age && <span className="form-error-msg">{formErrors.age}</span>}
                 </div>
 
+                <div className="prd-form-group"><label className="prd-form-label" htmlFor="prd-email">Email Address</label><input id="prd-email" type="email" className="prd-input" value={formData.email} onChange={e => setFormData(prev => ({...prev, email: e.target.value}))} />{formErrors.email && <span className="form-error-msg">{formErrors.email}</span>}</div>
+                <div className="prd-form-group"><label className="prd-form-label" htmlFor="prd-emergencyContact">Emergency Mobile Number</label><input id="prd-emergencyContact" type="tel" className="prd-input" value={formData.emergencyContact} onChange={e => setFormData(prev => ({...prev, emergencyContact: e.target.value}))} />{formErrors.emergencyContact && <span className="form-error-msg">{formErrors.emergencyContact}</span>}</div>
                 {/* Phone Number */}
                 <div className="prd-form-group">
                   <label className="prd-form-label" htmlFor="patientPhone">
@@ -1176,7 +1010,7 @@ export default function PatientRegistrationDashboard({
                 {newlyRegisteredRecord.patient.aadhaar && (
                   <div className="slip-field full">
                     <span className="field-key">Aadhaar (KYC):</span>
-                    <span className="field-val mono">{newlyRegisteredRecord.patient.aadhaar} (UIDAI Verified)</span>
+                    <span className="field-val mono">{newlyRegisteredRecord.patient.aadhaar} (Provided)</span>
                   </div>
                 )}
                 <div className="slip-field full">
@@ -1236,4 +1070,8 @@ export default function PatientRegistrationDashboard({
       )}
     </div>
   );
+}
+
+export default function PatientRegistrationDashboard(props) {
+  return <PatientRegistrationContent key={`${props.userRole}:${props.currentId}`} {...props} />;
 }

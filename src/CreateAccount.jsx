@@ -1,5 +1,9 @@
-import { useState, useRef, useEffect } from 'react';
-import { generateDoctorId, generatePatientId, createAccount } from './services/authService';
+import { refreshAuthorizedPatients } from './services/patientService.js';
+import { authRequest } from './services/api.js';
+import { setSession } from './services/authService.js';
+import { calculateAge, validatePatientDetails, todayISO } from './services/patientValidation.js';
+import { useState, useRef } from 'react';
+import { generateDoctorId, generatePatientId } from './services/authService';
 import { registerPatient, parseAadhaarCard } from './services/patientService';
 import './CreateAccount.css';
 
@@ -131,51 +135,7 @@ function formatDob(val) {
 }
 
 // Calculate age from DOB
-function calculateAge(dobInput) {
-  if (!dobInput) return '';
-  const str = String(dobInput).trim();
 
-  let day, month, year;
-  if (/^\d{4}[-/.]\d{1,2}[-/.]\d{1,2}$/.test(str)) {
-    const parts = str.split(/[-/.]/);
-    year = parseInt(parts[0], 10);
-    month = parseInt(parts[1], 10);
-    day = parseInt(parts[2], 10);
-  } else if (/^\d{1,2}[-/.]\d{1,2}[-/.]\d{4}$/.test(str)) {
-    const parts = str.split(/[-/.]/);
-    day = parseInt(parts[0], 10);
-    month = parseInt(parts[1], 10);
-    year = parseInt(parts[2], 10);
-  } else if (/^\d{8}$/.test(str)) {
-    day = parseInt(str.slice(0, 2), 10);
-    month = parseInt(str.slice(2, 4), 10);
-    year = parseInt(str.slice(4, 8), 10);
-  } else if (/^\d{4}$/.test(str)) {
-    year = parseInt(str, 10);
-    const currentYear = new Date().getFullYear();
-    if (year >= 1900 && year <= currentYear) return String(currentYear - year);
-    return '';
-  } else {
-    return '';
-  }
-
-  const currentYear = new Date().getFullYear();
-  if (!year || year < 1900 || year > currentYear) return '';
-  if (!month || month < 1 || month > 12) return '';
-  if (!day || day < 1 || day > 31) return '';
-
-  const birth = new Date(year, month - 1, day);
-  if (isNaN(birth.getTime())) return '';
-
-  const today = new Date();
-  let age = today.getFullYear() - birth.getFullYear();
-  const m = today.getMonth() - birth.getMonth();
-  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
-    age--;
-  }
-
-  return age >= 0 ? String(age) : '0';
-}
 
 const ROLES = [
   {
@@ -206,6 +166,7 @@ export default function CreateAccount({ onReturnToLogin, onLoginSuccess }) {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Patient Registration Details
+  const [nmcRegistrationNumber, setNmcRegistrationNumber] = useState('');
   const [patientForm, setPatientForm] = useState({
     name: '',
     gender: 'Male',
@@ -233,15 +194,7 @@ export default function CreateAccount({ onReturnToLogin, onLoginSuccess }) {
   const currentGeneratedId = selectedRole === 'doctor' ? doctorCandidateId : patientCandidateId;
 
   // Auto-calculate age from DOB
-  useEffect(() => {
-    if (patientForm.dob) {
-      const calculated = calculateAge(patientForm.dob);
-      if (calculated && calculated !== patientForm.age) {
-        setPatientForm((prev) => ({ ...prev, age: calculated }));
-        if (errors.age) setErrors((prev) => ({ ...prev, age: undefined }));
-      }
-    }
-  }, [patientForm.dob]);
+
 
   const handleRoleSelect = (roleId) => {
     setSelectedRole(roleId);
@@ -304,28 +257,14 @@ export default function CreateAccount({ onReturnToLogin, onLoginSuccess }) {
       errs.confirmPassword = 'Passwords do not match.';
     }
 
+    if (selectedRole === 'doctor' && !nmcRegistrationNumber.trim()) errs.nmcRegistrationNumber = 'NMC registration demo code is required.';
     // Additional validations for Patient
+    if (selectedRole === 'doctor' && !/^[6-9]\d{9}$/.test(patientForm.phone)) errs.phone = 'Enter a 10-digit mobile number starting with 6, 7, 8 or 9.';
     if (selectedRole === 'patient') {
       if (!patientForm.name.trim()) errs.name = 'Patient Full Name is required.';
       if (!patientForm.gender) errs.gender = 'Gender is required.';
-      if (!patientForm.dob || !patientForm.dob.trim()) {
-        errs.dob = 'Date of Birth is required.';
-      } else if (patientForm.dob.trim().length < 10) {
-        errs.dob = 'Complete DD-MM-YYYY format.';
-      }
-      if (!patientForm.phone.trim()) {
-        errs.phone = 'Mobile phone number is required.';
-      } else if (!/^\d{10}$/.test(patientForm.phone.replace(/[- ]/g, ''))) {
-        errs.phone = 'Enter a valid 10-digit mobile number.';
-      }
       if (!patientForm.address.trim()) errs.address = 'Residential Address is required.';
-
-      if (patientForm.aadhaar && patientForm.aadhaar.trim()) {
-        const cleanAadhaar = patientForm.aadhaar.replace(/\D/g, '');
-        if (cleanAadhaar.length !== 12) {
-          errs.aadhaar = `Aadhaar must be 12 digits (currently ${cleanAadhaar.length}).`;
-        }
-      }
+      Object.assign(errs, validatePatientDetails(patientForm));
     }
 
     return errs;
@@ -345,14 +284,22 @@ export default function CreateAccount({ onReturnToLogin, onLoginSuccess }) {
 
     await new Promise((res) => setTimeout(res, 500));
 
+    const result = await authRequest('register', {
+      role: selectedRole, id: currentGeneratedId, password,
+      nmcRegistrationNumber: selectedRole === 'doctor' ? nmcRegistrationNumber.trim() : undefined,
+      phone: patientForm.phone, profileData: selectedRole === 'patient' ? patientForm : undefined,
+    });
+    if (!result.success) { setLoading(false); setErrors({ form: result.error }); return; }
+    setSession({ ...result.session, token: result.token });
+    await refreshAuthorizedPatients();
     if (selectedRole === 'patient') {
       // 1. Register Patient Profile in patientService
-      registerPatient({
-        patientId: currentGeneratedId,
+      const profileResult = await registerPatient({
+        patientId: result.id,
         name: patientForm.name,
         gender: patientForm.gender,
         dob: patientForm.dob,
-        age: patientForm.age,
+        age: calculateAge(patientForm.dob),
         phone: patientForm.phone,
         email: patientForm.email,
         address: patientForm.address,
@@ -362,14 +309,8 @@ export default function CreateAccount({ onReturnToLogin, onLoginSuccess }) {
         emergencyContactRelationship: patientForm.emergencyContactRelationship,
         fromAadhaar: Boolean(aadhaarExtractedInfo),
       });
+      if (!profileResult.success) { setLoading(false); setErrors({ form: profileResult.error }); return; }
     }
-
-    // 2. Create Auth Account in authService
-    const result = createAccount({
-      role: selectedRole,
-      id: currentGeneratedId,
-      password,
-    });
 
     setLoading(false);
 
@@ -409,6 +350,13 @@ export default function CreateAccount({ onReturnToLogin, onLoginSuccess }) {
             <img src="/logo.jpeg" alt="CareVault Logo" className="create-account-logo-img" />
           </div>
 
+          {isDoctor && <div className="field-group">
+            <label className="field-label" htmlFor="doctor-nmc">NMC Registration Number (Demo) *</label>
+            <input id="doctor-nmc" className="field-input" value={nmcRegistrationNumber} maxLength={40} placeholder="Enter your approved DEMO-NMC code" aria-describedby="doctor-nmc-help" onChange={e => { setNmcRegistrationNumber(e.target.value.toUpperCase()); setErrors(prev => ({ ...prev, nmcRegistrationNumber: undefined, form: undefined })); }} />
+            <small id="doctor-nmc-help">Testing access only. This does not verify NMC registration or medical qualifications.</small>
+            {errors.nmcRegistrationNumber && <span className="field-error">{errors.nmcRegistrationNumber}</span>}
+          </div>}
+          {isDoctor && <div className="field-group"><label className="field-label" htmlFor="doctor-mobile">Mobile number for password recovery *</label><input id="doctor-mobile" className="field-input" type="tel" maxLength={10} value={patientForm.phone} onChange={e => setPatientForm(prev => ({ ...prev, phone: e.target.value }))} />{errors.phone && <span className="field-error">{errors.phone}</span>}</div>}
           <header className="create-account-card-header">
             <h1 className="create-account-welcome">Create New Account</h1>
             <p className="create-account-subtitle">
@@ -634,6 +582,7 @@ export default function CreateAccount({ onReturnToLogin, onLoginSuccess }) {
                         />
                         <input
                           type="date"
+                          min="1900-01-01" max={todayISO()}
                           aria-label="Pick date from calendar"
                           style={{ width: '38px', height: '38px', padding: 0, cursor: 'pointer', border: '1px solid #cbd5e1', borderRadius: '6px' }}
                           value={toYYYYMMDD(patientForm.dob)}
@@ -656,7 +605,8 @@ export default function CreateAccount({ onReturnToLogin, onLoginSuccess }) {
                         type="text"
                         className="field-input"
                         placeholder="Auto-calculated"
-                        value={patientForm.age}
+                        readOnly
+                      value={calculateAge(patientForm.dob)}
                         onChange={(e) => setPatientForm({ ...patientForm, age: e.target.value.replace(/\D/g, '') })}
                       />
                     </div>
@@ -713,6 +663,7 @@ export default function CreateAccount({ onReturnToLogin, onLoginSuccess }) {
                         value={patientForm.email}
                         onChange={(e) => setPatientForm({ ...patientForm, email: e.target.value })}
                       />
+                      {errors.email && <span className="field-error">{errors.email}</span>}
                     </div>
 
                     <div className="field-group" style={{ gridColumn: '1 / -1' }}>
@@ -764,6 +715,7 @@ export default function CreateAccount({ onReturnToLogin, onLoginSuccess }) {
                         value={patientForm.emergencyContact}
                         onChange={(e) => setPatientForm({ ...patientForm, emergencyContact: e.target.value })}
                       />
+                      {errors.emergencyContact && <span className="field-error">{errors.emergencyContact}</span>}
                     </div>
 
                     <div className="field-group">

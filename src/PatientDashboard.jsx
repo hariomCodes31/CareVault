@@ -72,13 +72,6 @@ const IconClock = () => (
   </svg>
 );
 
-const IconArrowRight = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="5" y1="12" x2="19" y2="12" />
-    <polyline points="12 5 19 12 12 19" />
-  </svg>
-);
-
 const IconPrinter = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="6 9 6 2 18 2 18 9" />
@@ -122,150 +115,159 @@ const IconLogOut = () => (
   </svg>
 );
 
-// Default patient fallback (Vikram Malhotra)
 const DEFAULT_PATIENT = {
-  name: 'Vikram Malhotra',
-  patientId: 'CV2026-000110',
-  age: 32,
-  dob: '1994-07-12',
-  gender: 'Male',
-  phone: '9876512340',
-  email: 'vikram.malhotra@example.com',
-  address: 'Boring Road, Patna, Bihar - 800001',
-  aadhaar: '7812 3456 9012',
-  bloodGroup: 'B+',
-  knownConditions: 'None Reported',
-  allergies: 'Not Reported',
-  emergencyContact: '9876512341',
-  emergencyContactRelationship: 'Spouse',
-  vitals: {
-    bp: '120/80 mmHg',
-    hr: '76 bpm',
-    temp: '98.6°F',
-    spo2: '99%',
-  },
-  stats: {
-    totalVisits: 3,
-    reportsCount: 2,
-    activeFollowUps: 1,
-  },
-  reports: [
-    {
-      id: 'r1',
-      title: 'Complete Blood Count (CBC)',
-      date: '10 Sep 2026',
-      category: 'Laboratory',
-      status: 'Completed',
-      issuedBy: 'CareVault Central Diagnostics',
-      fileSize: '1.2 MB',
-    },
-    {
-      id: 'r2',
-      title: 'Chest X-Ray PA View',
-      date: '15 May 2026',
-      category: 'Radiology',
-      status: 'Completed',
-      issuedBy: 'Radiology Dept - CareVault Hospital',
-      fileSize: '4.8 MB',
-    },
-  ],
-  prescriptions: [
-    {
-      id: 'p1',
-      date: '10 Sep 2026',
-      doctor: 'Dr. Ananya Sharma',
-      medicines: [
-        { name: 'Paracetamol 650 mg', dosage: '1-0-1', duration: '5 days', instruction: 'After meals' },
-        { name: 'Tab Cetirizine 10 mg', dosage: '0-0-1', duration: '3 days', instruction: 'At bedtime' },
-        { name: 'Cough Syrup (100ml)', dosage: '2 tsp', frequency: 'TID', duration: '5 days', instruction: 'After meals' },
-      ],
-      advice: 'Rest, warm fluids, and adequate hydration.',
-      followUp: '15 Sep 2026',
-    },
-  ],
+  name: '', patientId: '', age: '', dob: '', gender: '', phone: '', email: '', address: '', aadhaar: '', bloodGroup: '', knownConditions: '', allergies: '', emergencyContact: '', emergencyContactRelationship: '',
+  vitals: { bp: 'Not recorded', hr: 'Not recorded', temp: 'Not recorded', spo2: 'Not recorded' },
+  stats: { totalVisits: 0, reportsCount: 0, activeFollowUps: 0 }, reports: [], prescriptions: [],
 };
 
-export default function PatientDashboard({
+function PatientDashboardContent({
   patientData: customPatientData,
   onNavigateToCaseTaking,
   onNavigateToNewVisit,
   onSignOut,
   selectedVisitIdToOpen,
 }) {
-  const targetId = customPatientData?.patientId || customPatientData?.id || 'CV2026-000110';
+  const targetId = customPatientData?.patientId || customPatientData?.id || '';
 
+  const [accessStatus, setAccessStatus] = useState(() => (!targetId ? 'denied' : 'loading'));
+  const [errorMessage, setErrorMessage] = useState(() => (!targetId ? 'No patient record selected.' : ''));
+  const [retryCount, setRetryCount] = useState(0);
   const [activeTab, setActiveTab] = useState('overview');
-  const [patient, setPatient] = useState(DEFAULT_PATIENT);
-  const [serviceVisits, setServiceVisits] = useState([]);
-  const [selectedVisitModal, setSelectedVisitModal] = useState(null);
+  const [serviceVisits, setServiceVisits] = useState(() => getPatientVisits(targetId));
+  const [selectedVisitModal, setSelectedVisitModal] = useState(() => serviceVisits.find(v => v.id === selectedVisitIdToOpen) || null);
+  const [patient, setPatient] = useState(() => {
+    const profile = getPatientProfile(targetId);
+    const registered = getPatientById(targetId);
+    return { ...DEFAULT_PATIENT, ...profile, ...registered, ...customPatientData, patientId: targetId,
+      phone: customPatientData?.phone ?? registered?.phone ?? profile.contact ?? '',
+      vitals: { ...DEFAULT_PATIENT.vitals, ...registered?.vitals, ...customPatientData?.vitals },
+      stats: { totalVisits: serviceVisits.length, reportsCount: profile.reportCount ?? 0, activeFollowUps: profile.activeFollowUpCount ?? 0 },
+    };
+  });
 
   // Sync and load patient details from MongoDB Express Backend, services, & props
   useEffect(() => {
+    if (!targetId) return;
     let isMounted = true;
 
     // 1. Fetch directly from MongoDB Express Backend if available
     getPatientDashboardFromBackend(targetId)
       .then((res) => {
-        if (isMounted && res?.success && res?.patient) {
-          const dbPatient = res.patient;
-          setPatient((prev) => ({
-            ...prev,
-            name: dbPatient.name || prev.name,
-            patientId: dbPatient.patientId || prev.patientId,
-            age: dbPatient.age || prev.age,
-            gender: dbPatient.gender || prev.gender,
-            phone: dbPatient.phone || prev.phone,
-            address: dbPatient.address || prev.address,
-            aadhaar: dbPatient.aadhaar || prev.aadhaar,
-            bloodGroup: dbPatient.bloodGroup || prev.bloodGroup,
-            knownConditions: dbPatient.knownConditions || prev.knownConditions,
-            allergies: dbPatient.allergies || prev.allergies,
-            vitals: dbPatient.vitals || prev.vitals,
-          }));
+        if (!isMounted) return;
+        if (!res?.success || !res?.patient) {
+          if (res?.status === 401 || res?.status === 403) {
+            setAccessStatus('denied');
+            setErrorMessage(res?.error || 'Record unavailable or access denied. Sign in again or ask the patient to grant access.');
+          } else if (res?.status === 404) {
+            setAccessStatus('not_found');
+            setErrorMessage(res?.error || 'Patient record not found.');
+          } else if (res?.status === 408 || res?.isTimeout) {
+            setAccessStatus('timeout');
+            setErrorMessage(res?.error || 'Request timed out while loading dashboard. The server took too long to respond.');
+          } else {
+            setAccessStatus('error');
+            setErrorMessage(res?.error || 'Failed to load patient records.');
+          }
+          return;
         }
+
+        setAccessStatus('allowed');
+        setErrorMessage('');
+        const dbPatient = res.patient;
+        setServiceVisits(local => {
+          const remote = (res.visits || []).map(v => ({ ...v, id: v.visitId || v._id, date: String(v.date || '').slice(0, 10), primaryDiagnosis: v.diagnosis }));
+          const ids = new Set(local.map(v => v.id));
+          return [...local, ...remote.filter(v => !ids.has(v.id))].sort((a, b) => String(b.date).localeCompare(String(a.date)));
+        });
+        setPatient((prev) => ({
+          ...prev,
+          ...dbPatient,
+          reports: (res.reports || []).map(report => ({ ...report, id: report.reportId || report._id, date: String(report.date || '').slice(0, 10) })),
+          prescriptions: (res.prescriptions || []).map(rx => ({ ...rx, id: rx.prescriptionId || rx._id, doctor: rx.doctorName, date: String(rx.date || '').slice(0, 10), medicines: rx.medicines || [] })),
+          name: dbPatient.name || prev.name,
+          patientId: dbPatient.patientId || prev.patientId,
+          age: dbPatient.age ?? prev.age,
+          gender: dbPatient.gender || prev.gender,
+          phone: dbPatient.phone || prev.phone,
+          address: dbPatient.address || prev.address,
+          aadhaar: dbPatient.aadhaar || prev.aadhaar,
+          bloodGroup: dbPatient.bloodGroup || prev.bloodGroup,
+          knownConditions: dbPatient.knownConditions || prev.knownConditions,
+          allergies: dbPatient.allergies || prev.allergies,
+          vitals: dbPatient.vitals || prev.vitals,
+        }));
       })
-      .catch((err) => console.warn('MongoDB fetch notice:', err));
-
-    // 2. Local fallback sync
-    const regPatient = getPatientById(targetId);
-    const profile = getPatientProfile(targetId);
-    const vList = getPatientVisits(targetId);
-    setServiceVisits(vList || []);
-
-    if (selectedVisitIdToOpen) {
-      const found = (vList || []).find((v) => v.id === selectedVisitIdToOpen);
-      if (found) setSelectedVisitModal(found);
-    }
-
-    setPatient((prev) => ({
-      ...prev,
-      ...profile,
-      ...regPatient,
-      name: customPatientData?.name || regPatient?.name || profile.name || prev.name,
-      patientId: targetId,
-      age: customPatientData?.age || regPatient?.age || profile.age || prev.age,
-      gender: customPatientData?.gender || regPatient?.gender || profile.gender || prev.gender,
-      phone: customPatientData?.phone || regPatient?.phone || profile.contact || prev.phone,
-      email: regPatient?.email || profile.email || prev.email,
-      address: customPatientData?.address || regPatient?.address || profile.address || prev.address,
-      aadhaar: customPatientData?.aadhaar || regPatient?.aadhaar || profile.aadhaar || prev.aadhaar,
-      bloodGroup: customPatientData?.bloodGroup || regPatient?.bloodGroup || profile.bloodGroup || prev.bloodGroup,
-      emergencyContact: regPatient?.emergencyContact || prev.emergencyContact,
-      emergencyContactRelationship: regPatient?.emergencyContactRelationship || prev.emergencyContactRelationship,
-      knownConditions: regPatient?.knownConditions || profile.knownConditions || prev.knownConditions,
-      allergies: regPatient?.allergies || profile.allergies || prev.allergies,
-      vitals: { ...prev.vitals, ...(customPatientData?.vitals || {}) },
-      stats: {
-        totalVisits: (vList && vList.length > 0) ? vList.length : prev.stats.totalVisits,
-        reportsCount: profile.reportCount || prev.stats.reportsCount,
-        activeFollowUps: profile.activeFollowUpCount || prev.stats.activeFollowUps,
-      },
-    }));
+      .catch((err) => {
+        console.warn('MongoDB fetch notice:', err);
+        if (!isMounted) return;
+        setAccessStatus('error');
+        setErrorMessage(err?.message || 'Unable to connect to the server. Please check your connection and try again.');
+      });
 
     return () => {
       isMounted = false;
     };
-  }, [customPatientData, targetId, selectedVisitIdToOpen]);
+  }, [targetId, retryCount]);
+
+  if (accessStatus !== 'allowed') {
+    return (
+      <div className="patient-dashboard-container">
+        <div
+          className="pd-card pd-status-card"
+          style={{
+            maxWidth: '540px',
+            margin: '3rem auto',
+            textAlign: 'center',
+            padding: '2.5rem 1.5rem',
+            boxShadow: 'var(--pd-shadow)',
+            borderRadius: 'var(--pd-radius)',
+          }}
+        >
+          <p
+            role="status"
+            style={{
+              fontSize: '1rem',
+              color: accessStatus === 'loading' ? 'var(--pd-text-muted)' : 'var(--pd-text-main)',
+              marginBottom: accessStatus === 'loading' ? 0 : '1.25rem',
+              lineHeight: '1.5',
+            }}
+          >
+            {accessStatus === 'loading'
+              ? 'Checking record access...'
+              : (errorMessage || (accessStatus === 'denied'
+                ? 'Record unavailable or access denied. Sign in again or ask the patient to grant access.'
+                : 'Unable to load patient records.'))}
+          </p>
+          {accessStatus !== 'loading' && (
+            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                className="pd-btn pd-btn-secondary"
+                id="btn-retry-dashboard"
+                onClick={() => {
+                  setAccessStatus('loading');
+                  setErrorMessage('');
+                  setRetryCount((c) => c + 1);
+                }}
+              >
+                Retry
+              </button>
+              {onSignOut && accessStatus === 'denied' && (
+                <button
+                  type="button"
+                  className="pd-btn pd-btn-outline"
+                  onClick={onSignOut}
+                >
+                  Sign Out
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   const handleNewVisitAction = () => {
     if (onNavigateToCaseTaking) {
@@ -280,118 +282,34 @@ export default function PatientDashboard({
   };
 
   // Initials for avatar
-  const initials = (patient.name || 'Vikram Malhotra')
+  const initials = (patient.name || 'Patient')
     .split(' ')
     .map((n) => n[0])
     .join('')
     .substring(0, 2)
     .toUpperCase();
 
-  const displayVisits = serviceVisits.length > 0
-    ? serviceVisits.map((v) => ({
+  const displayVisits = serviceVisits.map((v) => ({
         id: v.id,
         date: v.date,
         time: v.time,
         type: 'OPD Visit',
         chiefComplaint: `${v.chiefComplaint}${v.complaintDuration ? ` (${v.complaintDuration} ${v.complaintDurationUnit || 'Days'})` : ''}`,
-        doctor: v.doctorName || 'Dr. Ananya Sharma',
-        department: 'General Medicine',
-        diagnosis: v.primaryDiagnosis || 'Clinical Assessment',
+        doctor: v.doctorName || 'Not recorded',
+        department: v.department || '',
+        diagnosis: v.primaryDiagnosis || '',
         vitals: v.vitals,
         prescription: v.prescription,
         historyOfPresentIllness: v.historyOfPresentIllness,
         followUp: v.followUp,
         rawVisitObj: v,
-      }))
-    : [
-        {
-          id: 'VIS-2026-003',
-          date: '10 Sep 2026',
-          type: 'OPD Visit',
-          chiefComplaint: 'Chest congestion & fever since 3 days',
-          doctor: 'Dr. Ananya Sharma',
-          department: 'General Medicine',
-          diagnosis: 'Acute Viral Pyrexia & Bronchitis',
-          status: 'Completed',
-        },
-        {
-          id: 'VIS-2026-002',
-          date: '15 May 2026',
-          type: 'Lab Test',
-          chiefComplaint: 'Routine Lab Screening',
-          doctor: 'Dr. Rajesh Verma',
-          department: 'Internal Medicine',
-          diagnosis: 'Chest X-Ray & CBC Screening',
-          status: 'Completed',
-        },
-      ];
+      }));
 
-  const patientCases = [
-    {
-      id: 'CASE-2026-081',
-      title: 'Acute Viral Pyrexia & Respiratory Infection',
-      startDate: '10 Sep 2026',
-      status: 'Active',
-      primaryDiagnosis: 'Acute Viral Pyrexia',
-      secondaryDiagnosis: 'Upper Respiratory Tract Congestion',
-      doctor: 'Dr. Ananya Sharma',
-      department: 'General Medicine',
-      lastUpdated: '10 Sep 2026',
-    },
-    {
-      id: 'CASE-2026-042',
-      title: 'Hypertension Monitoring & Blood Pressure Control',
-      startDate: '15 May 2026',
-      status: 'Closed',
-      primaryDiagnosis: 'Essential Hypertension (Controlled)',
-      secondaryDiagnosis: 'Mild Hyperlipidemia',
-      doctor: 'Dr. Rajesh Verma',
-      department: 'Internal Medicine',
-      lastUpdated: '28 Aug 2026',
-    },
-  ];
+  const patientCases = patient.cases || [];
 
-  const patientAppointments = [
-    {
-      id: 'APT-2026-104',
-      date: '15 Sep 2026',
-      time: '10:00 AM',
-      type: 'Follow-up Consultation',
-      tokenNumber: 'TK-104',
-      department: 'General Medicine',
-      doctor: 'Dr. Ananya Sharma',
-      status: 'Confirmed',
-    },
-    {
-      id: 'APT-2026-088',
-      date: '10 Sep 2026',
-      time: '10:30 AM',
-      type: 'OPD Consultation',
-      tokenNumber: 'TK-102',
-      department: 'General Medicine',
-      doctor: 'Dr. Ananya Sharma',
-      status: 'Completed',
-    },
-  ];
+  const patientAppointments = patient.appointments || [];
 
-  const patientDocuments = [
-    {
-      id: 'doc-1',
-      title: 'UIDAI Aadhaar KYC Identity Document',
-      category: 'Identity Record',
-      uploadDate: '10 Jan 2026',
-      fileSize: '1.4 MB',
-      fileType: 'PDF Document',
-    },
-    {
-      id: 'doc-2',
-      title: 'Hospital Clinical Summary & Vitals Card',
-      category: 'Clinical Record',
-      uploadDate: '15 May 2026',
-      fileSize: '2.8 MB',
-      fileType: 'PDF Document',
-    },
-  ];
+  const patientDocuments = patient.documents || [];
 
   return (
     <div className="patient-dashboard-container">
@@ -454,7 +372,7 @@ export default function PatientDashboard({
             onClick={handleNewVisitAction}
             id="btn-new-visit-case-taking"
           >
-            <IconPlusCircle /> + Start Consultation / New Case
+            <IconPlusCircle /> Start consultation
           </button>
         </div>
       </header>
@@ -494,14 +412,14 @@ export default function PatientDashboard({
           className={`pd-tab-btn ${activeTab === 'prescriptions' ? 'active' : ''}`}
           onClick={() => setActiveTab('prescriptions')}
         >
-          <IconPill /> Prescriptions ({patient.prescriptions?.length || 1})
+          <IconPill /> Prescriptions ({patient.prescriptions?.length || 0})
         </button>
         <button
           type="button"
           className={`pd-tab-btn ${activeTab === 'reports' ? 'active' : ''}`}
           onClick={() => setActiveTab('reports')}
         >
-          <IconFileText /> Lab Reports ({patient.reports?.length || 2})
+          <IconFileText /> Lab Reports ({patient.reports?.length || 0})
         </button>
         <button
           type="button"
@@ -531,47 +449,17 @@ export default function PatientDashboard({
                 <span className="pd-vitals-date">Timeline of recent patient updates</span>
               </div>
               <div className="pd-timeline" style={{ marginTop: '0.75rem' }}>
-                <div className="pd-timeline-item">
-                  <div className="pd-timeline-dot" />
-                  <div className="pd-timeline-content">
-                    <div className="pd-timeline-header">
-                      <span className="pd-timeline-date">10 Sep 2026</span>
-                      <span className="pd-visit-type-badge">New Consultation / Case</span>
+                {displayVisits.length === 0 && <p>No medical activity recorded yet.</p>}
+                {displayVisits.slice(0, 5).map(visit => (
+                  <div key={visit.id} className="pd-timeline-item">
+                    <div className="pd-timeline-dot" />
+                    <div className="pd-timeline-content">
+                      <span className="pd-timeline-date">{visit.date}</span>
+                      <h4 className="pd-visit-complaint">{visit.chiefComplaint}</h4>
+                      {visit.diagnosis && <p>Diagnosis: {visit.diagnosis}</p>}
                     </div>
-                    <h4 className="pd-visit-complaint">Chest congestion & fever evaluation</h4>
-                    <p style={{ fontSize: '0.85rem', color: '#475569', marginTop: '4px' }}>
-                      Primary Diagnosis: <strong>Acute Viral Pyrexia & Bronchitis</strong>. Prescribed Paracetamol 650mg & Cetirizine.
-                    </p>
                   </div>
-                </div>
-
-                <div className="pd-timeline-item">
-                  <div className="pd-timeline-dot" />
-                  <div className="pd-timeline-content">
-                    <div className="pd-timeline-header">
-                      <span className="pd-timeline-date">10 Sep 2026</span>
-                      <span className="pd-visit-type-badge" style={{ background: '#e0f2fe', color: '#0369a1' }}>Lab Report Ready</span>
-                    </div>
-                    <h4 className="pd-visit-complaint">Complete Blood Count (CBC) Diagnostic Result</h4>
-                    <p style={{ fontSize: '0.85rem', color: '#475569', marginTop: '4px' }}>
-                      Issued by CareVault Central Diagnostics. Status: Completed.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="pd-timeline-item">
-                  <div className="pd-timeline-dot" />
-                  <div className="pd-timeline-content">
-                    <div className="pd-timeline-header">
-                      <span className="pd-timeline-date">15 Sep 2026</span>
-                      <span className="pd-visit-type-badge" style={{ background: '#fef3c7', color: '#b45309' }}>Follow-up Scheduled</span>
-                    </div>
-                    <h4 className="pd-visit-complaint">Clinical Review & Vitals Check</h4>
-                    <p style={{ fontSize: '0.85rem', color: '#475569', marginTop: '4px' }}>
-                      Scheduled OPD Token: <strong>TK-104</strong> with Dr. Ananya Sharma.
-                    </p>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
 
@@ -605,11 +493,11 @@ export default function PatientDashboard({
                 <span className="pd-stat-label">Total Visits</span>
               </div>
               <div className="pd-stat-card">
-                <span className="pd-stat-number">{patient.reports?.length || 2}</span>
+                <span className="pd-stat-number">{patient.reports?.length || 0}</span>
                 <span className="pd-stat-label">Lab Reports</span>
               </div>
               <div className="pd-stat-card highlight">
-                <span className="pd-stat-number">{patient.stats?.activeFollowUps || 1}</span>
+                <span className="pd-stat-number">{serviceVisits.filter(v => v.followUp?.required === 'Yes').length}</span>
                 <span className="pd-stat-label">Active Follow-up</span>
               </div>
             </div>
@@ -618,16 +506,16 @@ export default function PatientDashboard({
             <div className="pd-card pd-vitals-card">
               <div className="pd-card-header-flex">
                 <h2 className="pd-card-title">Latest Recorded Vitals</h2>
-                <span className="pd-vitals-date">{displayVisits[0]?.date || '10 Sep 2026'}</span>
+                <span className="pd-vitals-date">{displayVisits[0]?.date || 'Not recorded'}</span>
               </div>
               <div className="pd-vitals-grid">
                 <div className="pd-vital-tile">
                   <span className="pd-vital-name">BP</span>
-                  <span className="pd-vital-val">{displayVisits[0]?.vitals?.bloodPressure || patient.vitals?.bp || '120/80 mmHg'}</span>
+                  <span className="pd-vital-val">{displayVisits[0]?.vitals?.bloodPressure || patient.vitals?.bp || 'Not recorded'}</span>
                 </div>
                 <div className="pd-vital-tile">
                   <span className="pd-vital-name">Heart Rate</span>
-                  <span className="pd-vital-val">{displayVisits[0]?.vitals?.heartRate ? `${displayVisits[0].vitals.heartRate} bpm` : (patient.vitals?.hr || '76 bpm')}</span>
+                  <span className="pd-vital-val">{displayVisits[0]?.vitals?.heartRate ? `${displayVisits[0].vitals.heartRate} bpm` : (patient.vitals?.hr || 'Not recorded')}</span>
                 </div>
                 <div className="pd-vital-tile">
                   <span className="pd-vital-name">Temperature</span>
@@ -635,26 +523,12 @@ export default function PatientDashboard({
                 </div>
                 <div className="pd-vital-tile">
                   <span className="pd-vital-name">SpO2</span>
-                  <span className="pd-vital-val">{displayVisits[0]?.vitals?.spO2 ? `${displayVisits[0].vitals.spO2}%` : (patient.vitals?.spo2 || '99%')}</span>
+                  <span className="pd-vital-val">{displayVisits[0]?.vitals?.spO2 ? `${displayVisits[0].vitals.spO2}%` : (patient.vitals?.spo2 || 'Not recorded')}</span>
                 </div>
               </div>
             </div>
 
-            {/* Quick Action Case-Taking Card */}
-            <div className="pd-card pd-action-banner">
-              <div className="pd-banner-content">
-                <span className="pd-banner-badge">Smart Consultation</span>
-                <h3>Start New Clinical Case</h3>
-                <p>Begin dynamic case-taking, vitals intake, diagnosis, and prescription recording.</p>
-              </div>
-              <button
-                type="button"
-                className="pd-btn pd-btn-secondary"
-                onClick={handleNewVisitAction}
-              >
-                + Start Consultation <IconArrowRight />
-              </button>
-            </div>
+
           </div>
         )}
 
@@ -676,6 +550,7 @@ export default function PatientDashboard({
             </div>
 
             <div className="pd-timeline">
+              {displayVisits.length === 0 && <p>No medical history recorded yet.</p>}
               {displayVisits.map((visit) => (
                 <div key={visit.id} className="pd-timeline-item">
                   <div className="pd-timeline-dot" />
@@ -735,6 +610,7 @@ export default function PatientDashboard({
             </div>
 
             <div className="pd-reports-list">
+              {patientCases.length === 0 && <p>No clinical cases recorded yet.</p>}
               {patientCases.map((c) => (
                 <div key={c.id} className="pd-report-card" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '0.6rem' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
@@ -781,6 +657,7 @@ export default function PatientDashboard({
             </div>
 
             <div className="pd-reports-list">
+              {patientAppointments.length === 0 && <p>No appointments recorded yet.</p>}
               {patientAppointments.map((apt) => (
                 <div key={apt.id} className="pd-report-card">
                   <div className="pd-report-icon">
@@ -825,6 +702,7 @@ export default function PatientDashboard({
               </button>
             </div>
 
+            {patient.prescriptions.length === 0 && <p>No prescriptions recorded.</p>}
             {patient.prescriptions.map((rx) => (
               <div key={rx.id} className="pd-rx-card">
                 <div className="pd-rx-header">
@@ -886,6 +764,7 @@ export default function PatientDashboard({
             </div>
 
             <div className="pd-reports-list">
+              {patient.reports.length === 0 && <p>No reports recorded.</p>}
               {patient.reports.map((report) => (
                 <div key={report.id} className="pd-report-card">
                   <div className="pd-report-icon">
@@ -924,6 +803,7 @@ export default function PatientDashboard({
             </div>
 
             <div className="pd-reports-list">
+              {patientDocuments.length === 0 && <p>No documents uploaded yet.</p>}
               {patientDocuments.map((doc) => (
                 <div key={doc.id} className="pd-report-card">
                   <div className="pd-report-icon">
@@ -973,7 +853,7 @@ export default function PatientDashboard({
               </div>
               <div className="pd-info-box">
                 <span className="pd-info-label">Date of Birth</span>
-                <span className="pd-info-value">{patient.dob || '12 Jul 1994'}</span>
+                <span className="pd-info-value">{patient.dob || 'Not Provided'}</span>
               </div>
               <div className="pd-info-box">
                 <span className="pd-info-label">Mobile Phone</span>
@@ -989,7 +869,7 @@ export default function PatientDashboard({
               </div>
               <div className="pd-info-box">
                 <span className="pd-info-label">Aadhaar (KYC Status)</span>
-                <span className="pd-info-value">{patient.aadhaar ? `${patient.aadhaar} (Verified)` : 'Not Provided'}</span>
+                <span className="pd-info-value">{patient.aadhaar ? `${patient.aadhaar} (Provided)` : 'Not Provided'}</span>
               </div>
               <div className="pd-info-box">
                 <span className="pd-info-label">Emergency Contact</span>
@@ -997,7 +877,7 @@ export default function PatientDashboard({
               </div>
               <div className="pd-info-box">
                 <span className="pd-info-label">Relationship</span>
-                <span className="pd-info-value">{patient.emergencyContactRelationship || 'Spouse / Relative'}</span>
+                <span className="pd-info-value">{patient.emergencyContactRelationship || 'Not Provided'}</span>
               </div>
               <div className="pd-info-box" style={{ gridColumn: '1 / -1' }}>
                 <span className="pd-info-label">Residential Address</span>
@@ -1104,4 +984,8 @@ export default function PatientDashboard({
       )}
     </div>
   );
+}
+
+export default function PatientDashboard(props) {
+  return <PatientDashboardContent key={`${props.patientData?.patientId || props.patientData?.id}:${props.selectedVisitIdToOpen || ""}`} {...props} />;
 }

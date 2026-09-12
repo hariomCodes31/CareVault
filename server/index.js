@@ -4,18 +4,19 @@ import { createRequire } from 'module';
 import { fileURLToPath } from 'url';
 import path from 'path';
 import mongoose from 'mongoose';
-import dns from 'dns';
-
-// Force Node.js c-ares DNS resolver to use Google Public DNS for MongoDB Atlas SRV resolution
-try {
-  dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1']);
-  console.log('🌐 Custom DNS Servers set (8.8.8.8, 8.8.4.4) for MongoDB Atlas SRV lookup');
-} catch (e) {
-  console.warn('⚠️ Could not override DNS servers:', e.message);
-}
+import { connectWithRetry } from './config/connectWithRetry.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+import dns from 'node:dns';
+
+// Ensure reliable DNS resolution for MongoDB Atlas SRV records (fixes local ISP DNS ECONNREFUSED)
+try {
+  dns.setServers(['8.8.8.8', '1.1.1.1']);
+} catch {
+  // Ignore if setting custom DNS servers fails
+}
 
 // Load .env from server directory
 const require = createRequire(import.meta.url);
@@ -37,14 +38,17 @@ const connectDB = async () => {
     console.error('❌ MONGO_URI is not defined in .env!');
     return;
   }
-  try {
-    const conn = await mongoose.connect(uri, {
-      serverSelectionTimeoutMS: 10000,
-    });
-    console.log(`✅ MongoDB Atlas Connected: ${conn.connection.host}`);
-  } catch (error) {
-    console.error(`❌ MongoDB Connection Error: ${error.message}`);
-  }
+  const conn = await connectWithRetry(() => mongoose.connect(uri, {
+    serverSelectionTimeoutMS: 10000,
+  }), {
+    onRetry: (err) => {
+      const sanitizedMsg = err?.message
+        ? String(err.message).replace(/mongodb(\+srv)?:\/\/[^\s@]+@/gi, 'mongodb$1://<redacted>@')
+        : '';
+      console.warn(`Database unreachable${sanitizedMsg ? `: ${sanitizedMsg}` : ''}. Retrying in 5 seconds; check your network connection.`);
+    },
+  });
+  console.log(`MongoDB connected: ${conn.connection.host}`);
 };
 
 connectDB();
@@ -54,13 +58,19 @@ app.use(cors());
 app.use(express.json());
 
 // API Routes
+app.use('/api', (req, res, next) => {
+  if (req.path === '/health') return next();
+  if (mongoose.connection.readyState !== 1) return res.status(503).json({ success: false, error: 'Database connection is unavailable. The server is reconnecting; check your network and try again shortly.' });
+  return next();
+});
 app.use('/api/auth', authRoutes);
 app.use('/api/patients', patientRoutes);
 
 // Healthcheck
 app.get('/api/health', (req, res) => {
   res.json({
-    status: 'OK',
+    status: mongoose.connection.readyState === 1 ? 'OK' : 'DEGRADED',
+    smsRecoveryConfigured: Boolean(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_VERIFY_SERVICE_SID),
     service: 'CareVault Backend API',
     timestamp: new Date().toISOString(),
     database: mongoose.connection.readyState === 1 ? 'MongoDB Atlas ✅ Connected' : 'MongoDB ❌ Disconnected',

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import PatientRegistrationDashboard from './components/PatientRegistrationDashboard';
 import PatientDashboard from './PatientDashboard';
 import NewVisitCaseTaking from './NewVisitCaseTaking';
@@ -36,7 +36,7 @@ const IconStethoscope = () => (
   </svg>
 );
 
-export default function AuthenticatedHome({ session, onSignOut, onReturnToCreateAccount }) {
+function AuthenticatedHomeContent({ session, onSignOut, onReturnToCreateAccount }) {
   const isDoctor = session?.role === 'doctor';
   const roleName = isDoctor ? 'Doctor' : 'Patient';
   const idLabel = isDoctor ? 'Doctor ID:' : 'Patient ID:';
@@ -54,18 +54,6 @@ export default function AuthenticatedHome({ session, onSignOut, onReturnToCreate
     if (isDoctor) return 'registration';
     return profileComplete ? 'dashboard' : 'registration';
   });
-
-  // Re-check profile completeness on accountId change
-  useEffect(() => {
-    if (!isDoctor && accountId) {
-      const p = getPatientById(accountId);
-      const complete = isProfileComplete(p);
-      setProfileComplete(complete);
-      if (!complete) {
-        setActiveView('registration');
-      }
-    }
-  }, [accountId, isDoctor]);
 
   const handlePatientViewSwitch = (view) => {
     if (view === 'dashboard' && !profileComplete) {
@@ -202,7 +190,7 @@ export default function AuthenticatedHome({ session, onSignOut, onReturnToCreate
             <div style={{ padding: '0.5rem 1rem 0 1rem', maxWidth: '1180px', margin: '0 auto' }}>
               <button
                 type="button"
-                className="auth-signout-btn"
+                className="auth-patient-back-btn"
                 onClick={() => setActiveView('registration')}
                 style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600 }}
               >
@@ -221,7 +209,7 @@ export default function AuthenticatedHome({ session, onSignOut, onReturnToCreate
           <NewVisitCaseTaking
             session={
               selectedDoctorPatientId
-                ? { ...session, patientId: selectedDoctorPatientId, id: selectedDoctorPatientId }
+                ? { ...session, patientId: selectedDoctorPatientId }
                 : session
             }
             onSignOut={onSignOut}
@@ -291,4 +279,8 @@ export default function AuthenticatedHome({ session, onSignOut, onReturnToCreate
       </main>
     </div>
   );
+}
+
+export default function AuthenticatedHome(props) {
+  return <AuthenticatedHomeContent key={`${props.session?.role}:${props.session?.id || props.session?.patientId || props.session?.doctorId}`} {...props} />;
 }

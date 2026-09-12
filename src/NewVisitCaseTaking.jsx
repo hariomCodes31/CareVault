@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { getPatientDashboardFromBackend } from './services/api.js';
+import { getPatientById } from './services/patientService.js';
+import { useState, useEffect } from 'react';
 import './NewVisitCaseTaking.css';
 import { getPatientProfile, saveNewVisit, saveDraftVisit, getDraftVisit } from './services/visitService';
 
@@ -49,8 +51,9 @@ const COMMON_CONDITIONS = [
   'Other'
 ];
 
-export default function NewVisitCaseTaking({ session, onSignOut }) {
-  const patient = getPatientProfile('CV2026-000102');
+function NewVisitContent({ session, onSignOut }) {
+  const patientId = session?.patientId || (session?.role === 'patient' ? session?.id : '');
+  const patient = { ...getPatientProfile(patientId), ...getPatientById(patientId), id: patientId };
   const currentDateFormatted = new Date().toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
@@ -62,7 +65,7 @@ export default function NewVisitCaseTaking({ session, onSignOut }) {
 
   // Form State
   const [formData, setFormData] = useState(() => {
-    const draft = getDraftVisit();
+    const draft = getDraftVisit(patientId);
     if (draft && draft.data) {
       return draft.data;
     }
@@ -222,7 +225,7 @@ export default function NewVisitCaseTaking({ session, onSignOut }) {
 
   // Save Draft Handler
   const handleSaveDraft = () => {
-    const ok = saveDraftVisit(formData);
+    const ok = saveDraftVisit(formData, patientId);
     if (ok) {
       showToast('Draft clinical record saved successfully.', 'info');
     } else {
@@ -254,6 +257,7 @@ export default function NewVisitCaseTaking({ session, onSignOut }) {
     // Process & Save
     const payload = {
       patientId: patient.id,
+      doctorId: session?.role === 'doctor' ? session.id : '',
       doctorName,
       hospitalName,
       chiefComplaint: formData.chiefComplaint,
@@ -1104,4 +1108,68 @@ export default function NewVisitCaseTaking({ session, onSignOut }) {
       )}
     </div>
   );
+}
+
+export default function NewVisitCaseTaking(props) {
+  const patientId = props.session?.patientId || (props.session?.role === 'patient' ? props.session.id : '');
+  return <VisitAccess key={patientId} patientId={patientId} {...props} />;
+}
+function VisitAccess({ patientId, ...props }) {
+  const [access, setAccess] = useState(() => (!patientId ? 'denied' : 'loading'));
+  const [errorMessage, setErrorMessage] = useState(() => (!patientId ? 'No patient record selected.' : ''));
+  const [retryCount, setRetryCount] = useState(0);
+
+  useEffect(() => {
+    if (!patientId) return;
+    let active = true;
+    getPatientDashboardFromBackend(patientId)
+      .then(result => {
+        if (!active) return;
+        if (result?.success) {
+          setAccess('allowed');
+        } else if (result?.status === 401 || result?.status === 403) {
+          setAccess('denied');
+          setErrorMessage(result?.error || 'Patient record unavailable or access denied.');
+        } else if (result?.status === 408 || result?.isTimeout) {
+          setAccess('timeout');
+          setErrorMessage(result?.error || 'Request timed out while verifying access. The server took too long to respond.');
+        } else {
+          setAccess('error');
+          setErrorMessage(result?.error || 'Unable to load patient record.');
+        }
+      })
+      .catch(err => {
+        if (!active) return;
+        setAccess('error');
+        setErrorMessage(err?.message || 'Unable to load patient record. Please check your connection and try again.');
+      });
+    return () => { active = false; };
+  }, [patientId, retryCount]);
+
+  if (access !== 'allowed') {
+    return (
+      <div style={{ maxWidth: '520px', margin: '3rem auto', textAlign: 'center', padding: '2rem 1.5rem', background: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
+        <p role="status" style={{ fontSize: '1rem', color: access === 'loading' ? '#64748b' : '#0f172a', marginBottom: access === 'loading' ? 0 : '1.25rem' }}>
+          {access === 'loading'
+            ? 'Checking record access...'
+            : (errorMessage || (access === 'denied' ? 'Patient record unavailable or access denied.' : 'Unable to load patient record.'))}
+        </p>
+        {access !== 'loading' && (
+          <button
+            type="button"
+            className="pd-btn pd-btn-secondary"
+            id="btn-retry-visit-access"
+            onClick={() => {
+              setAccess('loading');
+              setErrorMessage('');
+              setRetryCount(c => c + 1);
+            }}
+          >
+            Retry
+          </button>
+        )}
+      </div>
+    );
+  }
+  return <NewVisitContent {...props} />;
 }
