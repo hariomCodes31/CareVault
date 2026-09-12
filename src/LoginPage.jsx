@@ -192,21 +192,58 @@ export default function LoginPage({ onLoginSuccess, onNavigateToCreateAccount })
     }, 400);
   };
 
+
+
   const idLabelText = selectedRole === 'doctor' ? 'Doctor ID' : 'Patient ID';
   const idPlaceholderText = selectedRole === 'doctor' ? 'Enter your Doctor ID' : 'Enter your Patient ID';
 
   return (
     <div className="login-page">
       <main className="login-center-wrapper">
-        <div className="login-card">
-          {/* CareVault Logo Header using logo.jpeg */}
-          <div className="login-brand-header">
-            <img
-              src="/logo.jpeg"
-              alt="CareVault Logo"
-              className="login-logo-img"
-            />
+        {/* CHANGE 2: Small and elegant About CareVault introduction */}
+        <div className="login-about-intro" aria-label="About CareVault">
+          <div className="login-about-tag">
+            <span className="login-about-dot" aria-hidden="true" />
+            <span>About CareVault</span>
           </div>
+          <p className="login-about-heading">
+            CareVault brings patient information, clinical history and healthcare workflows together in one secure digital platform.
+          </p>
+          <p className="login-about-subtext">
+            Engineered for clinical precision, patient privacy, and uninterrupted continuity of care.
+          </p>
+        </div>
+
+        {/* CHANGE 1: Landscape Layout (1/3 Supportive Doctor Image + 2/3 Main Login Section) */}
+        <div className="login-landscape-card">
+          {/* 1/3 Supportive Healthcare Professional Visual */}
+          <aside className="login-doctor-panel" aria-label="Clinical Professional Support">
+            <div className="login-doctor-img-container">
+              <img
+                src="/doctor-login-visual.jpg"
+                alt="Healthcare professional in clinical environment"
+                className="login-doctor-photo"
+              />
+              <div className="login-doctor-gradient" aria-hidden="true" />
+              <div className="login-doctor-overlay-card">
+                <span className="login-doctor-chip">Clinical Sanctuary</span>
+                <p className="login-doctor-quote">
+                  "Guarding every patient story with precision, trust, and continuous care."
+                </p>
+              </div>
+            </div>
+          </aside>
+
+          {/* 2/3 Main Login Section */}
+          <section className="login-form-panel">
+            {/* CareVault Logo Header using logo.jpeg */}
+            <div className="login-brand-header">
+              <img
+                src="/logo.jpeg"
+                alt="CareVault Logo"
+                className="login-logo-img"
+              />
+            </div>
 
           <header className="login-card-header">
             <h1 className="login-welcome">Welcome Back</h1>
@@ -394,6 +431,7 @@ export default function LoginPage({ onLoginSuccess, onNavigateToCreateAccount })
           <footer className="login-card-footer">
             © {new Date().getFullYear()} CareVault · Healthcare Management System
           </footer>
+          </section>
         </div>
       </main>
 

@@ -1,7 +1,19 @@
+import { useState, useEffect } from 'react';
 import PatientRegistrationDashboard from './components/PatientRegistrationDashboard';
+import PatientDashboard from './PatientDashboard';
+import NewVisitCaseTaking from './NewVisitCaseTaking';
+import ReviewAIAssistance from './components/ReviewAIAssistance';
+import { getPatientById, isProfileComplete } from './services/patientService';
 import './AuthenticatedHome.css';
 
 // ── SVG Icons ───────────────────────────────────────────────────────────────
+const IconCheckCircle = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+    <polyline points="22 4 12 14.01 9 11.01" />
+  </svg>
+);
+
 const IconLogOut = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
@@ -25,9 +37,77 @@ const IconStethoscope = () => (
   </svg>
 );
 
-export default function AuthenticatedHome({ session, onSignOut }) {
+export default function AuthenticatedHome({ session, onSignOut, onReturnToCreateAccount }) {
   const isDoctor = session?.role === 'doctor';
+  const roleName = isDoctor ? 'Doctor' : 'Patient';
+  const idLabel = isDoctor ? 'Doctor ID:' : 'Patient ID:';
   const accountId = session?.id || session?.doctorId || session?.patientId;
+
+  // Check existing patient profile completion
+  const [profileComplete, setProfileComplete] = useState(() => {
+    if (isDoctor) return true;
+    const p = getPatientById(accountId);
+    return isProfileComplete(p);
+  });
+
+  // Default active view: Doctor -> 'registration', Patient -> 'dashboard' (if complete) or 'registration' (if incomplete)
+  const [activeView, setActiveView] = useState(() => {
+    if (isDoctor) return 'registration';
+    return profileComplete ? 'dashboard' : 'registration';
+  });
+
+  // Re-check profile completeness on accountId change
+  useEffect(() => {
+    if (!isDoctor && accountId) {
+      const p = getPatientById(accountId);
+      const complete = isProfileComplete(p);
+      setProfileComplete(complete);
+      if (!complete) {
+        setActiveView('registration');
+      }
+    }
+  }, [accountId, isDoctor]);
+
+  const handlePatientViewSwitch = (view) => {
+    if (view === 'dashboard' && !profileComplete) {
+      alert('Please complete your Patient Registration profile before accessing the Patient Dashboard.');
+      setActiveView('registration');
+      return;
+    }
+    setActiveView(view);
+  };
+
+  const handleRegistrationComplete = () => {
+    setProfileComplete(true);
+    setActiveView('dashboard');
+  };
+
+  const handleBackFromRegistration = () => {
+    if (session?.isNewAccount && onReturnToCreateAccount) {
+      onReturnToCreateAccount();
+    } else {
+      setActiveView('dashboard');
+    }
+  };
+
+  // Selected Patient ID for Doctor lookup view
+  const [selectedDoctorPatientId, setSelectedDoctorPatientId] = useState(null);
+
+  const handleDoctorSelectPatient = (patient) => {
+    const pId = patient?.patientId || patient?.id;
+    if (pId) {
+      setSelectedDoctorPatientId(pId);
+      setActiveView('doctor-patient-view');
+    }
+  };
+
+  const handleDoctorStartVisit = (patient) => {
+    const pId = patient?.patientId || patient?.id;
+    if (pId) {
+      setSelectedDoctorPatientId(pId);
+      setActiveView('case-taking');
+    }
+  };
 
   return (
     <div className="auth-home-container">
@@ -47,9 +127,75 @@ export default function AuthenticatedHome({ session, onSignOut }) {
 
         <div className="auth-nav-right">
           <div className="auth-user-chip">
-            <span className="user-role-label">{isDoctor ? 'Doctor ID' : 'Patient ID'}:</span>
+            <span className="user-role-label">{idLabel}</span>
             <strong className="user-id-code">{accountId}</strong>
           </div>
+
+          {!isDoctor && (
+            <div style={{ display: 'flex', gap: '0.4rem' }}>
+              <button
+                type="button"
+                className={`auth-signout-btn ${activeView === 'dashboard' ? 'active' : ''}`}
+                onClick={() => handlePatientViewSwitch('dashboard')}
+              >
+                Patient Dashboard
+              </button>
+
+              <button
+                type="button"
+                className={`auth-signout-btn ${activeView === 'registration' ? 'active' : ''}`}
+                onClick={() => handlePatientViewSwitch('registration')}
+              >
+                {profileComplete ? 'Edit Profile' : 'Complete Registration'}
+              </button>
+
+              <button
+                type="button"
+                className={`auth-signout-btn ${activeView === 'review-ai' ? 'active' : ''}`}
+                onClick={() => setActiveView('review-ai')}
+              >
+                ✨ Review & AI Assistance
+              </button>
+            </div>
+          )}
+
+          {isDoctor && (
+            <div style={{ display: 'flex', gap: '0.4rem' }}>
+              <button
+                type="button"
+                className={`auth-signout-btn ${activeView === 'registration' ? 'active' : ''}`}
+                onClick={() => setActiveView('registration')}
+              >
+                Doctor Search Workspace
+              </button>
+
+              {selectedDoctorPatientId && (
+                <button
+                  type="button"
+                  className={`auth-signout-btn ${activeView === 'doctor-patient-view' ? 'active' : ''}`}
+                  onClick={() => setActiveView('doctor-patient-view')}
+                >
+                  Patient ({selectedDoctorPatientId})
+                </button>
+              )}
+
+              <button
+                type="button"
+                className={`auth-signout-btn ${activeView === 'review-ai' ? 'active' : ''}`}
+                onClick={() => setActiveView('review-ai')}
+              >
+                ✨ Review & AI Assistance
+              </button>
+
+              <button
+                type="button"
+                className={`auth-signout-btn ${activeView === 'session' ? 'active' : ''}`}
+                onClick={() => setActiveView('session')}
+              >
+                Session Info
+              </button>
+            </div>
+          )}
 
           <button type="button" className="auth-signout-btn" onClick={onSignOut}>
             <IconLogOut /> Sign Out
@@ -57,12 +203,117 @@ export default function AuthenticatedHome({ session, onSignOut }) {
         </div>
       </nav>
 
-      {/* ── Main Portal Content ────────────────────────────────────────── */}
+      {/* ── Main Content ────────────────────────────────────────── */}
       <main className="auth-main-content">
-        <PatientRegistrationDashboard
-          userRole={isDoctor ? 'doctor' : 'patient'}
-          currentId={accountId}
-        />
+        {!isDoctor && activeView === 'dashboard' && (
+          <PatientDashboard
+            patientData={{ patientId: accountId }}
+            onNavigateToCaseTaking={() => setActiveView('case-taking')}
+            onNavigateToNewVisit={() => setActiveView('case-taking')}
+            onSignOut={onSignOut}
+          />
+        )}
+
+        {isDoctor && activeView === 'doctor-patient-view' && selectedDoctorPatientId && (
+          <div>
+            <div style={{ padding: '0.5rem 1rem 0 1rem', maxWidth: '1180px', margin: '0 auto' }}>
+              <button
+                type="button"
+                className="auth-signout-btn"
+                onClick={() => setActiveView('registration')}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600 }}
+              >
+                ← Back to Doctor Search Workspace
+              </button>
+            </div>
+            <PatientDashboard
+              patientData={{ patientId: selectedDoctorPatientId }}
+              onNavigateToCaseTaking={() => setActiveView('case-taking')}
+              onNavigateToNewVisit={() => setActiveView('case-taking')}
+            />
+          </div>
+        )}
+
+        {activeView === 'case-taking' && (
+          <NewVisitCaseTaking
+            session={
+              selectedDoctorPatientId
+                ? { ...session, patientId: selectedDoctorPatientId, id: selectedDoctorPatientId }
+                : session
+            }
+            onSignOut={onSignOut}
+            onReturnToDashboard={() => setActiveView(isDoctor ? 'doctor-patient-view' : 'dashboard')}
+            onNavigateToReviewAI={() => setActiveView('review-ai')}
+          />
+        )}
+
+        {activeView === 'registration' && (
+          <PatientRegistrationDashboard
+            userRole={isDoctor ? 'doctor' : 'patient'}
+            currentId={accountId}
+            onRegistrationComplete={handleRegistrationComplete}
+            onBack={handleBackFromRegistration}
+            onDoctorSelectPatient={handleDoctorSelectPatient}
+            onDoctorStartVisit={handleDoctorStartVisit}
+          />
+        )}
+
+        {activeView === 'review-ai' && (
+          <ReviewAIAssistance
+            initialPatientId={selectedDoctorPatientId || accountId}
+            onBack={() => setActiveView(isDoctor ? 'doctor-patient-view' : 'case-taking')}
+            onProceedToDoctor={() => setActiveView(isDoctor ? 'doctor-patient-view' : 'dashboard')}
+          />
+        )}
+
+        {activeView === 'session' && (
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem 1rem', width: '100%' }}>
+            <div className="auth-home-card">
+              <div className="auth-status-badge">
+                <IconCheckCircle /> Authenticated Session
+              </div>
+
+              <h1 className="auth-welcome-title">Welcome to CareVault</h1>
+              <p className="auth-welcome-desc">
+                You are signed in as a registered <strong>{roleName}</strong>.
+              </p>
+
+              <div className="auth-user-info-box">
+                <div className="info-row">
+                  <span className="info-label">{idLabel}</span>
+                  <span className="info-val"><strong>{accountId}</strong></span>
+                </div>
+                <div className="info-row">
+                  <span className="info-label">Selected Role:</span>
+                  <span className="info-val">{roleName}</span>
+                </div>
+                <div className="info-row">
+                  <span className="info-label">Session Status:</span>
+                  <span className="info-val status-active">Active</span>
+                </div>
+              </div>
+
+              <div className="auth-actions-group">
+                {!isDoctor && (
+                  <button
+                    type="button"
+                    className="auth-action-btn primary"
+                    onClick={() => setActiveView('dashboard')}
+                  >
+                    Open Patient Dashboard
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className="auth-action-btn secondary"
+                  onClick={onSignOut}
+                >
+                  <IconLogOut /> Sign Out
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

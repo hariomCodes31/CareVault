@@ -10,6 +10,45 @@
   gap: 1.5rem;
 }
 
+/* ── Top-Left Back Navigation Bar ────────────────────────────────────────── */
+.prd-top-nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  margin-bottom: -0.5rem;
+}
+
+.prd-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: fit-content;
+  background: var(--cv-white, #ffffff);
+  border: 1px solid var(--cv-slate-300, #cbd5e1);
+  color: var(--cv-slate-700, #334155);
+  font-family: var(--font-base, inherit);
+  font-size: 0.825rem;
+  font-weight: 600;
+  padding: 0.35rem 0.8rem;
+  border-radius: var(--radius-md, 6px);
+  cursor: pointer;
+  transition: all var(--transition-fast, 0.15s ease);
+  box-shadow: var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.05));
+}
+
+.prd-back-btn:hover {
+  background: var(--cv-blue-50, #eff6ff);
+  border-color: var(--cv-blue-300, #93c5fd);
+  color: var(--cv-blue-700, #1d4ed8);
+  transform: translateX(-2px);
+}
+
+.prd-back-btn svg {
+  width: 14px;
+  height: 14px;
+  stroke-width: 2.5;
+}
 /* ── Banner / Control Header ────────────────────────────────────────────── */
 .prd-banner {
   display: flex;
@@ -543,23 +582,21 @@
   background: linear-gradient(135deg, #0f2040 0%, #163060 100%);
   color: var(--cv-white);
   border-radius: var(--radius-lg);
-  padding: 1.5rem;
+  padding: 1.5rem 1.75rem;
   box-shadow: var(--shadow-md);
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1rem;
 }
 
 .aadhaar-header {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1.5rem;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
 .aadhaar-title-group {
-  max-width: 620px;
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
