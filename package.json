@@ -4,12 +4,13 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "node scripts/dev.mjs",
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview",
     "server": "node server/index.js",
-    "test": "node src/services/patientValidation.test.js && node server/passwordReset.test.js && node src/services/visitService.test.js && node server/connectWithRetry.test.js"
+    "test": "node src/services/patientValidation.test.js && node server/passwordReset.test.js && node src/services/visitService.test.js && node server/connectWithRetry.test.js && node server/doctorRegistration.test.js && node server/patientAccess.test.js && node src/services/dashboardApi.test.js",
+    "dev:frontend": "vite"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 const patientSchema = new mongoose.Schema(
   {
     patientId: { type: String, required: true, unique: true, trim: true },
+    allowedDoctorIds: { type: [String], default: [] },
     name: { type: String, required: true, trim: true },
     age: { type: Number, default: 0 },
     dob: { type: String, default: '' },

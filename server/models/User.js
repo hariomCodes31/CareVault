@@ -6,6 +6,8 @@ const userSchema = new mongoose.Schema(
     role: { type: String, required: true, enum: ['patient', 'doctor', 'nurse', 'reception', 'admin'], default: 'patient' },
     password: { type: String, required: true },
     phone: { type: String, default: '' },
+    nmcRegistrationNumber: { type: String, trim: true, uppercase: true },
+    registrationVerification: { type: String, enum: ['demo-allowlist'] },
     resetRequestedAt: Date,
     resetAttempts: { type: Number, default: 0 },
     name: { type: String, trim: true, default: '' },

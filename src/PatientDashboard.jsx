@@ -72,13 +72,6 @@ const IconClock = () => (
   </svg>
 );
 
-const IconArrowRight = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="5" y1="12" x2="19" y2="12" />
-    <polyline points="12 5 19 12 12 19" />
-  </svg>
-);
-
 const IconPrinter = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="6 9 6 2 18 2 18 9" />
@@ -137,6 +130,9 @@ function PatientDashboardContent({
 }) {
   const targetId = customPatientData?.patientId || customPatientData?.id || '';
 
+  const [accessStatus, setAccessStatus] = useState(() => (!targetId ? 'denied' : 'loading'));
+  const [errorMessage, setErrorMessage] = useState(() => (!targetId ? 'No patient record selected.' : ''));
+  const [retryCount, setRetryCount] = useState(0);
   const [activeTab, setActiveTab] = useState('overview');
   const [serviceVisits, setServiceVisits] = useState(() => getPatientVisits(targetId));
   const [selectedVisitModal, setSelectedVisitModal] = useState(() => serviceVisits.find(v => v.id === selectedVisitIdToOpen) || null);
@@ -152,43 +148,126 @@ function PatientDashboardContent({
 
   // Sync and load patient details from MongoDB Express Backend, services, & props
   useEffect(() => {
+    if (!targetId) return;
     let isMounted = true;
 
     // 1. Fetch directly from MongoDB Express Backend if available
     getPatientDashboardFromBackend(targetId)
       .then((res) => {
-        if (isMounted && res?.success && res?.patient) {
-          const dbPatient = res.patient;
-          setServiceVisits(local => {
-            const remote = (res.visits || []).map(v => ({ ...v, id: v.visitId || v._id, date: String(v.date || '').slice(0, 10), primaryDiagnosis: v.diagnosis }));
-            const ids = new Set(local.map(v => v.id));
-            return [...local, ...remote.filter(v => !ids.has(v.id))].sort((a, b) => String(b.date).localeCompare(String(a.date)));
-          });
-          setPatient((prev) => ({
-            ...prev,
-            ...dbPatient,
-            reports: (res.reports || []).map(report => ({ ...report, id: report.reportId || report._id, date: String(report.date || '').slice(0, 10) })),
-            prescriptions: (res.prescriptions || []).map(rx => ({ ...rx, id: rx.prescriptionId || rx._id, doctor: rx.doctorName, date: String(rx.date || '').slice(0, 10), medicines: rx.medicines || [] })),
-            name: dbPatient.name || prev.name,
-            patientId: dbPatient.patientId || prev.patientId,
-            age: dbPatient.age ?? prev.age,
-            gender: dbPatient.gender || prev.gender,
-            phone: dbPatient.phone || prev.phone,
-            address: dbPatient.address || prev.address,
-            aadhaar: dbPatient.aadhaar || prev.aadhaar,
-            bloodGroup: dbPatient.bloodGroup || prev.bloodGroup,
-            knownConditions: dbPatient.knownConditions || prev.knownConditions,
-            allergies: dbPatient.allergies || prev.allergies,
-            vitals: dbPatient.vitals || prev.vitals,
-          }));
+        if (!isMounted) return;
+        if (!res?.success || !res?.patient) {
+          if (res?.status === 401 || res?.status === 403) {
+            setAccessStatus('denied');
+            setErrorMessage(res?.error || 'Record unavailable or access denied. Sign in again or ask the patient to grant access.');
+          } else if (res?.status === 404) {
+            setAccessStatus('not_found');
+            setErrorMessage(res?.error || 'Patient record not found.');
+          } else if (res?.status === 408 || res?.isTimeout) {
+            setAccessStatus('timeout');
+            setErrorMessage(res?.error || 'Request timed out while loading dashboard. The server took too long to respond.');
+          } else {
+            setAccessStatus('error');
+            setErrorMessage(res?.error || 'Failed to load patient records.');
+          }
+          return;
         }
+
+        setAccessStatus('allowed');
+        setErrorMessage('');
+        const dbPatient = res.patient;
+        setServiceVisits(local => {
+          const remote = (res.visits || []).map(v => ({ ...v, id: v.visitId || v._id, date: String(v.date || '').slice(0, 10), primaryDiagnosis: v.diagnosis }));
+          const ids = new Set(local.map(v => v.id));
+          return [...local, ...remote.filter(v => !ids.has(v.id))].sort((a, b) => String(b.date).localeCompare(String(a.date)));
+        });
+        setPatient((prev) => ({
+          ...prev,
+          ...dbPatient,
+          reports: (res.reports || []).map(report => ({ ...report, id: report.reportId || report._id, date: String(report.date || '').slice(0, 10) })),
+          prescriptions: (res.prescriptions || []).map(rx => ({ ...rx, id: rx.prescriptionId || rx._id, doctor: rx.doctorName, date: String(rx.date || '').slice(0, 10), medicines: rx.medicines || [] })),
+          name: dbPatient.name || prev.name,
+          patientId: dbPatient.patientId || prev.patientId,
+          age: dbPatient.age ?? prev.age,
+          gender: dbPatient.gender || prev.gender,
+          phone: dbPatient.phone || prev.phone,
+          address: dbPatient.address || prev.address,
+          aadhaar: dbPatient.aadhaar || prev.aadhaar,
+          bloodGroup: dbPatient.bloodGroup || prev.bloodGroup,
+          knownConditions: dbPatient.knownConditions || prev.knownConditions,
+          allergies: dbPatient.allergies || prev.allergies,
+          vitals: dbPatient.vitals || prev.vitals,
+        }));
       })
-      .catch((err) => console.warn('MongoDB fetch notice:', err));
+      .catch((err) => {
+        console.warn('MongoDB fetch notice:', err);
+        if (!isMounted) return;
+        setAccessStatus('error');
+        setErrorMessage(err?.message || 'Unable to connect to the server. Please check your connection and try again.');
+      });
 
     return () => {
       isMounted = false;
     };
-  }, [targetId]);
+  }, [targetId, retryCount]);
+
+  if (accessStatus !== 'allowed') {
+    return (
+      <div className="patient-dashboard-container">
+        <div
+          className="pd-card pd-status-card"
+          style={{
+            maxWidth: '540px',
+            margin: '3rem auto',
+            textAlign: 'center',
+            padding: '2.5rem 1.5rem',
+            boxShadow: 'var(--pd-shadow)',
+            borderRadius: 'var(--pd-radius)',
+          }}
+        >
+          <p
+            role="status"
+            style={{
+              fontSize: '1rem',
+              color: accessStatus === 'loading' ? 'var(--pd-text-muted)' : 'var(--pd-text-main)',
+              marginBottom: accessStatus === 'loading' ? 0 : '1.25rem',
+              lineHeight: '1.5',
+            }}
+          >
+            {accessStatus === 'loading'
+              ? 'Checking record access...'
+              : (errorMessage || (accessStatus === 'denied'
+                ? 'Record unavailable or access denied. Sign in again or ask the patient to grant access.'
+                : 'Unable to load patient records.'))}
+          </p>
+          {accessStatus !== 'loading' && (
+            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                className="pd-btn pd-btn-secondary"
+                id="btn-retry-dashboard"
+                onClick={() => {
+                  setAccessStatus('loading');
+                  setErrorMessage('');
+                  setRetryCount((c) => c + 1);
+                }}
+              >
+                Retry
+              </button>
+              {onSignOut && accessStatus === 'denied' && (
+                <button
+                  type="button"
+                  className="pd-btn pd-btn-outline"
+                  onClick={onSignOut}
+                >
+                  Sign Out
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   const handleNewVisitAction = () => {
     if (onNavigateToCaseTaking) {
@@ -293,7 +372,7 @@ function PatientDashboardContent({
             onClick={handleNewVisitAction}
             id="btn-new-visit-case-taking"
           >
-            <IconPlusCircle /> + Start Consultation / New Case
+            <IconPlusCircle /> Start consultation
           </button>
         </div>
       </header>
@@ -449,21 +528,7 @@ function PatientDashboardContent({
               </div>
             </div>
 
-            {/* Quick Action Case-Taking Card */}
-            <div className="pd-card pd-action-banner">
-              <div className="pd-banner-content">
-                <span className="pd-banner-badge">Smart Consultation</span>
-                <h3>Start New Clinical Case</h3>
-                <p>Begin dynamic case-taking, vitals intake, diagnosis, and prescription recording.</p>
-              </div>
-              <button
-                type="button"
-                className="pd-btn pd-btn-secondary"
-                onClick={handleNewVisitAction}
-              >
-                + Start Consultation <IconArrowRight />
-              </button>
-            </div>
+
           </div>
         )}
 

@@ -1,3 +1,4 @@
+import { refreshAuthorizedPatients } from '../services/patientService.js';
 import { calculateAge, validatePatientDetails, todayISO } from '../services/patientValidation.js';
 import { useState, useRef } from 'react';
 import {
@@ -189,7 +190,7 @@ function PatientRegistrationContent({
 
 
   // ── Handle Search ──────────────────────────────────────────────────────────
-  const handleSearchSubmit = (e) => {
+  const handleSearchSubmit = async (e) => {
     if (e) e.preventDefault();
     if (!searchQuery.trim()) {
       setHasSearched(false);
@@ -198,6 +199,7 @@ function PatientRegistrationContent({
       return;
     }
 
+    await refreshAuthorizedPatients();
     const results = searchPatients(searchQuery);
     setSearchResults(results);
     setHasSearched(true);
@@ -284,7 +286,7 @@ function PatientRegistrationContent({
     // Simulate database write
     await new Promise((r) => setTimeout(r, 600));
 
-    const result = registerPatient({
+    const result = await registerPatient({
       ...formData,
       patientId: isPatient ? currentId : undefined,
       fromAadhaar: Boolean(aadhaarExtractedInfo),
@@ -451,8 +453,8 @@ function PatientRegistrationContent({
           {hasSearched && searchResults.length === 0 && (
             <div className="prd-no-results">
               <div className="no-results-icon"><IconAlertCircle /></div>
-              <h3>Patient Not Found</h3>
-              <p>No CareVault patient was found with this Patient ID. Please verify the ID and try again.</p>
+              <h3>No accessible patient found</h3>
+              <p>No matching patient is available to this account. Check the Patient ID; the record may exist but require access.</p>
             </div>
           )}
 

@@ -1,6 +1,12 @@
+import { getSession } from './authService.js';
 // CareVault API Client — Connects Frontend to MongoDB Express Backend
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+export function authorizationHeaders() {
+  const token = getSession()?.token;
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+const API_BASE_URL = import.meta?.env?.VITE_API_BASE_URL || '/api';
 
 /**
  * Health check to verify backend server status
@@ -38,16 +44,38 @@ export async function loginWithBackend({ role, id, password }) {
  * Fetch patient dashboard details from MongoDB
  */
 export async function getPatientDashboardFromBackend(patientId) {
+  if (!patientId) {
+    return { success: false, status: 400, error: 'Patient ID is required.' };
+  }
   try {
-    const res = await fetch(`${API_BASE_URL}/patients/${patientId}/dashboard`, {
-      signal: AbortSignal.timeout(3000),
+    const res = await fetch(`${API_BASE_URL}/patients/${encodeURIComponent(patientId)}/dashboard`, {
+      headers: authorizationHeaders(),
+      signal: AbortSignal.timeout(10000),
     });
     if (res.ok) {
       return await res.json();
     }
-    return null;
-  } catch {
-    return null;
+    const errData = await res.json().catch(() => null);
+    const defaultError = res.status === 401 || res.status === 403
+      ? 'Record unavailable or access denied. Sign in again or ask the patient to grant access.'
+      : res.status === 404
+      ? 'Patient record not found.'
+      : 'Failed to load patient dashboard. Please try again.';
+    return {
+      success: false,
+      status: res.status,
+      error: errData?.error || defaultError,
+    };
+  } catch (err) {
+    const isTimeout = err?.name === 'TimeoutError' || err?.name === 'AbortError';
+    return {
+      success: false,
+      status: isTimeout ? 408 : 0,
+      isTimeout,
+      error: isTimeout
+        ? 'Request timed out while loading dashboard. The server took too long to respond.'
+        : (err?.message || 'Network error. Could not connect to server.'),
+    };
   }
 }
 
@@ -57,7 +85,8 @@ export async function getPatientDashboardFromBackend(patientId) {
 export async function getAllPatientsFromBackend() {
   try {
     const res = await fetch(`${API_BASE_URL}/patients`, {
-      signal: AbortSignal.timeout(3000),
+      headers: authorizationHeaders(),
+      signal: AbortSignal.timeout(10000),
     });
     if (res.ok) {
       const data = await res.json();
@@ -76,7 +105,7 @@ export async function savePatientToBackend(patientDetails) {
   try {
     const res = await fetch(`${API_BASE_URL}/patients/register`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...authorizationHeaders() },
       body: JSON.stringify(patientDetails),
     });
     return await res.json();
@@ -95,4 +124,14 @@ export async function authRequest(path, body) {
   } catch {
     return { success: false, error: 'Unable to reach the account server. Please try again.' };
   }
+}
+
+export async function changeDoctorAccess(patientId, doctorId, allow) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/patients/${encodeURIComponent(patientId)}/doctor-access`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json', ...authorizationHeaders() },
+      body: JSON.stringify({ doctorId, allow }), signal: AbortSignal.timeout(10000),
+    });
+    return await response.json();
+  } catch { return { success: false, error: 'Unable to update access. Please try again.' }; }
 }

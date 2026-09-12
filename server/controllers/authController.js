@@ -1,3 +1,5 @@
+import Patient from '../models/Patient.js';
+import { isAllowedDoctorRegistration, normalizeDoctorRegistration } from '../config/doctorRegistration.js';
 import { randomInt } from 'node:crypto';
 import { validatePatientDetails } from '../../src/services/patientValidation.js';
 import User from '../models/User.js';
@@ -8,8 +10,11 @@ const jwtSecret = () => { if (!process.env.JWT_SECRET) throw new Error('JWT_SECR
 
 export const registerUser = async (req, res) => {
   try {
-    const { role, id, password, name, email, phone, profileData } = req.body;
+    const { role, id, password, name, email, phone, profileData, nmcRegistrationNumber } = req.body;
     if (!['doctor', 'patient'].includes(role) || typeof password !== 'string' || password.length < 4 || password.length > 72 || !/^[6-9]\d{9}$/.test(phone || '')) return res.status(400).json({ success: false, error: 'Valid role, mobile and password (4?72 characters) are required.' });
+    if (role === 'doctor' && !isAllowedDoctorRegistration(nmcRegistrationNumber)) {
+      return res.status(400).json({ success: false, error: 'Enter an approved demo NMC registration code to create a doctor account.' });
+    }
     if (role === 'patient') {
       const errors = validatePatientDetails(profileData || {});
       if (Object.keys(errors).length) return res.status(400).json({ success: false, error: Object.values(errors)[0], errors });
@@ -21,7 +26,7 @@ export const registerUser = async (req, res) => {
       return res.status(400).json({ success: false, error: 'Role, ID, and Password are required.' });
     }
 
-    while (await User.exists({ userId: cleanId })) {
+    while (await User.exists({ userId: cleanId }) || await Patient.exists({ patientId: cleanId })) {
       cleanId = `${role === 'doctor' ? 'DR' : 'CV'}${new Date().getFullYear()}-${randomInt(100000, 1000000)}`;
     }
 
@@ -33,6 +38,7 @@ export const registerUser = async (req, res) => {
       role,
       password: hashedPassword,
       phone,
+      ...(role === 'doctor' ? { nmcRegistrationNumber: normalizeDoctorRegistration(nmcRegistrationNumber), registrationVerification: 'demo-allowlist' } : {}),
       name: name || profileData?.name || '',
       email: email || profileData?.email || '',
     });

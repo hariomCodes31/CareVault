@@ -1,3 +1,4 @@
+import { refreshAuthorizedPatients } from './services/patientService.js';
 import { authRequest } from './services/api.js';
 import { setSession } from './services/authService.js';
 import { calculateAge, validatePatientDetails, todayISO } from './services/patientValidation.js';
@@ -165,6 +166,7 @@ export default function CreateAccount({ onReturnToLogin, onLoginSuccess }) {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Patient Registration Details
+  const [nmcRegistrationNumber, setNmcRegistrationNumber] = useState('');
   const [patientForm, setPatientForm] = useState({
     name: '',
     gender: 'Male',
@@ -255,6 +257,7 @@ export default function CreateAccount({ onReturnToLogin, onLoginSuccess }) {
       errs.confirmPassword = 'Passwords do not match.';
     }
 
+    if (selectedRole === 'doctor' && !nmcRegistrationNumber.trim()) errs.nmcRegistrationNumber = 'NMC registration demo code is required.';
     // Additional validations for Patient
     if (selectedRole === 'doctor' && !/^[6-9]\d{9}$/.test(patientForm.phone)) errs.phone = 'Enter a 10-digit mobile number starting with 6, 7, 8 or 9.';
     if (selectedRole === 'patient') {
@@ -283,13 +286,15 @@ export default function CreateAccount({ onReturnToLogin, onLoginSuccess }) {
 
     const result = await authRequest('register', {
       role: selectedRole, id: currentGeneratedId, password,
+      nmcRegistrationNumber: selectedRole === 'doctor' ? nmcRegistrationNumber.trim() : undefined,
       phone: patientForm.phone, profileData: selectedRole === 'patient' ? patientForm : undefined,
     });
     if (!result.success) { setLoading(false); setErrors({ form: result.error }); return; }
-    setSession(result.session);
+    setSession({ ...result.session, token: result.token });
+    await refreshAuthorizedPatients();
     if (selectedRole === 'patient') {
       // 1. Register Patient Profile in patientService
-      registerPatient({
+      const profileResult = await registerPatient({
         patientId: result.id,
         name: patientForm.name,
         gender: patientForm.gender,
@@ -304,6 +309,7 @@ export default function CreateAccount({ onReturnToLogin, onLoginSuccess }) {
         emergencyContactRelationship: patientForm.emergencyContactRelationship,
         fromAadhaar: Boolean(aadhaarExtractedInfo),
       });
+      if (!profileResult.success) { setLoading(false); setErrors({ form: profileResult.error }); return; }
     }
 
     setLoading(false);
@@ -344,6 +350,12 @@ export default function CreateAccount({ onReturnToLogin, onLoginSuccess }) {
             <img src="/logo.jpeg" alt="CareVault Logo" className="create-account-logo-img" />
           </div>
 
+          {isDoctor && <div className="field-group">
+            <label className="field-label" htmlFor="doctor-nmc">NMC Registration Number (Demo) *</label>
+            <input id="doctor-nmc" className="field-input" value={nmcRegistrationNumber} maxLength={40} placeholder="Enter your approved DEMO-NMC code" aria-describedby="doctor-nmc-help" onChange={e => { setNmcRegistrationNumber(e.target.value.toUpperCase()); setErrors(prev => ({ ...prev, nmcRegistrationNumber: undefined, form: undefined })); }} />
+            <small id="doctor-nmc-help">Testing access only. This does not verify NMC registration or medical qualifications.</small>
+            {errors.nmcRegistrationNumber && <span className="field-error">{errors.nmcRegistrationNumber}</span>}
+          </div>}
           {isDoctor && <div className="field-group"><label className="field-label" htmlFor="doctor-mobile">Mobile number for password recovery *</label><input id="doctor-mobile" className="field-input" type="tel" maxLength={10} value={patientForm.phone} onChange={e => setPatientForm(prev => ({ ...prev, phone: e.target.value }))} />{errors.phone && <span className="field-error">{errors.phone}</span>}</div>}
           <header className="create-account-card-header">
             <h1 className="create-account-welcome">Create New Account</h1>

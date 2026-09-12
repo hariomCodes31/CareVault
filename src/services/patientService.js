@@ -1,3 +1,5 @@
+import { getSession } from './authService.js';
+import { getAllPatientsFromBackend } from './api.js';
 import { calculateAge, validatePatientDetails } from './patientValidation.js';
 // patientService.js — CareVault Patient Data & Aadhaar OCR Service
 import Tesseract from 'tesseract.js';
@@ -7,117 +9,18 @@ const PATIENTS_STORAGE_KEY = 'carevault_patients';
 const TOKENS_STORAGE_KEY = 'carevault_tokens_counter';
 
 // Initial Seed Patients based on the SIH 2026 Workflow Poster & CareVault Demo
-const INITIAL_PATIENTS = [
-  {
-    patientId: 'CV2026-000110',
-    name: 'Vikram Malhotra',
-    age: 32,
-    dob: '1994-07-12',
-    gender: 'Male',
-    phone: '9876512340',
-    address: 'Boring Road, Patna, Bihar',
-    aadhaar: '7812 3456 9012',
-    bloodGroup: 'B+',
-    knownConditions: 'None',
-    allergies: 'Not Reported',
-    totalVisits: 3,
-    reportsCount: 2,
-    activeFollowUp: 1,
-    registrationComplete: true,
-    createdAt: '2026-01-10T10:00:00.000Z',
-    recentComplaint: 'Chest congestion & fever',
-    timeline: [
-      { date: '10 Sep 2026', type: 'OPD Visit', details: 'Fever & cough evaluation', status: 'Completed' },
-      { date: '15 May 2026', type: 'Lab Test', details: 'Chest X-Ray & CBC', status: 'Completed' },
-      { date: '12 Jan 2026', type: 'OPD Visit', details: 'Routine checkup', status: 'Completed' },
-    ],
-  },
-  {
-    patientId: 'CV2026-000452',
-    name: 'Rahul Kumar',
-    age: 28,
-    dob: '1998-05-14',
-    gender: 'Male',
-    phone: '9876543210',
-    address: 'Patna, Bihar',
-    aadhaar: '7845 9612 9012',
-    bloodGroup: 'O+',
-    knownConditions: 'None',
-    allergies: 'Not Reported',
-    totalVisits: 5,
-    reportsCount: 2,
-    activeFollowUp: 1,
-    registrationComplete: true,
-    createdAt: '2026-01-15T09:30:00.000Z',
-    recentComplaint: 'Fever (since 3 days)',
-    timeline: [
-      { date: '08 Sep 2026', type: 'OPD Visit', details: 'Fever, headache', status: 'Completed' },
-      { date: '12 Apr 2026', type: 'OPD Visit', details: 'Viral infection', status: 'Completed' },
-      { date: '03 Jan 2026', type: 'OPD Visit', details: 'Back pain', status: 'Completed' },
-      { date: '21 Aug 2025', type: 'OPD Visit', details: 'General checkup', status: 'Completed' },
-    ],
-  },
-  {
-    patientId: 'CV2026-000101',
-    name: 'Ananya Verma',
-    age: 24,
-    dob: '2002-09-20',
-    gender: 'Female',
-    phone: '9812345678',
-    address: 'Ranchi, Jharkhand',
-    aadhaar: '6512 8743 1123',
-    bloodGroup: 'B+',
-    knownConditions: 'Mild Asthma',
-    allergies: 'Penicillin',
-    totalVisits: 2,
-    reportsCount: 1,
-    activeFollowUp: 0,
-    registrationComplete: true,
-    createdAt: '2026-02-10T11:15:00.000Z',
-    recentComplaint: 'Seasonal Allergy',
-    timeline: [
-      { date: '14 Feb 2026', type: 'OPD Visit', details: 'Respiratory checkup', status: 'Completed' },
-      { date: '02 Oct 2025', type: 'OPD Visit', details: 'Routine health screening', status: 'Completed' },
-    ],
-  },
-  {
-    patientId: 'CV2026-000214',
-    name: 'Rajesh Sharma',
-    age: 45,
-    dob: '1981-11-04',
-    gender: 'Male',
-    phone: '9432167890',
-    address: 'Varanasi, Uttar Pradesh',
-    aadhaar: '9012 3456 7890',
-    bloodGroup: 'A+',
-    knownConditions: 'Hypertension',
-    allergies: 'None',
-    totalVisits: 3,
-    reportsCount: 4,
-    activeFollowUp: 1,
-    registrationComplete: true,
-    createdAt: '2026-03-01T14:20:00.000Z',
-    recentComplaint: 'Blood Pressure Monitoring',
-    timeline: [
-      { date: '28 Aug 2026', type: 'OPD Visit', details: 'Hypertension review', status: 'Completed' },
-      { date: '15 May 2026', type: 'Lab Test', details: 'Lipid Profile & ECG', status: 'Completed' },
-    ],
-  },
-];
+
 
 /**
  * Fetch all patients from localStorage or initialize with seed data
  */
 export function getPatients() {
   try {
-    const raw = localStorage.getItem(PATIENTS_STORAGE_KEY);
-    if (!raw) {
-      localStorage.setItem(PATIENTS_STORAGE_KEY, JSON.stringify(INITIAL_PATIENTS));
-      return INITIAL_PATIENTS;
-    }
+    const raw = sessionStorage.getItem(`${PATIENTS_STORAGE_KEY}:${getSession()?.id || 'signed-out'}`);
+    if (!raw) return [];
     return JSON.parse(raw);
   } catch {
-    return INITIAL_PATIENTS;
+    return [];
   }
 }
 
@@ -140,7 +43,7 @@ export function isProfileComplete(patient) {
  */
 function savePatients(patients) {
   try {
-    localStorage.setItem(PATIENTS_STORAGE_KEY, JSON.stringify(patients));
+    sessionStorage.setItem(`${PATIENTS_STORAGE_KEY}:${getSession()?.id || 'signed-out'}`, JSON.stringify(patients));
   } catch {
     // localStorage fallback
   }
@@ -235,7 +138,7 @@ export function getPatientById(id) {
 /**
  * Register a new patient
  */
-export function registerPatient(patientData) {
+export async function registerPatient(patientData) {
   const errors = validatePatientDetails(patientData);
   if (Object.keys(errors).length) return { success: false, error: Object.values(errors)[0], errors };
   patientData = { ...patientData, age: Number(calculateAge(patientData.dob)) };
@@ -269,23 +172,15 @@ export function registerPatient(patientData) {
     timeline: [],
   };
 
-  const existingIndex = patients.findIndex((p) => p.patientId === patientId);
-  if (existingIndex >= 0) {
-    const existing = patients[existingIndex];
-    patients[existingIndex] = { ...existing, ...newPatient, totalVisits: existing.totalVisits ?? 0, reportsCount: existing.reportsCount ?? 0, activeFollowUp: existing.activeFollowUp ?? 0, timeline: existing.timeline || [], createdAt: existing.createdAt || newPatient.createdAt, registrationComplete: true };
-    savePatients([...patients]);
-  } else {
-    savePatients([newPatient, ...patients]);
-  }
+  const result = await savePatientToBackend({ ...newPatient, createNew: !patientData.patientId });
+  if (!result.success) return result;
+  const saved = { ...newPatient, ...result.patient, registrationComplete: true };
+  const existingIndex = patients.findIndex(p => p.patientId === saved.patientId);
+  if (existingIndex >= 0) patients[existingIndex] = saved;
+  else patients.unshift(saved);
+  savePatients(patients);
 
-  // Push to MongoDB Atlas backend asynchronously
-  savePatientToBackend(newPatient).then((res) => {
-    if (res?.success) {
-      console.log('✅ Patient synced to MongoDB Atlas:', res.patient?.patientId);
-    }
-  }).catch((err) => console.warn('Backend sync notice:', err));
-
-  return { success: true, patient: newPatient, tokenNumber };
+  return { success: true, patient: saved, tokenNumber };
 }
 
 // Sample Aadhaar Cards for quick Hackathon Demo & Testing
@@ -559,4 +454,10 @@ export async function parseAadhaarCard(fileOrPreset, onProgress) {
     },
     source: 'upload',
   };
+}
+
+export async function refreshAuthorizedPatients() {
+  const patients = await getAllPatientsFromBackend();
+  savePatients(patients);
+  return patients;
 }

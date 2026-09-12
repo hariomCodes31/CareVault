@@ -1,3 +1,4 @@
+import { refreshAuthorizedPatients } from './services/patientService.js';
 import { useState } from 'react';
 import { setSession } from './services/authService';
 import { authRequest } from './services/api.js';
@@ -185,7 +186,8 @@ export default function LoginPage({ onLoginSuccess, onNavigateToCreateAccount })
       return;
     }
 
-    setSession(authResult.session);
+    setSession({ ...authResult.session, token: authResult.token });
+    await refreshAuthorizedPatients();
     const roleName = ROLES.find((r) => r.id === selectedRole)?.name;
     showToast(`Welcome! Signed in as ${roleName}.`);
 

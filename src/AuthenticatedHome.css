@@ -358,3 +358,26 @@
   color: var(--cv-green-primary);
   border-color: var(--cv-sage);
 }
+
+/* Session information card: keep action icons inside their controls. */
+.auth-main-content .auth-home-card { box-sizing:border-box; width:100%; max-width:520px; padding:32px; border-radius:20px; background:#fff; border:1px solid #d9e5dc; box-shadow:0 8px 30px rgba(28,59,43,.06); }
+.auth-home-card *, .auth-home-card *::before, .auth-home-card *::after { box-sizing:border-box; }
+.auth-home-card .auth-status-badge { margin:0 0 20px; padding:8px 14px; line-height:1.4; }
+.auth-home-card .auth-welcome-title { margin:0 0 8px; font-size:28px; line-height:1.25; letter-spacing:-.6px; }
+.auth-home-card .auth-welcome-desc { margin:0 0 24px; line-height:1.6; font-size:14px; }
+.auth-home-card .auth-user-info-box { padding:8px 20px; margin:0 0 24px; gap:0; background:#f7faf8; border-radius:12px; }
+.auth-home-card .info-row { gap:16px; min-height:48px; padding:12px 0; font-size:14px; }
+.auth-home-card .info-row + .info-row { border-top:1px solid #e3ebe6; }
+.auth-home-card .info-label { flex-shrink:0; }
+.auth-home-card .info-val { min-width:0; text-align:right; overflow-wrap:anywhere; }
+.auth-home-card .auth-action-btn { min-height:46px; height:auto; padding:12px 18px; gap:9px; line-height:1.4; font-size:14px; border-radius:10px; }
+.auth-home-card .auth-action-btn svg { display:block; width:18px; height:18px; min-width:18px; max-width:18px; flex:0 0 18px; }
+.auth-home-card .auth-action-btn.secondary { color:#244d37; background:#fff; border-color:#ccdcd1; }
+.auth-home-card .auth-action-btn.secondary:hover { background:#edf4ef; border-color:#8eae99; }
+.auth-home-card .auth-action-btn:focus-visible { outline:3px solid #7ca98c; outline-offset:3px; }
+@media (max-width:540px) {
+  .auth-main-content .auth-home-card { padding:24px 18px; margin:0 auto; }
+  .auth-home-card .auth-welcome-title { font-size:24px; }
+  .auth-home-card .auth-user-info-box { padding:6px 14px; }
+  .auth-home-card .info-row { font-size:13px; gap:10px; }
+}

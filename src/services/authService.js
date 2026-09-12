@@ -323,7 +323,8 @@ export function authenticate({ role, id, password }) {
 export function getSession() {
   try {
     const raw = localStorage.getItem(SESSION_KEY);
-    return raw ? JSON.parse(raw) : null;
+    const session = raw ? JSON.parse(raw) : null;
+    return session?.token ? session : null;
   } catch {
     return null;
   }
@@ -339,6 +340,8 @@ export function setSession(session) {
 
 export function clearSession() {
   try {
+    const session = getSession();
+    if (session?.id) sessionStorage.removeItem(`carevault_patients:${session.id}`);
     localStorage.removeItem(SESSION_KEY);
   } catch {
     // Fallback

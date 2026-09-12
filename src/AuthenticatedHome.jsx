@@ -190,7 +190,7 @@ function AuthenticatedHomeContent({ session, onSignOut, onReturnToCreateAccount 
             <div style={{ padding: '0.5rem 1rem 0 1rem', maxWidth: '1180px', margin: '0 auto' }}>
               <button
                 type="button"
-                className="auth-signout-btn"
+                className="auth-patient-back-btn"
                 onClick={() => setActiveView('registration')}
                 style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600 }}
               >
