@@ -6,8 +6,7 @@ export function authorizationHeaders() {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-const API_BASE_URL =
-  import.meta?.env?.VITE_API_BASE_URL || 'https://carevault-vwdi.onrender.com';
+const API_BASE_URL = import.meta?.env?.VITE_API_BASE_URL || '/api';
 
 /**
  * Health check to verify backend server status
