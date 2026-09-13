@@ -1,10 +1,10 @@
 import { refreshAuthorizedPatients } from './services/patientService.js';
-import { authRequest } from './services/api.js';
+import AuthVerification from './components/AuthVerification.jsx';
+import { useAuthVerification } from './services/useAuthVerification.js';
 import { setSession } from './services/authService.js';
 import { calculateAge, validatePatientDetails, todayISO } from './services/patientValidation.js';
 import { useState, useRef } from 'react';
-import { generateDoctorId, generatePatientId } from './services/authService';
-import { registerPatient, parseAadhaarCard } from './services/patientService';
+import { parseAadhaarCard } from './services/patientService';
 import './CreateAccount.css';
 
 // ── SVG Icons ───────────────────────────────────────────────────────────────
@@ -153,12 +153,10 @@ const ROLES = [
 ];
 
 export default function CreateAccount({ onReturnToLogin, onLoginSuccess }) {
+  const verification = useAuthVerification();
+  const [doctorProfile, setDoctorProfile] = useState({ name: '', degree: '', hospital: '', specialty: '' });
   const [selectedRole, setSelectedRole] = useState('doctor');
   
-  // Single permanent ID generation per role selection session
-  const [doctorCandidateId, setDoctorCandidateId] = useState(() => generateDoctorId());
-  const [patientCandidateId, setPatientCandidateId] = useState(() => generatePatientId());
-
   // Credentials
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -191,19 +189,16 @@ export default function CreateAccount({ onReturnToLogin, onLoginSuccess }) {
   const [loading, setLoading] = useState(false);
   const [createdSuccess, setCreatedSuccess] = useState(null);
 
-  const currentGeneratedId = selectedRole === 'doctor' ? doctorCandidateId : patientCandidateId;
+
 
   // Auto-calculate age from DOB
 
 
   const handleRoleSelect = (roleId) => {
+    verification.restart();
     setSelectedRole(roleId);
     setErrors({});
-    if (roleId === 'doctor' && !doctorCandidateId) {
-      setDoctorCandidateId(generateDoctorId());
-    } else if (roleId === 'patient' && !patientCandidateId) {
-      setPatientCandidateId(generatePatientId());
-    }
+
   };
 
   // OCR Scan handler
@@ -247,8 +242,8 @@ export default function CreateAccount({ onReturnToLogin, onLoginSuccess }) {
 
     if (!password) {
       errs.password = 'Password is required.';
-    } else if (password.length < 4) {
-      errs.password = 'Password must be at least 4 characters.';
+    } else if (password.length < 8) {
+      errs.password = 'Password must be at least 8 characters.';
     }
 
     if (!confirmPassword) {
@@ -267,6 +262,7 @@ export default function CreateAccount({ onReturnToLogin, onLoginSuccess }) {
       Object.assign(errs, validatePatientDetails(patientForm));
     }
 
+    if (selectedRole === 'doctor') for (const key of ['name', 'degree', 'hospital']) if (!doctorProfile[key].trim()) errs[key] = `Doctor ${key} is required.`;
     return errs;
   };
 
@@ -282,35 +278,18 @@ export default function CreateAccount({ onReturnToLogin, onLoginSuccess }) {
     setLoading(true);
     setErrors({});
 
-    await new Promise((res) => setTimeout(res, 500));
 
-    const result = await authRequest('register', {
-      role: selectedRole, id: currentGeneratedId, password,
+
+    const result = await verification.submit('register', {
+      role: selectedRole, password,
+      ...(selectedRole === 'doctor' ? doctorProfile : {}),
       nmcRegistrationNumber: selectedRole === 'doctor' ? nmcRegistrationNumber.trim() : undefined,
       phone: patientForm.phone, profileData: selectedRole === 'patient' ? patientForm : undefined,
     });
+    if (result.otpRequired) { setLoading(false); return; }
     if (!result.success) { setLoading(false); setErrors({ form: result.error }); return; }
     setSession({ ...result.session, token: result.token });
     await refreshAuthorizedPatients();
-    if (selectedRole === 'patient') {
-      // 1. Register Patient Profile in patientService
-      const profileResult = await registerPatient({
-        patientId: result.id,
-        name: patientForm.name,
-        gender: patientForm.gender,
-        dob: patientForm.dob,
-        age: calculateAge(patientForm.dob),
-        phone: patientForm.phone,
-        email: patientForm.email,
-        address: patientForm.address,
-        aadhaar: patientForm.aadhaar,
-        bloodGroup: patientForm.bloodGroup,
-        emergencyContact: patientForm.emergencyContact,
-        emergencyContactRelationship: patientForm.emergencyContactRelationship,
-        fromAadhaar: Boolean(aadhaarExtractedInfo),
-      });
-      if (!profileResult.success) { setLoading(false); setErrors({ form: profileResult.error }); return; }
-    }
 
     setLoading(false);
 
@@ -332,7 +311,7 @@ export default function CreateAccount({ onReturnToLogin, onLoginSuccess }) {
 
   const isDoctor = selectedRole === 'doctor';
   const idLabelText = isDoctor ? 'Doctor ID' : 'Patient ID';
-  const idHintText = isDoctor ? 'Doctor ID generated automatically' : 'Patient ID generated automatically';
+  const idHintText = `Your unique ${isDoctor ? 'Doctor' : 'Patient'} ID will be generated automatically and shown after signup.`;
 
   return (
     <div className="create-account-page">
@@ -350,13 +329,20 @@ export default function CreateAccount({ onReturnToLogin, onLoginSuccess }) {
             <img src="/logo.jpeg" alt="CareVault Logo" className="create-account-logo-img" />
           </div>
 
+          {isDoctor && !createdSuccess && <div className="doctor-registration-profile">
+            {Object.entries({ name: 'Full name', degree: 'Degree / Qualification', hospital: 'Hospital / Clinic name', specialty: 'Specialty (optional)' }).map(([key, label]) => <div className="field-group" key={key}>
+              <label className="field-label" htmlFor={`doctor-${key}`}>{label}{key !== 'specialty' && ' *'}</label>
+              <input id={`doctor-${key}`} className="field-input" value={doctorProfile[key]} maxLength={160} disabled={loading || Boolean(verification.pending)} onChange={e => setDoctorProfile(prev => ({ ...prev, [key]: e.target.value }))} />
+              {errors[key] && <span className="field-error">{errors[key]}</span>}
+            </div>)}
+          </div>}
           {isDoctor && <div className="field-group">
             <label className="field-label" htmlFor="doctor-nmc">NMC Registration Number (Demo) *</label>
-            <input id="doctor-nmc" className="field-input" value={nmcRegistrationNumber} maxLength={40} placeholder="Enter your approved DEMO-NMC code" aria-describedby="doctor-nmc-help" onChange={e => { setNmcRegistrationNumber(e.target.value.toUpperCase()); setErrors(prev => ({ ...prev, nmcRegistrationNumber: undefined, form: undefined })); }} />
+            <input id="doctor-nmc" disabled={loading || Boolean(verification.pending)} className="field-input" value={nmcRegistrationNumber} maxLength={40} placeholder="Enter your approved DEMO-NMC code" aria-describedby="doctor-nmc-help" onChange={e => { setNmcRegistrationNumber(e.target.value.toUpperCase()); setErrors(prev => ({ ...prev, nmcRegistrationNumber: undefined, form: undefined })); }} />
             <small id="doctor-nmc-help">Testing access only. This does not verify NMC registration or medical qualifications.</small>
             {errors.nmcRegistrationNumber && <span className="field-error">{errors.nmcRegistrationNumber}</span>}
           </div>}
-          {isDoctor && <div className="field-group"><label className="field-label" htmlFor="doctor-mobile">Mobile number for password recovery *</label><input id="doctor-mobile" className="field-input" type="tel" maxLength={10} value={patientForm.phone} onChange={e => setPatientForm(prev => ({ ...prev, phone: e.target.value }))} />{errors.phone && <span className="field-error">{errors.phone}</span>}</div>}
+          {isDoctor && <div className="field-group"><label className="field-label" htmlFor="doctor-mobile">Mobile number *</label><input id="doctor-mobile" disabled={loading || Boolean(verification.pending)} className="field-input" type="tel" maxLength={10} value={patientForm.phone} onChange={e => setPatientForm(prev => ({ ...prev, phone: e.target.value }))} />{errors.phone && <span className="field-error">{errors.phone}</span>}</div>}
           <header className="create-account-card-header">
             <h1 className="create-account-welcome">Create New Account</h1>
             <p className="create-account-subtitle">
@@ -401,6 +387,7 @@ export default function CreateAccount({ onReturnToLogin, onLoginSuccess }) {
             </div>
           ) : (
             <form className="create-account-form" onSubmit={handleSubmit} noValidate aria-label="Create account form">
+              <fieldset className="auth-details-fields" disabled={loading || Boolean(verification.pending)}>
               {errors.form && (
                 <div className="create-form-error" role="alert">
                   <IconAlert />
@@ -421,7 +408,7 @@ export default function CreateAccount({ onReturnToLogin, onLoginSuccess }) {
                       aria-checked={selectedRole === id}
                       id={`create-role-${id}`}
                       className={`role-card${selectedRole === id ? ' active' : ''}`}
-                      onClick={() => handleRoleSelect(id)}
+                      disabled={loading || Boolean(verification.pending)} onClick={() => handleRoleSelect(id)}
                     >
                       <div className="role-icon-wrap" aria-hidden="true">
                         <Icon />
@@ -455,7 +442,7 @@ export default function CreateAccount({ onReturnToLogin, onLoginSuccess }) {
                     id="create-accountId"
                     type="text"
                     className="field-input readonly-input"
-                    value={currentGeneratedId}
+                    value="Assigned after account creation"
                     readOnly
                     disabled
                   />
@@ -754,7 +741,7 @@ export default function CreateAccount({ onReturnToLogin, onLoginSuccess }) {
                       setPassword(e.target.value);
                       if (errors.password) setErrors((prev) => ({ ...prev, password: undefined }));
                     }}
-                    disabled={loading}
+                    disabled={loading || Boolean(verification.pending)}
                   />
                   <span className="field-icon" aria-hidden="true">
                     <IconLock />
@@ -763,7 +750,7 @@ export default function CreateAccount({ onReturnToLogin, onLoginSuccess }) {
                     type="button"
                     className="field-toggle"
                     onClick={() => setShowPassword((v) => !v)}
-                    disabled={loading}
+                    disabled={loading || Boolean(verification.pending)}
                   >
                     {showPassword ? <IconEyeOff /> : <IconEye />}
                   </button>
@@ -792,7 +779,7 @@ export default function CreateAccount({ onReturnToLogin, onLoginSuccess }) {
                       setConfirmPassword(e.target.value);
                       if (errors.confirmPassword) setErrors((prev) => ({ ...prev, confirmPassword: undefined }));
                     }}
-                    disabled={loading}
+                    disabled={loading || Boolean(verification.pending)}
                   />
                   <span className="field-icon" aria-hidden="true">
                     <IconLock />
@@ -801,7 +788,7 @@ export default function CreateAccount({ onReturnToLogin, onLoginSuccess }) {
                     type="button"
                     className="field-toggle"
                     onClick={() => setShowConfirmPassword((v) => !v)}
-                    disabled={loading}
+                    disabled={loading || Boolean(verification.pending)}
                   >
                     {showConfirmPassword ? <IconEyeOff /> : <IconEye />}
                   </button>
@@ -814,12 +801,14 @@ export default function CreateAccount({ onReturnToLogin, onLoginSuccess }) {
                 )}
               </div>
 
+              </fieldset>
+              <AuthVerification flow={verification} disabled={loading} />
               {/* Submit */}
               <button
                 type="submit"
                 id="create-account-submit-btn"
                 className="create-account-btn-primary"
-                disabled={loading}
+                disabled={loading || (!verification.pending && (!verification.challenge || verification.answer.length !== 6))}
                 aria-busy={loading}
               >
                 {loading ? (
@@ -829,7 +818,7 @@ export default function CreateAccount({ onReturnToLogin, onLoginSuccess }) {
                   </>
                 ) : (
                   <>
-                    {isDoctor ? 'Create Doctor Account' : 'Create Patient Account & Proceed'}
+                    {verification.pending ? 'Verify OTP & Create Account' : verification.challenge?.otpEnabled ? 'Send Registration OTP' : isDoctor ? 'Create Doctor Account' : 'Create Patient Account & Proceed'}
                     <IconArrow />
                   </>
                 )}

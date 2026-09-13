@@ -32,7 +32,12 @@ const connectDB = async () => {
   const conn = await connectWithRetry(() => mongoose.connect(uri, {
     serverSelectionTimeoutMS: 10000,
   }), {
-    onRetry: () => console.warn('Database unreachable. Retrying in 5 seconds; check your network connection.'),
+    onRetry: (err) => {
+      const sanitizedMsg = err?.message
+        ? String(err.message).replace(/mongodb(\+srv)?:\/\/[^\s@]+@/gi, 'mongodb$1://<redacted>@')
+        : '';
+      console.warn(`Database unreachable${sanitizedMsg ? `: ${sanitizedMsg}` : ''}. Retrying in 5 seconds. Check Atlas IP Access List, cluster availability, and outbound TCP port 27017.`);
+    },
   });
   console.log(`MongoDB connected: ${conn.connection.host}`);
 };

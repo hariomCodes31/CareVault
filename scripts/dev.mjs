@@ -17,5 +17,5 @@ function start(args) {
 }
 process.on('SIGINT', () => stop());
 process.on('SIGTERM', () => stop());
-start(['server/index.js']);
+start(['--watch', '--watch-path=server', '--watch-path=src/services/patientValidation.js', 'server/index.js']);
 start(['node_modules/vite/bin/vite.js', '--host', 'localhost', '--strictPort', ...process.argv.slice(2)]);

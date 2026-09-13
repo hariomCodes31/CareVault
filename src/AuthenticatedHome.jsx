@@ -1,3 +1,4 @@
+import DoctorProfile from './components/DoctorProfile.jsx';
 import { useState } from 'react';
 import PatientRegistrationDashboard from './components/PatientRegistrationDashboard';
 import PatientDashboard from './PatientDashboard';
@@ -176,6 +177,7 @@ function AuthenticatedHomeContent({ session, onSignOut, onReturnToCreateAccount 
 
       {/* ── Main Content ────────────────────────────────────────── */}
       <main className="auth-main-content">
+        {isDoctor && <DoctorProfile session={session} />}
         {!isDoctor && activeView === 'dashboard' && (
           <PatientDashboard
             patientData={{ patientId: accountId }}

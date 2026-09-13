@@ -1,3 +1,5 @@
+import MedicineBillOcr from './components/MedicineBillOcr.jsx';
+import { mergeBillMedicines } from './services/medicineBillParser.js';
 import { getPatientDashboardFromBackend } from './services/api.js';
 import { getPatientById } from './services/patientService.js';
 import { useState, useEffect } from 'react';
@@ -520,6 +522,8 @@ function NewVisitContent({ session, onSignOut }) {
             <span className="ct-section-num">D</span>
             <h2 className="ct-section-title">CURRENT MEDICATIONS</h2>
           </div>
+
+          <MedicineBillOcr key={patientId} onImport={rows => setFormData(previous => ({ ...previous, currentMedications: mergeBillMedicines(previous.currentMedications, rows) }))} />
 
           {formData.currentMedications.length === 0 ? (
             <div className="ct-empty-list-msg">No current medications added.</div>

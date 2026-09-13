@@ -1,7 +1,8 @@
 import { refreshAuthorizedPatients } from './services/patientService.js';
 import { useState } from 'react';
 import { setSession } from './services/authService';
-import { authRequest } from './services/api.js';
+import AuthVerification from './components/AuthVerification.jsx';
+import { useAuthVerification } from './services/useAuthVerification.js';
 import PasswordReset from './components/PasswordReset.jsx';
 import './LoginPage.css';
 
@@ -121,6 +122,7 @@ function validate({ accountId, password, role }) {
 // ── Main Component ───────────────────────────────────────────────────────────
 export default function LoginPage({ onLoginSuccess, onNavigateToCreateAccount }) {
   // Default selected role is Doctor
+  const verification = useAuthVerification();
   const [resetOpen, setResetOpen] = useState(false);
   const [selectedRole, setSelectedRole] = useState('doctor');
   const [accountId, setAccountId] = useState('');
@@ -133,6 +135,7 @@ export default function LoginPage({ onLoginSuccess, onNavigateToCreateAccount })
 
   // When switching roles, clear the identifier input to prevent accidental leakage
   const handleRoleSelect = (roleId) => {
+    verification.restart();
     setSelectedRole(roleId);
     setAccountId('');
     setErrors({});
@@ -170,10 +173,10 @@ export default function LoginPage({ onLoginSuccess, onNavigateToCreateAccount })
     setLoading(true);
     setErrors({});
 
-    await new Promise((res) => setTimeout(res, 600));
+
 
     // Call authentication service with role, id, and password
-    const authResult = await authRequest('login', {
+    const authResult = await verification.submit('login', {
       role: selectedRole,
       id: accountId,
       password,
@@ -181,6 +184,7 @@ export default function LoginPage({ onLoginSuccess, onNavigateToCreateAccount })
 
     setLoading(false);
 
+    if (authResult.otpRequired) return;
     if (!authResult.success) {
       setErrors({ form: authResult.error });
       return;
@@ -285,6 +289,7 @@ export default function LoginPage({ onLoginSuccess, onNavigateToCreateAccount })
                     aria-checked={selectedRole === id}
                     id={`role-${id}`}
                     className={`role-card${selectedRole === id ? ' active' : ''}`}
+                    disabled={loading || Boolean(verification.pending)}
                     onClick={() => handleRoleSelect(id)}
                   >
                     <div className="role-icon-wrap" aria-hidden="true">
@@ -325,7 +330,7 @@ export default function LoginPage({ onLoginSuccess, onNavigateToCreateAccount })
                   autoComplete="username"
                   aria-describedby={errors.accountId ? 'accountId-error' : undefined}
                   aria-invalid={!!errors.accountId}
-                  disabled={loading}
+                  disabled={loading || Boolean(verification.pending)}
                 />
                 <span className="field-icon" aria-hidden="true">
                   {selectedRole === 'doctor' ? <IconDoctor /> : <IconUser />}
@@ -360,7 +365,7 @@ export default function LoginPage({ onLoginSuccess, onNavigateToCreateAccount })
                   autoComplete="current-password"
                   aria-describedby={errors.password ? 'password-error' : undefined}
                   aria-invalid={!!errors.password}
-                  disabled={loading}
+                  disabled={loading || Boolean(verification.pending)}
                 />
                 <span className="field-icon" aria-hidden="true">
                   <IconLock />
@@ -371,7 +376,7 @@ export default function LoginPage({ onLoginSuccess, onNavigateToCreateAccount })
                   onClick={() => setShowPassword((v) => !v)}
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                   tabIndex={0}
-                  disabled={loading}
+                  disabled={loading || Boolean(verification.pending)}
                 >
                   {showPassword ? <IconEyeOff /> : <IconEye />}
                 </button>
@@ -401,12 +406,13 @@ export default function LoginPage({ onLoginSuccess, onNavigateToCreateAccount })
               </a>
             </div>
 
+            <AuthVerification flow={verification} disabled={loading} />
             {/* Submit */}
             <button
               id="login-submit-btn"
               type="submit"
               className="login-btn"
-              disabled={loading}
+              disabled={loading || (!verification.pending && (!verification.challenge || verification.answer.length !== 6))}
               aria-busy={loading}
             >
               {loading ? (
@@ -416,7 +422,7 @@ export default function LoginPage({ onLoginSuccess, onNavigateToCreateAccount })
                 </>
               ) : (
                 <>
-                  Sign In
+                  {verification.pending ? 'Verify OTP & Sign In' : verification.challenge?.otpEnabled ? 'Send Sign-in OTP' : 'Sign In'}
                   <IconArrow />
                 </>
               )}

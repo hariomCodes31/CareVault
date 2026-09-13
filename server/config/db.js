@@ -8,9 +8,13 @@ const connectDB = async () => {
     });
     console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
-    console.warn(`⚠️ MongoDB Connection Notice: ${error.message}`);
-    console.warn(`👉 LocalStorage fallback active.`);
-  }
+    console.error("❌ MongoDB connection failed:");
+    console.error("Name:", error.name);
+    console.error("Message:", error.message);
+    console.error("Code:", error.code);
+    console.error(error);
+    console.log("Retrying in 5 seconds...");
+}
 };
 
 export default connectDB;

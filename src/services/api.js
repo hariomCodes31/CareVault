@@ -135,3 +135,20 @@ export async function changeDoctorAccess(patientId, doctorId, allow) {
     return await response.json();
   } catch { return { success: false, error: 'Unable to update access. Please try again.' }; }
 }
+
+export async function getCaptcha() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/captcha`, { cache: 'no-store', signal: AbortSignal.timeout(10000) });
+    return await response.json();
+  } catch { return { success: false, error: 'Unable to load CAPTCHA. Check the backend connection and refresh.' }; }
+}
+
+export async function doctorProfileRequest(profile) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/doctor-profile`, {
+      method: profile ? 'PATCH' : 'GET', headers: { 'Content-Type': 'application/json', ...authorizationHeaders() },
+      ...(profile ? { body: JSON.stringify(profile) } : {}), signal: AbortSignal.timeout(10000),
+    });
+    return await response.json();
+  } catch { return { success: false, error: 'Unable to reach the profile server. Please try again.' }; }
+}

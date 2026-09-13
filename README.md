@@ -41,3 +41,30 @@ All `/api/patients` endpoints require a signed Bearer JWT. The server resolves t
 Manual doctor grants are no longer required, and the former grant/revoke API is removed. Existing `allowedDoctorIds` data is retained but does not restrict doctor access. No patient records are deleted or reassigned by this policy change.
 
 Patient search refreshes the permitted list from the backend. The frontend checks server permission before opening records. Visits/drafts remain a separate browser-storage workflow; this change covers existing patient database APIs.
+
+
+## MongoDB connection unavailable
+
+If `/api/health` reports `DEGRADED`, login needs the database connection restored. The server retries initial failures every five seconds; the MongoDB driver reconnects after temporary outages.
+
+- In MongoDB Atlas, confirm the cluster is running and add the backend machine's current public IP to the project's Network Access / IP Access List. A changed public IP needs an updated entry; use a stable backend egress IP for deployment.
+- Ensure the backend network permits outbound TCP port 27017 to the cluster hosts. A TCP timeout can mean network filtering or an Atlas access restriction; it does not establish that the password is wrong.
+- For `querySrv` / DNS errors, check the machine's DNS configuration. The backend uses the configured system DNS instead of forcing public resolvers that may be blocked by the network.
+- Run `npm run dev` and verify `/api/health` reports `OK` before trying login again. Never commit `server/.env`.
+
+MongoDB troubleshooting: https://www.mongodb.com/docs/atlas/troubleshoot-connection/
+
+
+## Sign-in / sign-up CAPTCHA and mobile OTP
+
+Both doctor and patient forms require a server-checked, single-use CAPTCHA (5-minute expiry). The input is directly below the image. CAPTCHA is a basic visual challenge, not a substitute for deployment-level abuse protection.
+
+OTP is implemented but disabled by default so unconfigured SMS does not lock out existing accounts. Configure `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, and `TWILIO_VERIFY_SERVICE_SID` privately in `server/.env`, confirm SMS delivery with Twilio Verify, then set `AUTH_OTP_ENABLED=true` and restart the backend. Do not send these secrets in chat or commit them. When enabled, neither sign-in nor sign-up issues a token before a successful OTP check. Login sends to the stored account mobile; signup verifies the submitted number. Missing provider configuration fails closed once enabled.
+
+OTP requests have a 60-second phone cooldown, 10-minute expiry, five attempts, and single-use completion. Challenges are bound to the action and submitted details, stored in MongoDB with TTL cleanup. Changing details requires restarting verification. The UI offers another request after the cooldown with a new CAPTCHA. Old accounts without a valid mobile need administrator-assisted recovery.
+
+Doctor name, degree, hospital and optional specialty are saved on the account and displayed in the workspace. Existing doctors can use Edit profile to fill missing details. Qualifications are self-reported; the demo registration allowlist is not professional credential verification.
+
+Patient account and profile creation use a MongoDB transaction; use Atlas or a local replica set. Standalone MongoDB does not support this transaction. This avoids a successful signup followed by a failed profile request.
+
+Verify API reference: https://www.twilio.com/docs/verify/api/verification-check
