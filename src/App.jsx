@@ -98,7 +98,7 @@ function App() {
     <ErrorBoundary>
       <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', position: 'relative' }}>
         {/* Subtle, Minimal Ambient Cursor Glow */}
-        <CursorBackground />
+        {!sessionData && currentScreen === 'landing' && <CursorBackground />}
 
         {/* Main Content Layer */}
         <div style={{ position: 'relative', zIndex: 1, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>

@@ -1,3 +1,4 @@
+import PatientSymptomChat from './components/PatientSymptomChat';
 import { useState, useEffect } from 'react';
 import './PatientDashboard.css';
 import { getPatientProfile, getPatientVisits } from './services/visitService';
@@ -123,6 +124,7 @@ const DEFAULT_PATIENT = {
 
 function PatientDashboardContent({
   patientData: customPatientData,
+  enableSymptomChat = false,
   onNavigateToCaseTaking,
   onNavigateToNewVisit,
   onSignOut,
@@ -324,7 +326,8 @@ function PatientDashboardContent({
           <button type="button" className="pd-signout-btn" onClick={onSignOut}>
             <IconLogOut /> Sign Out
           </button>
-        </nav>
+          {enableSymptomChat && <button type="button" className={`pd-tab-btn ${activeTab === 'chat' ? 'active' : ''}`} onClick={() => setActiveTab('chat')}>Health Chat</button>}
+      </nav>
       )}
 
       {/* ── Top Header Profile Card ── */}
@@ -439,6 +442,7 @@ function PatientDashboardContent({
 
       {/* ── Main Tab Content ── */}
       <main className="pd-tab-content">
+        {enableSymptomChat && <div hidden={activeTab !== 'chat'}><PatientSymptomChat active={activeTab === 'chat'} /></div>}
         {/* ==================== 1. OVERVIEW TAB ==================== */}
         {activeTab === 'overview' && (
           <div className="pd-overview-grid">

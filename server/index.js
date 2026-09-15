@@ -1,4 +1,5 @@
 import express from 'express';
+import dns from 'node:dns';
 import cors from 'cors';
 import { createRequire } from 'module';
 import { fileURLToPath } from 'url';
@@ -13,6 +14,11 @@ const __dirname = path.dirname(__filename);
 const require = createRequire(import.meta.url);
 const dotenv = require('dotenv');
 dotenv.config({ path: path.join(__dirname, '.env') });
+
+// Optional app-only DNS override for networks that reject SRV lookups.
+if (process.env.MONGO_DNS_SERVERS) {
+  dns.setServers(process.env.MONGO_DNS_SERVERS.split(',').map(value => value.trim()).filter(Boolean));
+}
 
 console.log('🔑 MONGO_URI loaded:', process.env.MONGO_URI ? 'YES ✅' : 'NO ❌');
 
@@ -50,7 +56,7 @@ app.use(express.json());
 
 // API Routes
 app.use('/api', (req, res, next) => {
-  if (req.path === '/health') return next();
+  if (req.path === '/health' || (req.method === 'GET' && req.path === '/auth/captcha')) return next();
   if (mongoose.connection.readyState !== 1) return res.status(503).json({ success: false, error: 'Database connection is unavailable. The server is reconnecting; check your network and try again shortly.' });
   return next();
 });

@@ -252,7 +252,7 @@ export default function CreateAccount({ onReturnToLogin, onLoginSuccess }) {
       errs.confirmPassword = 'Passwords do not match.';
     }
 
-    if (selectedRole === 'doctor' && !nmcRegistrationNumber.trim()) errs.nmcRegistrationNumber = 'NMC registration demo code is required.';
+    if (selectedRole === 'doctor' && !nmcRegistrationNumber.trim()) errs.nmcRegistrationNumber = 'NMC registration number is required.';
     // Additional validations for Patient
     if (selectedRole === 'doctor' && !/^[6-9]\d{9}$/.test(patientForm.phone)) errs.phone = 'Enter a 10-digit mobile number starting with 6, 7, 8 or 9.';
     if (selectedRole === 'patient') {
@@ -337,9 +337,8 @@ export default function CreateAccount({ onReturnToLogin, onLoginSuccess }) {
             </div>)}
           </div>}
           {isDoctor && <div className="field-group">
-            <label className="field-label" htmlFor="doctor-nmc">NMC Registration Number (Demo) *</label>
-            <input id="doctor-nmc" disabled={loading || Boolean(verification.pending)} className="field-input" value={nmcRegistrationNumber} maxLength={40} placeholder="Enter your approved DEMO-NMC code" aria-describedby="doctor-nmc-help" onChange={e => { setNmcRegistrationNumber(e.target.value.toUpperCase()); setErrors(prev => ({ ...prev, nmcRegistrationNumber: undefined, form: undefined })); }} />
-            <small id="doctor-nmc-help">Testing access only. This does not verify NMC registration or medical qualifications.</small>
+            <label className="field-label" htmlFor="doctor-nmc">NMC Registration Number *</label>
+            <input id="doctor-nmc" disabled={loading || Boolean(verification.pending)} className="field-input" value={nmcRegistrationNumber} maxLength={40} autoComplete="off" autoCorrect="off" spellCheck={false} onChange={e => { setNmcRegistrationNumber(e.target.value.toUpperCase()); setErrors(prev => ({ ...prev, nmcRegistrationNumber: undefined, form: undefined })); }} />
             {errors.nmcRegistrationNumber && <span className="field-error">{errors.nmcRegistrationNumber}</span>}
           </div>}
           {isDoctor && <div className="field-group"><label className="field-label" htmlFor="doctor-mobile">Mobile number *</label><input id="doctor-mobile" disabled={loading || Boolean(verification.pending)} className="field-input" type="tel" maxLength={10} value={patientForm.phone} onChange={e => setPatientForm(prev => ({ ...prev, phone: e.target.value }))} />{errors.phone && <span className="field-error">{errors.phone}</span>}</div>}

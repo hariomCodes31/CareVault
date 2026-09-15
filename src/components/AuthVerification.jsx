@@ -16,7 +16,7 @@ export default function AuthVerification({ flow, disabled }) {
   return <section className="auth-verification" aria-label="CAPTCHA verification">
     <label htmlFor={id}>Security CAPTCHA</label>
     <div className="captcha-image-box">{flow.challenge ? <img src={flow.challenge.image} alt="CAPTCHA characters to enter below" /> : <span>{flow.loading ? 'Loading CAPTCHA?' : 'CAPTCHA unavailable'}</span>}</div>
-    <input id={id} value={flow.answer} onChange={e => flow.setAnswer(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6))} placeholder="Enter the characters above" maxLength={6} autoComplete="off" disabled={disabled || !flow.challenge} />
+    <input id={id} value={flow.answer} onChange={e => flow.setAnswer(e.target.value.replace(/[^a-zA-Z0-9]/g, '').slice(0, 6))} placeholder="Enter the characters above" maxLength={6} autoComplete="off" autoCapitalize="none" autoCorrect="off" spellCheck={false} disabled={disabled || !flow.challenge} />
     <button type="button" disabled={disabled || flow.loading} onClick={flow.refresh}>Refresh CAPTCHA</button>
     {flow.error && <p role="alert">{flow.error}</p>}
     <small>CAPTCHA is case-insensitive and expires in 5 minutes.</small>

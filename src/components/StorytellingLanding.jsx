@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import LoginPage from '../LoginPage';
+import CareAnimation from './CareAnimation';
 import './StorytellingLanding.css';
 
 // ── SVG Icons ───────────────────────────────────────────────────────────────
@@ -60,6 +61,29 @@ export default function StorytellingLanding({
 }) {
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const portalRef = useRef(null);
+  const aboutRef = useRef(null);
+
+  useEffect(() => {
+    if (!isAboutOpen) return;
+    const previousFocus = document.activeElement;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    aboutRef.current?.querySelector("button")?.focus();
+    const trapFocus = (event) => {
+      if (event.key !== "Tab") return;
+      const buttons = aboutRef.current?.querySelectorAll("button, a[href], input, [tabindex='0']");
+      if (!buttons?.length) return;
+      const first = buttons[0], last = buttons[buttons.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    document.addEventListener("keydown", trapFocus);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", trapFocus);
+      previousFocus?.focus();
+    };
+  }, [isAboutOpen]);
 
   const scrollToPortal = () => {
     if (portalRef.current) {
@@ -83,11 +107,11 @@ export default function StorytellingLanding({
       {/* ── Sticky Navigation ── */}
       <header className="story-nav">
         <div className="cv-container story-nav-inner">
-          <div className="story-nav-brand" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+          <a className="story-nav-brand" href="#visual-story">
             <img src="/logo.jpeg" alt="CareVault" className="story-nav-logo" />
             <span className="story-nav-title">CareVault</span>
             <span className="story-nav-tag">Clinical Vault</span>
-          </div>
+          </a>
 
           <nav className="story-nav-links" aria-label="Main Navigation">
             <a href="#visual-story" className="story-nav-link">Clinical Care</a>
@@ -139,6 +163,8 @@ export default function StorytellingLanding({
       {/* ── NEW: Smooth, Elegant About CareVault Panel ── */}
       {isAboutOpen && (
         <div
+          id="about-carevault-panel"
+          ref={aboutRef}
           className="about-panel-backdrop"
           onClick={() => setIsAboutOpen(false)}
           role="dialog"
@@ -246,6 +272,8 @@ export default function StorytellingLanding({
           </div>
 
           {/* Canvas presenting the high-quality Children / Healthcare visual */}
+          <div className="story-care-grid">
+            <CareAnimation />
           <div className="story-visual-canvas">
             <div className="story-main-img-wrap">
               <img
@@ -264,6 +292,8 @@ export default function StorytellingLanding({
                 </div>
               </div>
             </div>
+          </div>
+
           </div>
 
           {/* Metric Summary Strip */}

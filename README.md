@@ -68,3 +68,12 @@ Doctor name, degree, hospital and optional specialty are saved on the account an
 Patient account and profile creation use a MongoDB transaction; use Atlas or a local replica set. Standalone MongoDB does not support this transaction. This avoids a successful signup followed by a failed profile request.
 
 Verify API reference: https://www.twilio.com/docs/verify/api/verification-check
+
+
+## Patient Health Chat
+
+Patient dashboard > Health Chat runs locally in the browser without an API key, AI provider, or chat network requests. It collects symptoms, timing, severity, age, medication history, health history and warning signs. Only structured answers drive its general guidance; free text is recorded verbatim and is not interpreted as a diagnosis. It never recommends medicines.
+
+There are 27 Indian-language input choices plus English. Seventeen languages have localized intake prompts; remaining prompts, safety controls and summaries use the disclosed English/Hindi fallback. This is guided intake, not fluent multilingual AI. Answers remain in dashboard memory and are cleared on leaving the dashboard/signing out. Users can explicitly download their own summary. No patient records are sent to an AI service.
+
+Voice typing uses browser on-device SpeechRecognition only (`processLocally=true`). A microphone click may offer language-pack installation. Unsupported browsers/languages keep manual typing; no cloud recognition fallback is used. Final transcripts append to the draft for patient review and are never auto-submitted. Microphone sessions stop when leaving the chat, changing language/question, or hiding the browser tab.

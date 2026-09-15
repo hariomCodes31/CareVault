@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import './LogoIntro.css';
 
 /**
@@ -10,27 +10,31 @@ import './LogoIntro.css';
 export default function LogoIntro({ onComplete }) {
   const [dismissing, setDismissing] = useState(false);
 
+  const completeRef = useRef(onComplete);
+  useEffect(() => { completeRef.current = onComplete; }, [onComplete]);
+
   useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      completeRef.current?.();
+      return;
+    }
     // Settle for ~2.3 seconds then begin smooth dismissal
     const settleTimer = setTimeout(() => {
       setDismissing(true);
     }, 2400);
 
     const finishTimer = setTimeout(() => {
-      if (onComplete) onComplete();
+      completeRef.current?.();
     }, 3100);
 
     return () => {
       clearTimeout(settleTimer);
       clearTimeout(finishTimer);
     };
-  }, [onComplete]);
+  }, []);
 
   const handleSkip = () => {
-    setDismissing(true);
-    setTimeout(() => {
-      if (onComplete) onComplete();
-    }, 450);
+    completeRef.current?.();
   };
 
   return (

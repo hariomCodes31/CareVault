@@ -57,7 +57,7 @@ export async function getPatientDashboardFromBackend(patientId) {
     }
     const errData = await res.json().catch(() => null);
     const defaultError = res.status === 401 || res.status === 403
-      ? 'Record unavailable or access denied. Sign in again or ask the patient to grant access.'
+      ? 'Record unavailable or access denied. Please sign in again with an authorized account.'
       : res.status === 404
       ? 'Patient record not found.'
       : 'Failed to load patient dashboard. Please try again.';

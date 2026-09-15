@@ -17,7 +17,7 @@ export const registerUser = async (req, res) => {
     const { role, password, name, email, phone, profileData, nmcRegistrationNumber, degree, hospital, specialty } = req.body;
     if (!['doctor', 'patient'].includes(role) || typeof password !== 'string' || password.length < 4 || password.length > 72 || !/^[6-9]\d{9}$/.test(phone || '')) return res.status(400).json({ success: false, error: 'Valid role, mobile and password (4?72 characters) are required.' });
     if (role === 'doctor' && !isAllowedDoctorRegistration(nmcRegistrationNumber)) {
-      return res.status(400).json({ success: false, error: 'Enter an approved demo NMC registration code to create a doctor account.' });
+      return res.status(400).json({ success: false, error: 'NMC registration number was not found.' });
     }
     if (role === 'patient') {
       const errors = validatePatientDetails(profileData || {});
@@ -36,7 +36,7 @@ export const registerUser = async (req, res) => {
       phone,
       ...(req.verifiedPhone ? { phoneVerifiedAt: new Date() } : {}),
       ...(role === 'doctor' ? { degree, hospital, specialty: typeof specialty === 'string' ? specialty.slice(0, 160) : '' } : {}),
-      ...(role === 'doctor' ? { nmcRegistrationNumber: normalizeDoctorRegistration(nmcRegistrationNumber), registrationVerification: 'demo-allowlist' } : {}),
+      ...(role === 'doctor' ? { nmcRegistrationNumber: normalizeDoctorRegistration(nmcRegistrationNumber), registrationVerification: 'provided-record-match' } : {}),
       name: name || profileData?.name || '',
       email: email || profileData?.email || '',
     };

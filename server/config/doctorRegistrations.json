@@ -1,0 +1,492 @@
+[
+  {
+    "srNo": 1,
+    "yearOfInfo": "2002",
+    "registrationNumber": "DMC/R/513",
+    "stateMedicalCouncil": "Delhi Medical Council",
+    "doctorName": "Amit Kumar Yadav",
+    "fatherName": "Ashok Kumar Yadav",
+    "source": "user-provided",
+    "isVerified": false
+  },
+  {
+    "srNo": 2,
+    "yearOfInfo": "2003",
+    "registrationNumber": "DMC/R/1074",
+    "stateMedicalCouncil": "Delhi Medical Council",
+    "doctorName": "Amit Kumar Tyagi",
+    "fatherName": "Vrit Pal Singh Tyagi",
+    "source": "user-provided",
+    "isVerified": false
+  },
+  {
+    "srNo": 3,
+    "yearOfInfo": "2004",
+    "registrationNumber": "DMC/R/2113",
+    "stateMedicalCouncil": "Delhi Medical Council",
+    "doctorName": "Amit Kumar Singal",
+    "fatherName": "Hari Sharan Singla",
+    "source": "user-provided",
+    "isVerified": false
+  },
+  {
+    "srNo": 4,
+    "yearOfInfo": "2005",
+    "registrationNumber": "DMC/R/2205",
+    "stateMedicalCouncil": "Delhi Medical Council",
+    "doctorName": "Amit Kumar Lohia",
+    "fatherName": "Prakash Chand",
+    "source": "user-provided",
+    "isVerified": false
+  },
+  {
+    "srNo": 5,
+    "yearOfInfo": "2005",
+    "registrationNumber": "DMC/R/2243",
+    "stateMedicalCouncil": "Delhi Medical Council",
+    "doctorName": "Amit Kumar Gupta",
+    "fatherName": "M.L. Gupta",
+    "source": "user-provided",
+    "isVerified": false
+  },
+  {
+    "srNo": 6,
+    "yearOfInfo": "2006",
+    "registrationNumber": "DMC/R/2987",
+    "stateMedicalCouncil": "Delhi Medical Council",
+    "doctorName": "Amit Kumar Sharma",
+    "fatherName": "R. K. SHARMA",
+    "source": "user-provided",
+    "isVerified": false
+  },
+  {
+    "srNo": 7,
+    "yearOfInfo": "2007",
+    "registrationNumber": "DMC/R/3885",
+    "stateMedicalCouncil": "Delhi Medical Council",
+    "doctorName": "Amit Kumar Dhawan",
+    "fatherName": "Shyam Lal Dhawan",
+    "source": "user-provided",
+    "isVerified": false
+  },
+  {
+    "srNo": 8,
+    "yearOfInfo": "2007",
+    "registrationNumber": "DMC/R/4024",
+    "stateMedicalCouncil": "Delhi Medical Council",
+    "doctorName": "Amit Kumar Jaiswal",
+    "fatherName": "Birendra Prasad Jaiswal",
+    "source": "user-provided",
+    "isVerified": false
+  },
+  {
+    "srNo": 9,
+    "yearOfInfo": "2007",
+    "registrationNumber": "DMC/R/4118",
+    "stateMedicalCouncil": "Delhi Medical Council",
+    "doctorName": "Amit Kumar Sharma",
+    "fatherName": "Guru Dutt Sharma",
+    "source": "user-provided",
+    "isVerified": false
+  },
+  {
+    "srNo": 10,
+    "yearOfInfo": "2008",
+    "registrationNumber": "DMC/R/4800",
+    "stateMedicalCouncil": "Delhi Medical Council",
+    "doctorName": "AMIT KUMAR NIRANJAN",
+    "fatherName": "ASHOK KUMAR NIRANJAN",
+    "source": "user-provided",
+    "isVerified": false
+  },
+  {
+    "srNo": 11,
+    "yearOfInfo": "2008",
+    "registrationNumber": "DMC/R/4809",
+    "stateMedicalCouncil": "Delhi Medical Council",
+    "doctorName": "AMIT KUMAR SINGH",
+    "fatherName": "SUDHAR SINGH",
+    "source": "user-provided",
+    "isVerified": false
+  },
+  {
+    "srNo": 12,
+    "yearOfInfo": "2008",
+    "registrationNumber": "DMC/R/4819",
+    "stateMedicalCouncil": "Delhi Medical Council",
+    "doctorName": "Amit Kumar Singh",
+    "fatherName": "S. R. Singh",
+    "source": "user-provided",
+    "isVerified": false
+  },
+  {
+    "srNo": 13,
+    "yearOfInfo": "2008",
+    "registrationNumber": "DMC/R/4862",
+    "stateMedicalCouncil": "Delhi Medical Council",
+    "doctorName": "AMIT KUMAR TIWARI",
+    "fatherName": "Vikrma Ditya Tiwari",
+    "source": "user-provided",
+    "isVerified": false
+  },
+  {
+    "srNo": 14,
+    "yearOfInfo": "2009",
+    "registrationNumber": "DMC/R/5519",
+    "stateMedicalCouncil": "Delhi Medical Council",
+    "doctorName": "AMIT KUMAR MODI",
+    "fatherName": "AMBIKA PRASAD MODI",
+    "source": "user-provided",
+    "isVerified": false
+  },
+  {
+    "srNo": 15,
+    "yearOfInfo": "2009",
+    "registrationNumber": "DMC/R/5672",
+    "stateMedicalCouncil": "Delhi Medical Council",
+    "doctorName": "AMIT KUMAR NIRMAL",
+    "fatherName": "BHAGWAT PRASAD NIRMAL",
+    "source": "user-provided",
+    "isVerified": false
+  },
+  {
+    "srNo": 16,
+    "yearOfInfo": "2011",
+    "registrationNumber": "DMC/R/6753",
+    "stateMedicalCouncil": "Delhi Medical Council",
+    "doctorName": "AMIT KUMAR CHAWLA",
+    "fatherName": "SANTOSH KUMAR CHAWLA",
+    "source": "user-provided",
+    "isVerified": false
+  },
+  {
+    "srNo": 17,
+    "yearOfInfo": "2012",
+    "registrationNumber": "DMC/R/7762",
+    "stateMedicalCouncil": "Delhi Medical Council",
+    "doctorName": "AMIT KUMAR KUNDU",
+    "fatherName": "RAJENDER KUNDU",
+    "source": "user-provided",
+    "isVerified": false
+  },
+  {
+    "srNo": 18,
+    "yearOfInfo": "2013",
+    "registrationNumber": "DMC/R/9620",
+    "stateMedicalCouncil": "Delhi Medical Council",
+    "doctorName": "AMIT KUMAR DUBEY",
+    "fatherName": "SURENDRA KUMAR DUBEY",
+    "source": "user-provided",
+    "isVerified": false
+  },
+  {
+    "srNo": 19,
+    "yearOfInfo": "2014",
+    "registrationNumber": "DMC/R/10305",
+    "stateMedicalCouncil": "Delhi Medical Council",
+    "doctorName": "AMIT KUMAR DINKAR",
+    "fatherName": "SHIV DAS DINKAR",
+    "source": "user-provided",
+    "isVerified": false
+  },
+  {
+    "srNo": 20,
+    "yearOfInfo": "2014",
+    "registrationNumber": "DMC/R/10645",
+    "stateMedicalCouncil": "Delhi Medical Council",
+    "doctorName": "AMIT KUMAR KASHYAP",
+    "fatherName": "RISHPAL KASHYAP",
+    "source": "user-provided",
+    "isVerified": false
+  },
+  {
+    "srNo": 21,
+    "yearOfInfo": "2014",
+    "registrationNumber": "DMC/R/11302",
+    "stateMedicalCouncil": "Delhi Medical Council",
+    "doctorName": "AMIT KUMAR JHA",
+    "fatherName": "BIRENDRA KUMAR JHA",
+    "source": "user-provided",
+    "isVerified": false
+  },
+  {
+    "srNo": 22,
+    "yearOfInfo": "2014",
+    "registrationNumber": "DMC/R/11408",
+    "stateMedicalCouncil": "Delhi Medical Council",
+    "doctorName": "AMIT KUMAR SINGH",
+    "fatherName": "SURENDRA SINGH",
+    "source": "user-provided",
+    "isVerified": false
+  },
+  {
+    "srNo": 23,
+    "yearOfInfo": "2015",
+    "registrationNumber": "DMC/R/12739",
+    "stateMedicalCouncil": "Delhi Medical Council",
+    "doctorName": "AMIT KUMAR YADAV",
+    "fatherName": "MAHENDRA SINGH YADAV",
+    "source": "user-provided",
+    "isVerified": false
+  },
+  {
+    "srNo": 24,
+    "yearOfInfo": "2015",
+    "registrationNumber": "DMC/R/13558",
+    "stateMedicalCouncil": "Delhi Medical Council",
+    "doctorName": "Amit Kumar Sah",
+    "fatherName": "Lal Babu Sah",
+    "source": "user-provided",
+    "isVerified": false
+  },
+  {
+    "srNo": 25,
+    "yearOfInfo": "2016",
+    "registrationNumber": "DMC/R/14287",
+    "stateMedicalCouncil": "Delhi Medical Council",
+    "doctorName": "AMIT KUMAR SAMADHIYA",
+    "fatherName": "UMA SHANKAR SAMADHIYA",
+    "source": "user-provided",
+    "isVerified": false
+  },
+  {
+    "srNo": 26,
+    "yearOfInfo": "2016",
+    "registrationNumber": "DMC/R/14328",
+    "stateMedicalCouncil": "Delhi Medical Council",
+    "doctorName": "Amit Kumar Singh",
+    "fatherName": "Amar Nath Singh",
+    "source": "user-provided",
+    "isVerified": false
+  },
+  {
+    "srNo": 27,
+    "yearOfInfo": "2016",
+    "registrationNumber": "DMC/R/15021",
+    "stateMedicalCouncil": "Delhi Medical Council",
+    "doctorName": "AMIT KUMAR MEENA",
+    "fatherName": "RADHE SHYAM MEENA",
+    "source": "user-provided",
+    "isVerified": false
+  },
+  {
+    "srNo": 28,
+    "yearOfInfo": "2016",
+    "registrationNumber": "DMC/R/15218",
+    "stateMedicalCouncil": "Delhi Medical Council",
+    "doctorName": "Amit Kumar Keshri",
+    "fatherName": "Ajay Prasad Keshri",
+    "source": "user-provided",
+    "isVerified": false
+  },
+  {
+    "srNo": 29,
+    "yearOfInfo": "2017",
+    "registrationNumber": "DMC/R/16233",
+    "stateMedicalCouncil": "Delhi Medical Council",
+    "doctorName": "Amit Kumar Upadhyay",
+    "fatherName": "Shiv Shankar Upadhyay",
+    "source": "user-provided",
+    "isVerified": false
+  },
+  {
+    "srNo": 30,
+    "yearOfInfo": "2017",
+    "registrationNumber": "DMC/R/16770",
+    "stateMedicalCouncil": "Delhi Medical Council",
+    "doctorName": "AMIT KUMAR MEENA",
+    "fatherName": "SHIV RAM MEENA",
+    "source": "user-provided",
+    "isVerified": false
+  },
+  {
+    "srNo": 31,
+    "yearOfInfo": "2017",
+    "registrationNumber": "DMC/R/16918",
+    "stateMedicalCouncil": "Delhi Medical Council",
+    "doctorName": "Amit Kumar Gauraw",
+    "fatherName": "Braj Kishor Yadav",
+    "source": "user-provided",
+    "isVerified": false
+  },
+  {
+    "srNo": 32,
+    "yearOfInfo": "2017",
+    "registrationNumber": "DMC/R/17346",
+    "stateMedicalCouncil": "Delhi Medical Council",
+    "doctorName": "AMIT KUMAR VERMA",
+    "fatherName": "RAM PATI VERMA",
+    "source": "user-provided",
+    "isVerified": false
+  },
+  {
+    "srNo": 33,
+    "yearOfInfo": "2017",
+    "registrationNumber": "DMC/R/17587",
+    "stateMedicalCouncil": "Delhi Medical Council",
+    "doctorName": "AMIT KUMAR CHAUDHARY",
+    "fatherName": "RAM NIWAS CHAUDHARY",
+    "source": "user-provided",
+    "isVerified": false
+  },
+  {
+    "srNo": 34,
+    "yearOfInfo": "2018",
+    "registrationNumber": "DMC/R/18821",
+    "stateMedicalCouncil": "Delhi Medical Council",
+    "doctorName": "Amit Kumar Ojha",
+    "fatherName": "SATYADEV OJHA",
+    "source": "user-provided",
+    "isVerified": false
+  },
+  {
+    "srNo": 35,
+    "yearOfInfo": "2018",
+    "registrationNumber": "DMC/R/19605",
+    "stateMedicalCouncil": "Delhi Medical Council",
+    "doctorName": "Amit Kumar Sheoran",
+    "fatherName": "RATTANVIR",
+    "source": "user-provided",
+    "isVerified": false
+  },
+  {
+    "srNo": 36,
+    "yearOfInfo": "2018",
+    "registrationNumber": "DMC/R/21038",
+    "stateMedicalCouncil": "Delhi Medical Council",
+    "doctorName": "AMIT KUMAR TIWARI",
+    "fatherName": "VIRENDRA TIWARI",
+    "source": "user-provided",
+    "isVerified": false
+  },
+  {
+    "srNo": 37,
+    "yearOfInfo": "2019",
+    "registrationNumber": "DMC/R/21643",
+    "stateMedicalCouncil": "Delhi Medical Council",
+    "doctorName": "Amit Kumar Gadhwal",
+    "fatherName": "Mahendra Singh",
+    "source": "user-provided",
+    "isVerified": false
+  },
+  {
+    "srNo": 38,
+    "yearOfInfo": "2019",
+    "registrationNumber": "DMC/R/23056",
+    "stateMedicalCouncil": "Delhi Medical Council",
+    "doctorName": "AMIT KUMAR POONIA",
+    "fatherName": "KISHAN SINGH POONIA",
+    "source": "user-provided",
+    "isVerified": false
+  },
+  {
+    "srNo": 39,
+    "yearOfInfo": "2019",
+    "registrationNumber": "DMC/R/23072",
+    "stateMedicalCouncil": "Delhi Medical Council",
+    "doctorName": "AMIT KUMAR OJHA",
+    "fatherName": "RAJKUMAR OJHA",
+    "source": "user-provided",
+    "isVerified": false
+  },
+  {
+    "srNo": 40,
+    "yearOfInfo": "2019",
+    "registrationNumber": "DMC/R/23415",
+    "stateMedicalCouncil": "Delhi Medical Council",
+    "doctorName": "AMIT KUMAR GUPTA",
+    "fatherName": "SATYARAM GUPTA",
+    "source": "user-provided",
+    "isVerified": false
+  },
+  {
+    "srNo": 41,
+    "yearOfInfo": "2020",
+    "registrationNumber": "DMC/R/25046",
+    "stateMedicalCouncil": "Delhi Medical Council",
+    "doctorName": "AMIT KUMAR PORWAL",
+    "fatherName": "SANTOSH CHANDRA PORWAL",
+    "source": "user-provided",
+    "isVerified": false
+  },
+  {
+    "srNo": 42,
+    "yearOfInfo": "2021",
+    "registrationNumber": "DMC/R/28917",
+    "stateMedicalCouncil": "Delhi Medical Council",
+    "doctorName": "Amit Kumar Singh",
+    "fatherName": "Kiranpal Singh",
+    "source": "user-provided",
+    "isVerified": false
+  },
+  {
+    "srNo": 43,
+    "yearOfInfo": "2021",
+    "registrationNumber": "DMC/R/31520",
+    "stateMedicalCouncil": "Delhi Medical Council",
+    "doctorName": "AMIT KUMAR SINGH",
+    "fatherName": "PARMA SINGH",
+    "source": "user-provided",
+    "isVerified": false
+  },
+  {
+    "srNo": 44,
+    "yearOfInfo": "2022",
+    "registrationNumber": "DMC/R/34366",
+    "stateMedicalCouncil": "Delhi Medical Council",
+    "doctorName": "Amit Kumar Chaudhary",
+    "fatherName": "Jagveer Singh",
+    "source": "user-provided",
+    "isVerified": false
+  },
+  {
+    "srNo": 45,
+    "yearOfInfo": "2022",
+    "registrationNumber": "DMC/R/34796",
+    "stateMedicalCouncil": "Delhi Medical Council",
+    "doctorName": "Amit Kumar Yadav",
+    "fatherName": "Vinod Yadav",
+    "source": "user-provided",
+    "isVerified": false
+  },
+  {
+    "srNo": 46,
+    "yearOfInfo": "2023",
+    "registrationNumber": "DMC/R/36191",
+    "stateMedicalCouncil": "Delhi Medical Council",
+    "doctorName": "Samit Kumar Mahato",
+    "fatherName": "Anil Kumar Mahato",
+    "source": "user-provided",
+    "isVerified": false
+  },
+  {
+    "srNo": 47,
+    "yearOfInfo": "2024",
+    "registrationNumber": "DMC/R/40861",
+    "stateMedicalCouncil": "Delhi Medical Council",
+    "doctorName": "Amit Kumar Shah",
+    "fatherName": "Mithlesh Sah",
+    "source": "user-provided",
+    "isVerified": false
+  },
+  {
+    "srNo": 48,
+    "yearOfInfo": "2025",
+    "registrationNumber": "DMC/R/41752",
+    "stateMedicalCouncil": "Delhi Medical Council",
+    "doctorName": "Amit Kumar Boora",
+    "fatherName": "Jorawar Singh",
+    "source": "user-provided",
+    "isVerified": false
+  },
+  {
+    "srNo": 49,
+    "yearOfInfo": "2025",
+    "registrationNumber": "DMC/R/43697",
+    "stateMedicalCouncil": "Delhi Medical Council",
+    "doctorName": "AMIT KUMAR TIWARI",
+    "fatherName": "DEVENDRA KUMAR TIWARI",
+    "source": "user-provided",
+    "isVerified": false
+  }
+]

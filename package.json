@@ -9,7 +9,7 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "server": "node server/index.js",
-    "test": "node src/services/patientValidation.test.js && node server/passwordReset.test.js && node src/services/visitService.test.js && node server/connectWithRetry.test.js && node server/doctorRegistration.test.js && node server/patientAccess.test.js && node src/services/dashboardApi.test.js && node --test server/authVerification.test.js && node --test server/authProfile.test.js && node --test src/services/medicineBillParser.test.js && node --test server/accountId.test.js",
+    "test": "node src/services/patientValidation.test.js && node server/passwordReset.test.js && node src/services/visitService.test.js && node server/connectWithRetry.test.js && node server/doctorRegistration.test.js && node server/patientAccess.test.js && node src/services/dashboardApi.test.js && node --test server/authVerification.test.js && node --test server/authProfile.test.js && node --test src/services/medicineBillParser.test.js && node --test server/accountId.test.js && node --test src/services/symptomChat.test.js && node --test src/services/offlineDictation.test.js",
     "dev:frontend": "vite"
   },
   "dependencies": {

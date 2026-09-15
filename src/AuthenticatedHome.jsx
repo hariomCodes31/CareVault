@@ -1,3 +1,4 @@
+import PatientSymptomChat from './components/PatientSymptomChat';
 import DoctorProfile from './components/DoctorProfile.jsx';
 import { useState } from 'react';
 import PatientRegistrationDashboard from './components/PatientRegistrationDashboard';
@@ -177,9 +178,11 @@ function AuthenticatedHomeContent({ session, onSignOut, onReturnToCreateAccount 
 
       {/* ── Main Content ────────────────────────────────────────── */}
       <main className="auth-main-content">
+        {!isDoctor && activeView === 'chat' && <PatientSymptomChat />}
         {isDoctor && <DoctorProfile session={session} />}
         {!isDoctor && activeView === 'dashboard' && (
           <PatientDashboard
+            enableSymptomChat
             patientData={{ patientId: accountId }}
             onNavigateToCaseTaking={() => setActiveView('case-taking')}
             onNavigateToNewVisit={() => setActiveView('case-taking')}
@@ -279,6 +282,11 @@ function AuthenticatedHomeContent({ session, onSignOut, onReturnToCreateAccount 
           </div>
         )}
       </main>
+      {!isDoctor && activeView !== 'chat' && <button type="button" className="sc-launcher" onClick={() => { setActiveView('chat'); window.scrollTo({ top: 0, behavior: 'auto' }); }} aria-label="Open Health Chat">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M21 11a8 8 0 0 1-8 8H7l-5 3V11a9 9 0 0 1 19 0Z"/><path d="M7 10h10M7 14h6"/></svg>
+        <span>Health Chat</span>
+      </button>}
+
     </div>
   );
 }

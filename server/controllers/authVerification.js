@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { registrationError } from '../config/authValidation.js';
 import { randomInt, randomUUID, createHmac } from 'node:crypto';
 import bcrypt from 'bcryptjs';
@@ -12,12 +13,33 @@ export function payloadDigest(body, purpose) {
   const payload = Object.fromEntries(Object.entries(body).filter(([key]) => !['captchaId', 'captchaAnswer', 'challengeId', 'code'].includes(key)));
   return digest(JSON.stringify({ purpose, payload }));
 }
+// Development-only fallback: bounded, expiring, single-use challenges.
+// Production continues to use shared MongoDB storage across server instances.
+const localCaptchas = new Map();
 export async function captcha(req, res) {
   try {
-    const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    const answer = Array.from({ length: 6 }, () => alphabet[randomInt(alphabet.length)]).join('');
-    const id = randomUUID();
-    await Challenge.create({ _id: id, kind: 'captcha', digest: digest(answer), expiresAt: new Date(Date.now() + 300000) });
+    const lettersAlphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+    const alphabet = lettersAlphabet + lettersAlphabet.toLowerCase() + '23456789';
+    const characters = Array.from({ length: 6 }, () => alphabet[randomInt(alphabet.length)]);
+    characters[0] = lettersAlphabet[randomInt(lettersAlphabet.length)];
+    characters[1] = lettersAlphabet[randomInt(lettersAlphabet.length)].toLowerCase();
+    for (let i = characters.length - 1; i > 0; i--) {
+      const j = randomInt(i + 1);
+      [characters[i], characters[j]] = [characters[j], characters[i]];
+    }
+    const answer = characters.join('');
+    const local = process.env.NODE_ENV !== 'production' && mongoose.connection.readyState !== 1;
+    const id = (local ? 'local:' : '') + randomUUID();
+    const challenge = { _id: id, kind: 'captcha', digest: digest(answer.toUpperCase()), expiresAt: new Date(Date.now() + 300000) };
+    if (local) {
+      for (const [key, value] of localCaptchas) {
+        if (value.expiresAt <= new Date()) localCaptchas.delete(key);
+      }
+      if (localCaptchas.size >= 1000) return res.status(429).json({ success: false, error: 'Too many CAPTCHA requests. Try again shortly.' });
+      localCaptchas.set(id, challenge);
+    } else {
+      await Challenge.create(challenge);
+    }
     const letters = [...answer].map((char, i) => `<text x="${22 + i * 32}" y="${40 + randomInt(-5, 6)}" transform="rotate(${randomInt(-15, 16)} ${22 + i * 32} 35)">${char}</text>`).join('');
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="230" height="64" viewBox="0 0 230 64"><rect width="230" height="64" fill="#edf3ee"/><g stroke="#9baa9e" fill="none"><path d="M0 12L230 49M0 50L230 18M10 30Q120 0 220 40"/></g><g font-family="monospace" font-size="29" font-weight="bold" fill="#203e30">${letters}</g></svg>`;
     res.set('Cache-Control', 'no-store');
@@ -26,6 +48,11 @@ export async function captcha(req, res) {
 }
 export async function consumeCaptcha(body) {
   if (typeof body.captchaId !== 'string' || typeof body.captchaAnswer !== 'string') return false;
+  if (body.captchaId.startsWith('local:')) {
+    const challenge = localCaptchas.get(body.captchaId);
+    localCaptchas.delete(body.captchaId);
+    return Boolean(challenge && challenge.expiresAt > new Date() && challenge.digest === digest(body.captchaAnswer.trim().toUpperCase()));
+  }
   const challenge = await Challenge.findOneAndDelete({ _id: body.captchaId, kind: 'captcha', expiresAt: { $gt: new Date() } });
   return Boolean(challenge && challenge.digest === digest(body.captchaAnswer.trim().toUpperCase()));
 }

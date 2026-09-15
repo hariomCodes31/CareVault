@@ -2,7 +2,7 @@ import { getSession } from './authService.js';
 import { getAllPatientsFromBackend } from './api.js';
 import { calculateAge, validatePatientDetails } from './patientValidation.js';
 // patientService.js — CareVault Patient Data & Aadhaar OCR Service
-import Tesseract from 'tesseract.js';
+
 import { savePatientToBackend } from './api';
 
 const PATIENTS_STORAGE_KEY = 'carevault_patients';
@@ -301,6 +301,7 @@ export async function parseAadhaarCard(fileOrPreset, onProgress) {
     if (fileOrPreset.type?.startsWith('image/')) {
       if (onProgress) onProgress({ step: 2, text: 'Running Tesseract Neural OCR on image...' });
       try {
+        const { default: Tesseract } = await import('tesseract.js');
         const ocrResult = await Tesseract.recognize(fileOrPreset, 'eng', {
           logger: (m) => {
             if (m.status === 'recognizing text' && onProgress) {

@@ -4,7 +4,7 @@ export function registrationError(body) {
   if (!['doctor', 'patient'].includes(body.role) || typeof body.password !== 'string' || body.password.length < 8 || Buffer.byteLength(body.password) > 72) return 'Choose a password of at least 8 characters and at most 72 bytes.';
   if (typeof body.phone !== 'string' || !/^[6-9]\d{9}$/.test(body.phone)) return 'Enter a valid ten-digit mobile number.';
   if (body.role === 'doctor') {
-    if (!isAllowedDoctorRegistration(body.nmcRegistrationNumber)) return 'Enter an approved demo NMC registration code.';
+    if (!isAllowedDoctorRegistration(body.nmcRegistrationNumber)) return 'NMC registration number was not found.';
     if (['name', 'degree', 'hospital'].some(key => typeof body[key] !== 'string' || !body[key].trim() || body[key].length > 160)) return 'Doctor name, degree and hospital are required (up to 160 characters).';
   } else {
     const profile = body.profileData;

@@ -12,9 +12,12 @@ process.env.AUTH_OTP_ENABLED = 'true';
 for (const key of ['TWILIO_ACCOUNT_SID', 'TWILIO_AUTH_TOKEN', 'TWILIO_VERIFY_SERVICE_SID']) process.env[key] = 'test';
 const hash = value => createHmac('sha256', process.env.JWT_SECRET).update(value).digest('hex');
 test('CAPTCHA uses server-side digest, expiry and one-use consumption', async () => {
+ const previousEnv = process.env.NODE_ENV;
+ process.env.NODE_ENV = 'production';
  let stored;
  const create = mock.method(Challenge, 'create', async data => { stored = data; });
- const res = response(); await captcha({}, res);
+ const res = response();
+ try { await captcha({}, res); } finally { if (previousEnv === undefined) delete process.env.NODE_ENV; else process.env.NODE_ENV = previousEnv; }
  assert.ok(res.body.image.startsWith('data:image/svg+xml;base64,')); assert.equal(res.body.answer, undefined); assert.ok(stored.expiresAt > new Date());
  create.mock.restore();
  const consume = mock.method(Challenge, 'findOneAndDelete', async filter => { assert.ok(filter.expiresAt.$gt); const value = stored; stored = null; return value; });
@@ -94,4 +97,42 @@ test('SMS cooldown rejects without contacting provider', async () => {
  const f = mock.method(globalThis, 'fetch', async () => assert.fail());
  try { const res = response(); await requireOtp('login')({ body: { ...body, captchaId: 'x', captchaAnswer: 'ABC234' } }, res, () => assert.fail()); assert.equal(res.code, 429); }
  finally { for (const m of [c,u,reserve,f]) m.mock.restore(); }
+});
+
+
+test('local CAPTCHA loads without MongoDB and remains single-use and expiring', async () => {
+ const previousEnv = process.env.NODE_ENV;
+ process.env.NODE_ENV = 'development';
+ const create = mock.method(Challenge, 'create', async () => assert.fail('Must not require MongoDB'));
+ const remove = mock.method(Challenge, 'findOneAndDelete', async () => assert.fail('Local consumption must not query MongoDB'));
+ const issue = async () => {
+   const res = response(); await captcha({}, res);
+   assert.equal(res.body.success, true);
+   const svg = Buffer.from(res.body.image.split(',')[1], 'base64').toString();
+   const answer = [...svg.matchAll(/<text[^>]*>([^<]+)<\/text>/g)].map(match => match[1]).join('');
+   assert.equal(answer.length, 6);
+   assert.match(answer, /[A-Z]/);
+   assert.match(answer, /[a-z]/);
+   return { captchaId: res.body.captchaId, captchaAnswer: answer };
+ };
+ try {
+   const valid = await issue();
+   assert.equal(await consumeCaptcha({ ...valid, captchaAnswer: valid.captchaAnswer.toLowerCase() }), true);
+   const uppercase = await issue();
+   assert.equal(await consumeCaptcha({ ...uppercase, captchaAnswer: uppercase.captchaAnswer.toUpperCase() }), true);
+   const mixed = await issue();
+   assert.equal(await consumeCaptcha(mixed), true);
+   assert.equal(await consumeCaptcha(valid), false);
+   const wrong = await issue();
+   assert.equal(await consumeCaptcha({ ...wrong, captchaAnswer: 'INVALID' }), false);
+   assert.equal(await consumeCaptcha(wrong), false);
+   const expired = await issue();
+   const RealDate = globalThis.Date;
+   const future = RealDate.now() + 300001;
+   const clock = mock.method(globalThis, 'Date', class extends RealDate { constructor(...args) { super(...(args.length ? args : [future])); } });
+   try { assert.equal(await consumeCaptcha(expired), false); } finally { clock.mock.restore(); }
+ } finally {
+   create.mock.restore(); remove.mock.restore();
+   if (previousEnv === undefined) delete process.env.NODE_ENV; else process.env.NODE_ENV = previousEnv;
+ }
 });

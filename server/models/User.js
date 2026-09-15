@@ -7,7 +7,7 @@ const userSchema = new mongoose.Schema(
     password: { type: String, required: true },
     phone: { type: String, default: '' },
     nmcRegistrationNumber: { type: String, trim: true, uppercase: true },
-    registrationVerification: { type: String, enum: ['demo-allowlist'] },
+    registrationVerification: { type: String, enum: ['demo-allowlist', 'provided-record-match'] },
     phoneVerifiedAt: Date,
     degree: { type: String, trim: true, default: '' },
     hospital: { type: String, trim: true, default: '' },
